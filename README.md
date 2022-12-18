@@ -1,2 +1,2 @@
-# LMS
-Spring MVC project :: LMS
+# SCM
+Spring MVC project :: SCM
