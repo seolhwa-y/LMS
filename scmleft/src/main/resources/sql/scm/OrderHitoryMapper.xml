@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.scm.dao.OrderHistoryDAO">
+
+<!-- 일별수주내역 조회 -->
+<select id="getOrderHistoryList" parameterType="kr.happyjob.study.scm.model.OrderHistoryModel" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT  JI.JORD_CODE AS 'JORDCODE',
+			JI.JORD_DATE AS 'JORDDATE',
+			JI.loginID AS 'LOGINID',
+			UI.company AS 'COMPANYNAME',
+			JI.MODEL_CODE AS 'MODELCODE',
+			PD.PD_NAME AS 'PDNAME',
+			WS.WH_STOCK AS 'WHSTOCK',
+			PD.PD_PRICE AS 'PDPRICE',
+			JI.JORD_AMT AS 'JORDAMT',
+			(PD.PD_PRICE * JI.JORD_AMT) AS 'TOTALAMT',
+			RI.RE_DATE AS 'REDATE',
+			JI.JORD_IN AS 'JORDIN',
+			DI.BORD_CODE AS 'BORDCODE',
+			DI.SH_CODE AS 'SHCODE'
+	FROM 	JORDER_INFO JI INNER JOIN tb_userinfo UI ON JI.loginID = UI.loginID
+						   INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE
+						   INNER JOIN WHOUSE_STOCK WS ON JI.JORD_CODE = WS.WH_CODE AND JI.MODEL_CODE = WS.MODEL_CODE
+						   LEFT OUTER JOIN RETURN_INFO RI ON JI.JORD_CODE = RI.JORD_CODE
+						   LEFT OUTER JOIN (SELECT JI.JORD_CODE, 
+												   BI.BORD_CODE, 
+												   SI.SH_CODE, 
+												   RI.RE_CODE 
+											FROM JORDER_INFO JI LEFT OUTER JOIN (SELECT DI.DIR_CODE, 
+																						BI.JORD_CODE,
+																						BI.BORD_CODE
+																				 FROM DIRECTION DI INNER JOIN BORDER_INFO BI ON DI.DIR_CODE = BI.DIR_CODE
+																				 WHERE DI.DIR_TYPE = '0') BI ON JI.JORD_CODE = BI.JORD_CODE
+						   LEFT OUTER JOIN (SELECT DI.DIR_CODE, 
+												   SI.JORD_CODE, 
+												   SI.SH_CODE
+											FROM DIRECTION DI INNER JOIN SHIP_INFO SI ON DI.DIR_CODE = SI.DIR_CODE
+											WHERE DI.DIR_TYPE = '1') SI ON JI.JORD_CODE = SI.JORD_CODE
+						   LEFT OUTER JOIN (SELECT DI.DIR_CODE, 
+												   RI.JORD_CODE, 
+												   RI.RE_CODE
+											FROM DIRECTION DI INNER JOIN RETURN_INFO RI ON DI.DIR_CODE = RI.DIR_CODE
+											WHERE DI.DIR_TYPE = '2') RI ON JI.JORD_CODE = RI.JORD_CODE) DI ON JI.JORD_CODE = DI.JORD_CODE
+</select>
+
+<!-- 지시서  -->
+<insert id="insertDirection" parameterType="kr.happyjob.study.scm.model.OrderHistoryModel">
+
+</insert>
+
+<!-- 발주지시서 -->
+<insert id="insertBorderInfo" parameterType="kr.happyjob.study.scm.model.OrderHistoryModel">
+
+</insert>
+
+<!-- 배송지시서 -->
+<insert id="insertShipInfo" parameterType="kr.happyjob.study.scm.model.OrderHistoryModel">
+
+</insert>
+
+</mapper>
