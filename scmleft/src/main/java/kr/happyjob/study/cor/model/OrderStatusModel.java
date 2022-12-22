@@ -1,19 +1,21 @@
 package kr.happyjob.study.cor.model;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 //lombok 사용 X
-@Component
+@Repository
 public class OrderStatusModel {
 	private String jordNo; // 전체 주문코드
 	private int cnt; // 주문 수량
-	private int total; // 총주문금액
+	private long total; // 총주문금액
 	private String jordDate; // 주문일자
 	private String jordWishdate; // 주문희망일자
 	private String jordIn; // 입금여부 (0 - 미입금, 1 - 입금)
+	private String shType; // 배송여부 (0 - 미배송, 1 - 배송완료, 2 - 배송중)
 	
 	private String modelName; // 모델분류
 	private String pdName; // 제품이름
+	private String pdCode; // 제품코드
 	private String pdCorp; // 제품 제조사
 	private int pdPrice; // 제품 가격
 	private String jordAmt; // 주문한 수량
@@ -48,10 +50,10 @@ public class OrderStatusModel {
 	public void setCnt(int cnt) {
 		this.cnt = cnt;
 	}
-	public int getTotal() {
+	public long getTotal() {
 		return total;
 	}
-	public void setTotal(int total) {
+	public void setTotal(long total) {
 		this.total = total;
 	}
 	public String getJordDate() {
@@ -72,6 +74,12 @@ public class OrderStatusModel {
 	public void setJordIn(String jordIn) {
 		this.jordIn = jordIn;
 	}
+	public String getShType() {
+		return shType;
+	}
+	public void setShType(String shType) {
+		this.shType = shType;
+	}
 	public String getModelName() {
 		return modelName;
 	}
@@ -83,6 +91,12 @@ public class OrderStatusModel {
 	}
 	public void setPdName(String pdName) {
 		this.pdName = pdName;
+	}
+	public String getPdCode() {
+		return pdCode;
+	}
+	public void setPdCode(String pdCode) {
+		this.pdCode = pdCode;
 	}
 	public String getPdCorp() {
 		return pdCorp;

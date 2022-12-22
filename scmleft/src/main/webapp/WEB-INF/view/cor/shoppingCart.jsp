@@ -135,6 +135,13 @@ click-able rows
 
 	}
 	
+	function init() {
+		let scList = ${shoppingCartList};
+		let tbody = document.getElementById("shoppingCartTBody");
+		let content = "";
+		console.log(scList);
+	}
+	
 	// 버튼 :: 주문하기
 	function insOrderInfo() {
 		console.log("주문하기");
@@ -143,7 +150,7 @@ click-able rows
 
 
 </head>
-<body>
+<body onload = "init()">
 	<form id="myForm" action="" method="">
 
 		<input type="hidden" id="currentPage" value="1"> <input
@@ -189,15 +196,8 @@ click-able rows
 											<th scope="col">납품희망일자</th>
 										</tr>
 									</thead>
-									<tbody >
-										<tr >
-											<td> <!-- EL 방식으로 박아 넣기 --> </td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-										</tr>
+									<tbody id = "shoppingCartTBody">
+
 									</tbody>
 								</table>
 							</div>

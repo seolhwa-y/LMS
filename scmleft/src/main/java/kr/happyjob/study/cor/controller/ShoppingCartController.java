@@ -30,28 +30,25 @@ public class ShoppingCartController {
 	@RequestMapping("shoppingCart.do")
 	public ModelAndView moveSoppingCartPage(ModelAndView mav, HttpSession session)  throws Exception {	
 		/* 담당자 : 염설화
-		 * 개발기간 : 2022-12-23 ~ 
+		 * 개발기간 : 2022-12-22 ~ 2022-12-22
 		 * 비고 : Service 단에서 장바구니 내역 가져와서 페이지에 보내준다. */
-		
-		this.scs.backController(mav, 1); // 장바구니 목록 불러오기
-		
-		mav.setViewName("cor/shoppingCart");
+		this.scs.backController(session, mav, 1); // 장바구니 목록 불러오기
 		
 		return mav;
 	}
 	
 	// 선택 항목 장바구니 목록 삭제
 	@ResponseBody
-	public HashMap<String, Object> deleteSoppingCart(Model model, HashMap<String, Object> map, @ModelAttribute ShoppingCartModel scm) {
-		this.scs.backController(model, 1);
+	public HashMap<String, Object> deleteSoppingCart(Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute ShoppingCartModel scm) {
+		this.scs.backController(session, model, 1);
 		
 		return map;
 	}
 
 	// 주문하기
 	@ResponseBody
-	public HashMap<String, Object> insertJorderInfo(Model model, HashMap<String, Object> map, @ModelAttribute ShoppingCartModel scm) {
-		this.scs.backController(model, 2);
+	public HashMap<String, Object> insertJorderInfo(Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute ShoppingCartModel scm) {
+		this.scs.backController(session, model, 2);
 		return map;
 	}
 }

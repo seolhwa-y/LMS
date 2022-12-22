@@ -135,6 +135,67 @@ click-able rows
 
 	}
 	
+	function init() {
+		let osList =${orderStatusList};
+		let tbody = document.getElementById("orderStatusTBody");
+		let content = "", num = 0;
+		
+		console.log(osList);
+		// 일련번호 주문수량 결제금액 구매일자 배송희망일자 배송상태 반품선택
+		for(i = 0; i < osList.length; i++) {
+			num = i + 1;
+			content += "<tr><td>" + num + "</td>"
+					+ "<td>" + osList[i].cnt.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + osList[i].total.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + cngDateType(osList[i].jordDate) + "</td>"
+					+ "<td>" + cngDateType(osList[i].jordWishdate) + "</td>";
+			content += "<td>" + (osList[i].shType == "0" ? "미배송" : "배송완료") + "</td>"
+					+ "<td><input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + osList[i].jordNo + ")' /></td></tr>";
+		}
+		tbody.innerHTML = content;
+		console.log(content);
+	}
+	
+	// 타입 변환 :: 스트링 -> 날짜
+	function cngDateType(strDate) {
+		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
+	}
+	
+	// 주문내역에서 상세 제품정보 불러오기
+	function getDetailList(no) {
+		// Ajax = 파라미터
+		const param = { jordNo : no }
+		
+		// Ajax = 호출
+		var callafterback = function(returndata) {
+			callDatail(returndata);
+		}
+		
+		callAjax("/cor/refundHistory", "post", "json", true, param, callafterback);
+	}
+	
+	// 상세 제품정보 CALLBACK
+	function callDatail(ajax){
+		let osdList = ajax.osdList;
+		let tbody = document.getElementById("detailOrderStatusTBody");
+		let content = "";
+		
+		console.log(osdList);
+		for(i = 0; i < osdList.length; i++) {
+			// 체크박스 주문번호 제품명 제품번호 제조사 단가 수량 합계금액
+			content += "<tr><td><input type = 'checkBox' class = 'cheReturn'/></td>"
+					+ "<td>" + osdList[i].jordNo + "</tb>"
+					+ "<td>" + osdList[i].pdName + "</tb>"
+					+ "<td>" + osdList[i].pdCode + "</tb>"
+					+ "<td>" + osdList[i].pdCorp + "</tb>"
+					+ "<td>" + osdList[i].pdPrice.toLocaleString('ko-KR') + "</tb>"
+					+ "<td>" + osdList[i].jordAmt.toLocaleString('ko-KR') + "</tb>"
+					+ "<td>" + osdList[i].total.toLocaleString('ko-KR') + "</tb>";
+		}
+		console.log(content);
+		tbody.innerHTML = content;
+	}
+	
 	// 날짜인풋 :: 수주리스트 조회기간 설정
 	function getOrderStatusList() {
 		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
@@ -146,7 +207,7 @@ click-able rows
 
 
 </head>
-<body>
+<body onload = "init()">
 	<form id="myForm" action="" method="">
 
 		<input type="hidden" id="currentPage" value="1"> <input
@@ -200,16 +261,8 @@ click-able rows
 											<th scope="col">반품선택</th>
 										</tr>
 									</thead>
-									<tbody >
-										<tr >
-											<td> <!-- EL 방식으로 박아 넣기 --> </td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-										</tr>
+									<tbody id = "orderStatusTBody">
+
 									</tbody>
 								</table>
 							</div>
@@ -230,20 +283,11 @@ click-able rows
 											<th scope="col">합계금액</th>
 										</tr>
 									</thead>
-									<tbody >
-										<tr >
-											<td> <!-- EL 방식으로 박아 넣기 --> </td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td></td>
-										</tr>
+									<tbody id = "detailOrderStatusTBody">
+
 									</tbody>
 								</table>
-								<input type = "button" id = "btnReturn" onClick = "insReturnInfo()" />
+								<input type = "button"  id = "btnReturn" value = "반품하기" onClick = "insReturnInfo()" />
 							</div>
 						</div>
 

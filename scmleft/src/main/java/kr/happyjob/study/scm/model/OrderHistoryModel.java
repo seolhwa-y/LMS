@@ -1,10 +1,8 @@
 package kr.happyjob.study.scm.model;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 // lombok 사용 X
-//@Component
 @Repository
 public class OrderHistoryModel {
 	private String jordCode; // 주문코드
@@ -15,7 +13,7 @@ public class OrderHistoryModel {
 	private String pdName; // 제품 이름
 	private int pdPrice; // 제품 단가
 	private int jordAmt; // 제품 수량
-	private int totalAmt; // 제품 주문한 토탈가격
+	private long totalAmt; // 제품 주문한 토탈가격
 	private String reDate; // 반품일자
 	private String jordIn; // 입금여부
 
@@ -89,10 +87,10 @@ public class OrderHistoryModel {
 	public void setJordAmt(int jordAmt) {
 		this.jordAmt = jordAmt;
 	}
-	public int getTotalAmt() {
+	public long getTotalAmt() {
 		return totalAmt;
 	}
-	public void setTotalAmt(int totalAmt) {
+	public void setTotalAmt(long totalAmt) {
 		this.totalAmt = totalAmt;
 	}
 	public String getReDate() {

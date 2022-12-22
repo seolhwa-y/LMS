@@ -8,9 +8,10 @@ public class ShoppingCartModel {
 	private String loginId; // 장바구니 주인 이름 + 주문한 사람
 	private String modelCode; // 제품 모델 코드
 	private String pdNadd; // 제품 이미지 링크
+	private String pdName; // 제품 이름
 	private int pdPrice; // 제품 가격
 	private int baAmt; // 장바구니 수량
-	private String total; // 제품별 합계금액
+	private long total; // 제품별 합계금액
 	private String baWishdate; // 제품별 배송희망일자
 	
 	private String jordCode; // 제품별 주문코드
@@ -20,8 +21,8 @@ public class ShoppingCartModel {
 	private String jordWishdate; // 배송희망일자
 	private int jordAmt; // 주문수량
 	
-	// 파라미터 값 나중에 추가하기
 	
+	// 파라미터 값 나중에 추가하기
 	public String getLoginId() {
 		return loginId;
 	}
@@ -40,6 +41,12 @@ public class ShoppingCartModel {
 	public void setPdNadd(String pdNadd) {
 		this.pdNadd = pdNadd;
 	}
+	public String getPdName() {
+		return pdName;
+	}
+	public void setPdName(String pdName) {
+		this.pdName = pdName;
+	}
 	public int getPdPrice() {
 		return pdPrice;
 	}
@@ -52,10 +59,10 @@ public class ShoppingCartModel {
 	public void setBaAmt(int baAmt) {
 		this.baAmt = baAmt;
 	}
-	public String getTotal() {
+	public long getTotal() {
 		return total;
 	}
-	public void setTotal(String total) {
+	public void setTotal(long total) {
 		this.total = total;
 	}
 	public String getBaWishdate() {

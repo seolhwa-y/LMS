@@ -139,6 +139,23 @@ click-able rows
 
 	}
 	
+	function init() {
+		let srList = ${salesRankList};
+		let tbody = document.getElementById("salesRankingTBody");
+		let content = "", num = 0;
+		
+		console.log(srList);
+		
+		for(i = 0; i < srList.length; i++) {
+			num = i + 1;
+			content += "<tr><td>" + num + "</td>"
+					+ "<td>" + srList[i].companyName + "</td>"
+					+ "<td>" + srList[i].total.toLocaleString('ko-KR') + "</td>";
+		}
+
+		tbody.innerHTML = content;
+	}
+	
 	// 날짜인풋 :: 수주리스트 조회기간 설정
 	function getRankList() {
 		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
@@ -149,7 +166,7 @@ click-able rows
 </script>
 
 </head>
-<body>
+<body onload = "init()">
 	<form id="myForm" action="" method="">
 
 		<input type="hidden" id="currentPage" value="1"> <input
@@ -203,12 +220,8 @@ click-able rows
 											<th scope="col">매출금액</th>
 										</tr>
 									</thead>
-									<tbody >
-										<tr >
-											<td> <!-- EL 방식으로 박아 넣기 --> </td>
-											<td></td>
-											<td></td>
-										</tr>
+									<tbody id = "salesRankingTBody">
+
 									</tbody>
 								</table>
 								<br>

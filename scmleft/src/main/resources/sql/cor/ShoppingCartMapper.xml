@@ -3,8 +3,18 @@
 <mapper namespace="kr.happyjob.study.cor.dao.ShoppingCartDAO">
 
 <!-- 장바구니 조회 -->
-<select id="getBasketList" parameterType="kr.happyjob.study.cor.model.ShoppingCartModel" resultType="kr.happyjob.study.cor.model.ShoppingCartModel">
-	
+<select id="getBasketList" parameterType="string" resultType="kr.happyjob.study.cor.model.ShoppingCartModel">
+	SELECT  BA.loginID AS 'loginId', 
+			BA.MODEL_CODE AS 'modelCode', 
+			PF.PD_NADD AS 'pdNadd', 
+			PD.PD_NAME AS 'pdName', 
+			PD.PD_PRICE AS 'pdPrice', 
+			BA.B_AMT AS 'baAmt', 
+			(PD.PD_PRICE * BA.B_AMT) AS 'total', 
+			BA.B_WISHDATE AS 'baWishdate'
+	FROM    BASKET BA RIGHT OUTER JOIN PD_INFO PD ON BA.MODEL_CODE = PD.MODEL_CODE
+                  	  LEFT OUTER JOIN PD_FILE PF ON PD.PDFILE_CODE = PF.PDFILE_CODE
+	WHERE   BA.loginID = #{loginId}
 </select>
 
 <!-- 주문하기 -->

@@ -143,8 +143,8 @@ click-able rows
 		let content = "";
 		
 		console.log(ohList);
-		console.log(ohList.length);
-		
+
+
 		for(i = 0; i < ohList.length; i++) {
 			content += "<tr>"
 					+ "<td>" + ohList[i].jordCode + "</td>"
@@ -161,8 +161,8 @@ click-able rows
 			ohList[i].bordCode != null ? content += "<td>작성완료</td>" : content += "<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"Border\")' /></td>";
 			ohList[i].shCode != null ? content += "<td>작성완료</td>" : content += "<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"Sorder\")' /></td>";
 		}
-		console.log(content);
-		tbody.innerHTML = content;
+		
+		tbody.innerHTML = content;	
 	 }
 	 
 	// 타입 변환 :: 스트링 -> 날짜
