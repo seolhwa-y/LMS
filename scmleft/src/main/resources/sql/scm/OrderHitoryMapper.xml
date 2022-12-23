@@ -41,6 +41,18 @@
 												   RI.RE_CODE
 											FROM DIRECTION DI INNER JOIN RETURN_INFO RI ON DI.DIR_CODE = RI.DIR_CODE
 											WHERE DI.DIR_TYPE = '2') RI ON JI.JORD_CODE = RI.JORD_CODE) DI ON JI.JORD_CODE = DI.JORD_CODE
+	<where>
+		<choose>
+			<when test="type != null">
+				<if test="type.eq('jorder') AND startDate != null AND endDate != null">
+					JI.JORD_DATE BETWEEN #{startDate} AND #{endDate}
+				</if>
+				<if test="type.eq('return') AND startDate != null AND endDate != null">
+					RI.RE_DATE BETWEEN #{startDate} AND #{endDate}
+				</if>	
+			</when>
+		</choose>
+	</where>										
 </select>
 
 <!-- 지시서  -->

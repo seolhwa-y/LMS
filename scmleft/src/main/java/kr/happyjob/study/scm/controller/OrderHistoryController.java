@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -48,7 +50,7 @@ public class OrderHistoryController {
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 클릭한 발주지시서의 재고가 있는 창고 리스트를 가져와서 보내준다. */
 		
-		this.ohs.backController(session, model, 1);
+		this.ohs.backController(session, map, 1);
 		
 		return map;
 	}
@@ -60,7 +62,7 @@ public class OrderHistoryController {
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 작성한 발주지시서를 DB에 Insert 한다. */
 		
-		this.ohs.backController(session, model, 2);
+		this.ohs.backController(session, map, 2);
 		
 		return map;
 	}
@@ -72,7 +74,7 @@ public class OrderHistoryController {
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 클릭한 배송지시서의 재고가 있는 창고 리스트를 가져와서 보내준다. */
 		
-		this.ohs.backController(session, model, 3);
+		this.ohs.backController(session, map, 3);
 		
 		return map;
 	}
@@ -84,10 +86,20 @@ public class OrderHistoryController {
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 작성한 배송지시서를 DB에 Insert 한다. */
 		
-		this.ohs.backController(session, model, 4);
+		this.ohs.backController(session, map, 4);
 		return map;
 	}
 	
 	// 기간 재선택 (x)
+	@ResponseBody
+	@PostMapping("/searchOrderHistoryList")
+	public HashMap<String, Object> searchOrderHistoryCtl (Model model, @RequestParam HashMap<String, Object> map, HttpSession session, @ModelAttribute OrderHistoryModel ohm) {
+		/* 담당자 : 염설화
+		 * 개발기간 : 2022-12-21 ~ 
+		 * 비고 : Service 단에서 SCM 담당자가 작성한 배송지시서를 DB에 Insert 한다. */
+		
+		this.ohs.backController(session, map, 5);
+		return map;
+	}
 	// 입금된 목록만 보기 (x)
 }

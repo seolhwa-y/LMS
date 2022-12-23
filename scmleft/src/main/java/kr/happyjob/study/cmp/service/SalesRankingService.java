@@ -1,5 +1,6 @@
 package kr.happyjob.study.cmp.service;
 
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -44,17 +45,18 @@ public class SalesRankingService implements SalesRankingInter {
 
 	}
 	
-	public void backController (Model model, int serviceCode) {
+	public void backController (HashMap<String, Object> map, int serviceCode) {
 		System.err.println("현재 실행되고 있는 클래스 이름 : " + className + " : " + serviceCode);
 		
 		switch (serviceCode) {
-		//case 1 : (model); break; // 기간 재선택
+		case 1 : this.searchSalesRanking(map); break; // 기간 재선택
 
 		default : break;
 		}
 	}
 
 	
+
 	// 매출 순위 Select
 	@SuppressWarnings("unchecked")
 	private void showSaleRankCtl(ModelAndView mav) {
@@ -63,11 +65,18 @@ public class SalesRankingService implements SalesRankingInter {
 		 * 비고 : DB에서 내역을 가져와서 List에 담아 JSON으로 바꿔 화면단에 넘겨준다. */
 		Gson gson = new Gson();
 		
-		List<SalesRankingModel> srList = (List<SalesRankingModel>) this.sql.selectList("getSalesRankingList", srm);
+		List<SalesRankingModel> srList = (List<SalesRankingModel>) this.sql.selectList("getSalesRankingList", null);
 		mav.addObject("salesRankList", gson.toJson(srList));
 		mav.setViewName("cmp/salesRanking");
 		
 		System.err.println(mav.getModel().get("salesRankList"));
+	}
+	
+	// 기간별 검색 Select
+	@SuppressWarnings("unchecked")
+	private void searchSalesRanking(HashMap<String, Object> map) {
+		List<SalesRankingModel> srList = (List<SalesRankingModel>) this.sql.selectList("getSalesRankingList", map);
+		map.put("searchRankList", srList);
 	}
 
 }

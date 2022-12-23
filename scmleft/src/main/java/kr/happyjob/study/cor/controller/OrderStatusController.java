@@ -44,17 +44,19 @@ public class OrderStatusController {
 	// 주문 상세내역 불러오기
 	@ResponseBody
 	@PostMapping("/refundHistory")
-	public HashMap<String, Object> showDetailOrder(Model model, HttpSession session, @RequestParam HashMap<String, Object> map) {
+	public HashMap<String, Object> showDetailOrder(HttpSession session, @RequestParam HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 2022-12-22 ~ 2022-12-22
 		 * 비고 : Service 단에서 회원의 주문내역 제품들을 가져와서 페이지에 보내준다. */
-		oss.backController(session, map, 1);
+		map.put("loginId", session.getAttribute("loginId"));
+		this.oss.backController(session, map, 1);
 	
 		return map;
 	}
 	
 	// 선택한 상품 반품요청
 	@ResponseBody
+	@PostMapping("/")
 	public HashMap<String, Object> insertReturnInfo(Model model, HttpSession session, @RequestParam HashMap<String, Object> map) {
 		this.oss.backController(session, map, 2);
 	
@@ -62,5 +64,13 @@ public class OrderStatusController {
 	}
 	
 	// 모델명 검색 (x)
-	// 구매일 재선택 (x)
+	// 구매일 재선택
+	@ResponseBody
+	@PostMapping("/searchOrderList")
+	public HashMap<String, Object> searchNewOrderList(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		map.put("loginId", session.getAttribute("loginId"));
+		this.oss.backController(session, map, 3);
+		
+		return map;
+	}
 }

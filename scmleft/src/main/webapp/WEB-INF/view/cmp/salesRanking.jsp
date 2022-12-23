@@ -12,7 +12,9 @@
 <jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
 <script src="https://unpkg.com/axios@0.12.0/dist/axios.min.js"></script>
 <script src="https://unpkg.com/lodash@4.13.1/lodash.min.js"></script>
-<!-- D3 -->
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
 <style>
 //
 click-able rows
@@ -30,139 +32,93 @@ click-able rows
 }
 </style>
 <script type="text/javascript">
-	var pageSizeinf = 3;
-	var pageBlockSizeinquiry = 10;
-
-	/** 버튼 이벤트 등록 */
-	function fRegisterButtonClickEvent() {
-		$('a[name=btn]').click(function(e) {
-			e.preventDefault();
-
-			var btnId = $(this).attr('id');
-			switch (btnId) {
-			case 'btnClose':
-				gfCloseModal();
-				break;
-			case 'btnCloseGrpCod':
-				gfCloseModal();
-				break;
-			case 'btnSaveGrpCod':
-				fSaveGrpCod();
-				break;
-
-			}
-		});
-	}
-
-	/** 공지사항 조회 */
-	function fListInf(currentPage) {
-
-		currentPage = currentPage || 1;
-
-		//console.log("currentPage : " + currentPage);
-
-		var param = {
-			currentPage : currentPage,
-			pageSize : pageSizeinf
-		}
-
-		var resultCallback = function(data) {
-			fListInfResult(data, currentPage);
-		};
-
-		//Ajax실행 방식
-		//callAjax("Url",type,return,async or sync방식,넘겨준거,값,Callback함수 이름)
-		//html로 받을거라 text
-		callAjax("/inf/listinfvue.do", "post", "json", true, param,
-				resultCallback);
-	}
-
-	/** 공지사항 조회 콜백 함수 */
-	function fListInfResult(data, currentPage) {
-
-		//console.log(data);		
-		noticeareavar.listitem = data.notice;
-
-		// 총 개수 추출
-		var totalCntlistInf = data.noticeCnt;
-		var list = $("#selectedInfNo").val();
-		// 페이지 네비게이션 생성
-		var paginationHtml = getPaginationHtml(currentPage, totalCntlistInf,
-				pageSizeinf, pageBlockSizeinquiry, 'fListInf', [ list ]);
-		//console.log("paginationHtml : " + paginationHtml);
-
-		$("#listInfPagination").empty().append(paginationHtml);
-
-	}
-
-	/*공지사항 상세 조회*/
-	function fNoticeModal(noticeNo) {
-
-		var param = {
-			noticeNo : noticeNo
-		};
-		var resultCallback2 = function(data) {
-			fdetailResult(data);
-		};
-
-		callAjax("/system/detailNotice.do", "post", "json", true, param,
-				resultCallback2);
-	}
-
-	/*  공지사항 상세 조회 -> 콜백함수   */
-	function fdetailResult(data) {
-
-		if (data.resultMsg == "SUCCESS") {
-			//모달 띄우기 
-			gfModalPop("#notice");
-
-			// 모달에 정보 넣기 
-			frealPopModal(data.result);
-
-		} else {
-			alert(data.resultMsg);
-		}
-	}
-
-	/* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
-	function frealPopModal(object) {
-
-		noticeeditvue.loginId = object.loginId;
-		noticeeditvue.noticeTitle = object.noticeTitle;
-		noticeeditvue.noticeContent = object.noticeContent;
-
-		noticeeditvue.loginIdread = "readonly";
-		noticeeditvue.noticeTitleread = "readonly";
-		noticeeditvue.noticeContentread = "readonly";
-
-		$("#noticeNo").val(object.noticeNo); // 중요한 num 값도 숨겨서 받아온다. 
-
-	}
-	
 	function init() {
 		let srList = ${salesRankList};
-		let tbody = document.getElementById("salesRankingTBody");
-		let content = "", num = 0;
-		
-		console.log(srList);
-		
-		for(i = 0; i < srList.length; i++) {
-			num = i + 1;
-			content += "<tr><td>" + num + "</td>"
-					+ "<td>" + srList[i].companyName + "</td>"
-					+ "<td>" + srList[i].total.toLocaleString('ko-KR') + "</td>";
-		}
 
-		tbody.innerHTML = content;
+		makeTableBody(srList);
+		makeChart(srList);
 	}
-	
+
 	// 날짜인풋 :: 수주리스트 조회기간 설정
 	function getRankList() {
 		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
-		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝
-		
-		console.log(stDate + "~" + edDate + "기간 확인 ok");
+		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝*/
+	
+		if(stDate != "" & edDate != "") {
+			console.log(stDate + "~" + edDate + "기간 확인 ok");
+			
+			// Ajax = 파라미터
+			const param = { startDate : stDate, 
+							endDate : edDate }
+			
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				callNewRank(returndata);
+			}
+			
+			callAjax("/cmp/searchRank", "post", "json", true, param, callafterback);	
+		} else return;
 	}
+	
+	function callNewRank(ajax) {
+		let rankList = ajax.searchRankList;
+		
+		console.log(rankList);
+		
+		makeTableBody(rankList);
+		makeChart(rankList);
+	}
+	
+	// 테이블 그리기
+	function makeTableBody (list) {
+		let tbody = document.getElementById("salesRankingTBody");
+		let content = "", num = 0;
+		
+		for(i = 0; i < list.length; i++) {
+			num = i + 1;
+			content += "<tr><td>" + num + "</td>"
+					+ "<td>" + list[i].companyName + "</td>"
+					+ "<td>" + list[i].total.toLocaleString('ko-KR') + "</td>";
+		}
+		tbody.innerHTML = "";
+		tbody.innerHTML = content;
+	}
+	
+	// 차트 그리기
+    function makeChart (list) {
+		let name = [], price = [];
+		
+		list.forEach(function(srList) {
+			name.push(srList.companyName);
+			price.push(srList.total);
+		});
+    	
+	    var options = {
+		    series: price,
+		    chart: {
+		    width: 380,
+		    type: 'pie',
+	    },
+		    labels: name,
+		    responsive: [{
+		      breakpoint: 480,
+		      options: {
+		        chart: {
+		          width: 200
+		        },
+		        legend: {
+		          position: 'bottom'
+		        }
+		      }
+		    }]
+	    };
+	    
+	    console.log(options);
+    
+	    var chart = new ApexCharts(document.querySelector("#chart"), options);
+	    chart.render();
+    }  
+
 </script>
 
 </head>
@@ -199,9 +155,9 @@ click-able rows
 							</div>
 							
 							<div id = "divSearchBar">
-									<input type = "date" id = "inpStartDate" />
+									<input type = "date" id = "inpStartDate" onchange = "getRankList()"/>
 									<span> ~ </span>
-									<input type = "date" id = "inpEndDate" onchange="getRankList()" />
+									<input type = "date" id = "inpEndDate" onchange = "getRankList()" />
 							</div>
 
 							<!-- 매출 TOP 10 -->
@@ -227,12 +183,15 @@ click-able rows
 								<br>
 							</div>
 							<br>
+							
+							<div id = "chart"></div>
 						</div>
 
 					</li>
 				</ul>
 			</div>
 		</div>
+		
 		
 		<!-- 모달팝업 -->
 		<div id="notice" class="layerPop layerType2" style="width: 600px;">

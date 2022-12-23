@@ -26,139 +26,10 @@ click-able rows
 }
 </style>
 <script type="text/javascript">
-	var pageSizeinf = 3;
-	var pageBlockSizeinquiry = 10;
-
-	/** 버튼 이벤트 등록 */
-	function fRegisterButtonClickEvent() {
-		$('a[name=btn]').click(function(e) {
-			e.preventDefault();
-
-			var btnId = $(this).attr('id');
-			switch (btnId) {
-			case 'btnClose':
-				gfCloseModal();
-				break;
-			case 'btnCloseGrpCod':
-				gfCloseModal();
-				break;
-			case 'btnSaveGrpCod':
-				fSaveGrpCod();
-				break;
-
-			}
-		});
-	}
-
-	/** 공지사항 조회 */
-	function fListInf(currentPage) {
-
-		currentPage = currentPage || 1;
-
-		//console.log("currentPage : " + currentPage);
-
-		var param = {
-			currentPage : currentPage,
-			pageSize : pageSizeinf
-		}
-
-		var resultCallback = function(data) {
-			fListInfResult(data, currentPage);
-		};
-
-		//Ajax실행 방식
-		//callAjax("Url",type,return,async or sync방식,넘겨준거,값,Callback함수 이름)
-		//html로 받을거라 text
-		callAjax("/inf/listinfvue.do", "post", "json", true, param,
-				resultCallback);
-	}
-
-	/** 공지사항 조회 콜백 함수 */
-	function fListInfResult(data, currentPage) {
-
-		//console.log(data);		
-		noticeareavar.listitem = data.notice;
-
-		// 총 개수 추출
-		var totalCntlistInf = data.noticeCnt;
-		var list = $("#selectedInfNo").val();
-		// 페이지 네비게이션 생성
-		var paginationHtml = getPaginationHtml(currentPage, totalCntlistInf,
-				pageSizeinf, pageBlockSizeinquiry, 'fListInf', [ list ]);
-		//console.log("paginationHtml : " + paginationHtml);
-
-		$("#listInfPagination").empty().append(paginationHtml);
-
-	}
-
-	/*공지사항 상세 조회*/
-	function fNoticeModal(noticeNo) {
-
-		var param = {
-			noticeNo : noticeNo
-		};
-		var resultCallback2 = function(data) {
-			fdetailResult(data);
-		};
-
-		callAjax("/system/detailNotice.do", "post", "json", true, param,
-				resultCallback2);
-	}
-
-	/*  공지사항 상세 조회 -> 콜백함수   */
-	function fdetailResult(data) {
-
-		if (data.resultMsg == "SUCCESS") {
-			//모달 띄우기 
-			gfModalPop("#notice");
-
-			// 모달에 정보 넣기 
-			frealPopModal(data.result);
-
-		} else {
-			alert(data.resultMsg);
-		}
-	}
-
-	/* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
-	function frealPopModal(object) {
-
-		noticeeditvue.loginId = object.loginId;
-		noticeeditvue.noticeTitle = object.noticeTitle;
-		noticeeditvue.noticeContent = object.noticeContent;
-
-		noticeeditvue.loginIdread = "readonly";
-		noticeeditvue.noticeTitleread = "readonly";
-		noticeeditvue.noticeContentread = "readonly";
-
-		$("#noticeNo").val(object.noticeNo); // 중요한 num 값도 숨겨서 받아온다. 
-
-	}
-	
 	function init() {
 		let osList =${orderStatusList};
-		let tbody = document.getElementById("orderStatusTBody");
-		let content = "", num = 0;
-		
-		console.log(osList);
-		// 일련번호 주문수량 결제금액 구매일자 배송희망일자 배송상태 반품선택
-		for(i = 0; i < osList.length; i++) {
-			num = i + 1;
-			content += "<tr><td>" + num + "</td>"
-					+ "<td>" + osList[i].cnt.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + osList[i].total.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + cngDateType(osList[i].jordDate) + "</td>"
-					+ "<td>" + cngDateType(osList[i].jordWishdate) + "</td>";
-			content += "<td>" + (osList[i].shType == "0" ? "미배송" : "배송완료") + "</td>"
-					+ "<td><input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + osList[i].jordNo + ")' /></td></tr>";
-		}
-		tbody.innerHTML = content;
-		console.log(content);
-	}
 	
-	// 타입 변환 :: 스트링 -> 날짜
-	function cngDateType(strDate) {
-		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
+		makeOrderList(osList);
 	}
 	
 	// 주문내역에서 상세 제품정보 불러오기
@@ -195,13 +66,56 @@ click-able rows
 		console.log(content);
 		tbody.innerHTML = content;
 	}
-	
+
 	// 날짜인풋 :: 수주리스트 조회기간 설정
 	function getOrderStatusList() {
 		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
-		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝
-		
-		console.log(stDate + "~" + edDate + "기간 확인 ok");
+		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝*/
+	
+		if(stDate != "" & edDate != "") {
+			console.log(stDate + "~" + edDate + "기간 확인 ok");
+			
+			// Ajax = 파라미터
+			const param = { startDate : stDate, 
+							endDate : edDate }
+			
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				callNewOrderList(returndata);
+			}
+			
+			callAjax("/cor/searchOrderList", "post", "json", true, param, callafterback);	
+		} else return;
+	}
+	
+	function callNewOrderList(ajax) {
+		let newList = ajax.newOrder;
+		console.log(newList);
+		makeOrderList(newList);
+	}
+	
+	// 주문내역 테이블 그리기
+	function makeOrderList(list){
+		let tbody = document.getElementById("orderStatusTBody");
+		let content = "", num = 0;
+
+		for(i = 0; i < list.length; i++) {
+			num = i + 1;
+			content += "<tr><td>" + num + "</td>"
+					+ "<td>" + list[i].cnt.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + list[i].total.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + cngDateType(list[i].jordDate) + "</td>"
+					+ "<td>" + cngDateType(list[i].jordWishdate) + "</td>";
+			content += "<td>" + (list[i].shType == "0" ? "미배송" : "배송완료") + "</td>"
+					+ "<td><input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + list[i].jordNo + ")' /></td></tr>";
+		}
+		tbody.innerHTML = content;
+		console.log(content);
+	}
+	
+	// 타입 변환 :: 스트링 -> 날짜
+	function cngDateType(strDate) {
+		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
 	}
 </script>
 

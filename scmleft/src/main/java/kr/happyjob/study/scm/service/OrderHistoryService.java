@@ -1,6 +1,7 @@
 package kr.happyjob.study.scm.service;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -50,19 +51,21 @@ public class OrderHistoryService implements OrderHistoryInter {
 		
 	}
 
-	public void backController (HttpSession session, Model model, int serviceCode) {
+	public void backController (HttpSession session, HashMap<String, Object> map, int serviceCode) {
 		System.err.println("현재 실행되고 있는 클래스 이름 : " + className + " : " + serviceCode);
 		
 		switch (serviceCode) {
-		case 1 : this.getBorderWarehouseCtl(model); break; // 발주지시서 보기
-		case 2 : this.insertBorderDirectionCtl(model); break; // 발주지시서 작성완료
-		case 3 : this.getShipWarehouseCtl(model); break; // 배송지시서 보기
-		case 4 : this.insertShipDirectionCtl(model); break; // 배송지시서 작성완료
-
+		case 1 : this.getBorderWarehouseCtl(map); break; // 발주지시서 보기
+		case 2 : this.insertBorderDirectionCtl(map); break; // 발주지시서 작성완료
+		case 3 : this.getShipWarehouseCtl(map); break; // 배송지시서 보기
+		case 4 : this.insertShipDirectionCtl(map); break; // 배송지시서 작성완료
+		case 5 : this.getSearchHistoryCtl(map); break;
 		default : break;
 		}
 	}
 	
+
+
 
 	// 주문내역 Select
 	@SuppressWarnings("unchecked")
@@ -81,7 +84,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 	} 
 	
 	// 발주 창고정보 Select
-	private void getBorderWarehouseCtl(Model model) {
+	private void getBorderWarehouseCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
@@ -90,7 +93,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 
 	// 발주정보 + 발주지시서 Insert
 	@Transactional
-	private void insertBorderDirectionCtl(Model model) {
+	private void insertBorderDirectionCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
@@ -98,7 +101,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 	}
 
 	// 배송 창고정보 Select
-	private void getShipWarehouseCtl(Model model) {
+	private void getShipWarehouseCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
@@ -107,52 +110,16 @@ public class OrderHistoryService implements OrderHistoryInter {
 
 	// 배송정보 + 배송지시서 Insert
 	@Transactional
-	private void insertShipDirectionCtl(Model model) {
+	private void insertShipDirectionCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
 		
 	}
 	
-	// OrderHistoryList String Table
-	private String makeListHtml(List<OrderHistoryModel> ohList) {
-		StringBuffer sb = new StringBuffer();
-		
-		
-		return sb.toString();
-	}
-	
-	// 창고정보 셀렉트 박스
-	private String makeSelectBoxHtml(List<OrderHistoryModel> ohList) {
-		StringBuffer sb = new StringBuffer();
-		DecimalFormat numFormat = new DecimalFormat("###,###,###,###,###");
-				
-		for(int i = 0; i < ohList.size(); i++) {
-			sb.append("<tr><td>" + ohList.get(i).getJordCode() + "</td>");
-			sb.append("<td>" + ohList.get(i).getJordDate().substring(0, 4) + "-");
-			sb.append(ohList.get(i).getJordDate().substring(4, 6) + "-");
-			sb.append(ohList.get(i).getJordDate().substring(6, 8) + "</td>");
-			sb.append("<td>" + ohList.get(i).getCompanyName() + "</td>");
-			sb.append("<td>" + ohList.get(i).getPdName() + "</td>");
-			sb.append("<td>" + numFormat.format(ohList.get(i).getWhStock()) + "</td>");
-			sb.append("<td>" + numFormat.format(ohList.get(i).getPdPrice()) + "</td>");
-			sb.append("<td>" + numFormat.format(ohList.get(i).getJordAmt()) + "</td>");
-			sb.append("<td>" + numFormat.format(ohList.get(i).getTotalAmt()) + "</td>");
-			
-			if(ohList.get(i).getReDate() != null) sb.append("<td>Y</td><td>" + ohList.get(i).getReDate() + "</td>");
-			else sb.append("<td>N</td><td></td>");
-			
-			if(ohList.get(i).getJordIn() == "0") sb.append("<td>미입금</td>");
-			else sb.append("<td>입금</td>");
-			
-			if(ohList.get(i).getBordCode() != null) sb.append("<td>작성완료</td>");
-			else sb.append("<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"Border\")' /></td>");
-			
-			if(ohList.get(i).getShCode() != null) sb.append("<td>작성완료</td>");
-			else sb.append("<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"Sorder\")' /></td>");			
-		}
-		
-		return sb.toString();
+	private void getSearchHistoryCtl(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		System.err.println(map);
 	}
 
 	// Insert / Update / Delete

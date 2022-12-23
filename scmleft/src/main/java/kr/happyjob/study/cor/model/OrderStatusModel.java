@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 //lombok 사용 X
 @Repository
 public class OrderStatusModel {
+	private String startDate;
+	private String endDate;
+	
 	private String jordNo; // 전체 주문코드
 	private int cnt; // 주문 수량
 	private long total; // 총주문금액
@@ -37,7 +40,18 @@ public class OrderStatusModel {
 	private int reOut; // 송금여부
 	
 	// 파라미터 값 나중에 추가하기
-	
+	public String getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+	public String getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
 	public String getJordNo() {
 		return jordNo;
 	}

@@ -1,10 +1,16 @@
 package kr.happyjob.study.cmp.controller;
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import kr.happyjob.study.cmp.service.SalesRankingService;
@@ -30,5 +36,15 @@ public class SalesRankingController {
 		return mav;
 	}
 	
-	// 기간 재선택 (x)
+	//
+	@ResponseBody
+	@PostMapping("/searchRank")
+	public HashMap<String, Object> showDetailOrder(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		/* 담당자 : 염설화
+		 * 개발기간 : 2022-12-22 ~ 2022-12-22
+		 * 비고 : Service 단에서 회원의 주문내역 제품들을 가져와서 페이지에 보내준다. */
+		this.srs.backController(map, 1);
+	
+		return map;
+	}
 }

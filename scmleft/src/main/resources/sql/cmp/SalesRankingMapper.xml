@@ -4,7 +4,23 @@
 
 <!-- 매출 TOP10 -->
 <select id="getSalesRankingList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.cmp.model.SalesRankingModel">
-	
+	SELECT    SI.loginID AS 'userId',
+	          SI.company AS 'companyName',
+	          SUM(PD.PD_PRICE * SI.SH_AMT) AS 'total'
+	FROM      PD_INFO PD INNER JOIN (SELECT  JORDER_INFO.loginID,
+	                                         tb_userinfo.company, 
+	                                         JORDER_INFO.JORD_CODE,
+	                                         SHIP_INFO.MODEL_CODE,
+	                                         SHIP_INFO.SH_AMT,
+	                                         SHIP_INFO.SH_DATE
+	                                 FROM    SHIP_INFO INNER JOIN JORDER_INFO ON SHIP_INFO.JORD_CODE = JORDER_INFO.JORD_CODE
+		                                               INNER JOIN tb_userinfo ON JORDER_INFO.loginID = tb_userinfo.loginID
+	                                 WHERE   SHIP_INFO.RE_CODE IS NULL AND SHIP_INFO.SH_TYPE = 1) SI ON PD.MODEL_CODE = SI.MODEL_CODE
+	<if test="startDate != null and endDate != null">
+		WHERE SI.SH_DATE BETWEEN #{startDate} AND #{endDate}
+	</if>
+	GROUP BY  SI.loginID, SI.company
+	ORDER BY  SUM(PD.PD_PRICE * SI.SH_AMT) DESC
 </select>
 
 </mapper>

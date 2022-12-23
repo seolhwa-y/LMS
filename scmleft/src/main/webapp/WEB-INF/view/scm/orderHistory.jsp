@@ -178,7 +178,33 @@ click-able rows
 		const dateType = document.getElementById("selClass").value;
 		
 		console.log(dateType + " : " + stDate + "~" + edDate + "기간 확인 ok");
+			
+		if(dateType != "" && stDate != "" && edDate != "") {
+			console.log(stDate + "~" + edDate + "기간 확인 ok");
+			
+			// Ajax = 파라미터
+			const param = { type : dateType,
+							startDate : stDate, 
+							endDate : edDate }
+			
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				callSearchList(returndata);
+			}
+			
+			callAjax("/scm/searchOrderHistoryList", "post", "json", true, param, callafterback);	
+		} else return;
 	}
+
+	function callSearchList(ajax) {
+		let newList = ajax;
+		console.log(newList);
+
+	}
+	
+	
+	
+	
 	
 	// 라디오버튼 :: 전체 or 반품
 	function getReturnList(checkBox) {
@@ -238,8 +264,8 @@ click-able rows
 							
 								<div id = "divSearchBar">
 									<select id = "selClass">
-										<option>주문일자</option>
-										<option>반품처리일</option>
+										<option value = 'jorder'>주문일자</option>
+										<option value = 'return'>반품처리일</option>
 									</select>
 									<input type = "date" id = "inpStartDate" />
 									<span> ~ </span>

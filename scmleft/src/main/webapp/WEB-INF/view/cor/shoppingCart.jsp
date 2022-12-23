@@ -137,14 +137,30 @@ click-able rows
 	
 	function init() {
 		let scList = ${shoppingCartList};
-		let tbody = document.getElementById("shoppingCartTBody");
-		let content = "";
-		console.log(scList);
+
+		makeBasketList(scList);
 	}
 	
 	// 버튼 :: 주문하기
 	function insOrderInfo() {
 		console.log("주문하기");
+	}
+	
+	// 테이블 그리기
+	function makeBasketList (list) {
+		let tbody = document.getElementById("shoppingCartTBody");
+		let content = "";
+		// 선택 제품명 단가 수량 합계 납품희망일자
+		for(i = 0; i < list.length; i++) {
+			content += "<tr><td><input type = 'checkBox' class = 'deleteProduct' value = '" + list[i].loginId + "&" + list[i].modelCode +"' /></td>"
+					+ "<td>"+ list[i].pdName +"</td>"
+					+ "<td>"+ list[i].pdPrice +"</td>"
+					+ "<td>"+ list[i].baAmt +"</td>"
+					+ "<td>"+ list[i].total +"</td>"
+					+ "<td>"+ list[i].baWishdate +"</td>";
+		}
+		tbody.innerHTML = content;
+		console.log(content);
 	}
 </script>
 

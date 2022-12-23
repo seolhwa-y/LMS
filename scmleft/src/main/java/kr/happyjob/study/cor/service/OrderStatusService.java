@@ -50,12 +50,13 @@ public class OrderStatusService implements OrderStatusInter {
 		switch (serviceCode) {
 		case 1 : this.getDetailOrderCtl(map); break; // 상세 주문내역 불러오기
 		case 2 : this.insertReturnInfoCtl(map); break; // 반품신청
-		
+		case 3 : this.getNewOrderListCtl(map); break;
 		default : break;
 		}
 	}
 	
 	
+
 	// 주문내역 불러오기
 	@SuppressWarnings("unchecked")
 	private void showOrderStatusCtl(HttpSession session, ModelAndView mav) {
@@ -63,13 +64,14 @@ public class OrderStatusService implements OrderStatusInter {
 		 * 개발기간 : 2022-12-21 ~ 2022-12-21
 		 * 비고 : DB에 param으로 보낼 session에 저장된 userId를 가져와야 한다.
 		  		  DB에서 내역을 가져와서 List에 담아 JSON으로 바꿔 화면단에 넘겨준다. */
+		HashMap<String, Object> map = new HashMap<String, Object>();
 		Gson gson = new Gson();
-		
-		List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", session.getAttribute("loginId"));
+		map.put("loginId", session.getAttribute("loginId"));
+
+		List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", map);
 		mav.addObject("orderStatusList", gson.toJson(osList));
 		mav.setViewName("cor/orderStatus");
-		
-		System.out.println(mav.getModel().get("orderStatusList"));
+
 	}
 
 	// 상세주문내역 불러오기
@@ -91,6 +93,14 @@ public class OrderStatusService implements OrderStatusInter {
 		 * 개발기간 : 
 		 * 비고 :  */
 		
+	}
+	
+	// 기간 + 제품명 검색
+	private void getNewOrderListCtl(HashMap<String, Object> map) {
+		System.out.println(map);
+		List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", map);
+		System.err.println(osList);
+		map.put("newOrder", osList);
 	}
 	
 	// Insert / Update / Delete

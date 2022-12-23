@@ -46,6 +46,17 @@ click-able rows
 		/* onload 이벤트  */
 		$(document).ready(function() {
 			
+			selectComCombo("whp", "whpall", "all", "");   // 창고 담당자 정보 : whpall : selectbox ID   value : loginID          all : 전체     sel : 선택 
+			selectComCombo("wh", "whall", "sel", "");   // 창고  정보  whall : selectbox ID  value : WH_CODE
+			selectComCombo("wh_mng", "whmngall", "all", "");  // 창고담당자정보   whmngall : selectbox ID      value : WH_CODE
+			selectComCombo("pro", "proall", "all", "");  // 제품정보   proall : selectbox ID   value : MODEL_CODE
+			comcombo("proCD", "prolargeall", "all", ""); // 제품 구분  prolargeall : selectbox ID   value :  detail_code
+			
+			$("#prolargeall").change(function() {
+				productCombo($("#prolargeall").val(), "prodall", "all",  "");   // 제품정보   prodall : selectbox ID   value : MODEL_CODE
+			});
+			
+			
 			init();
 			
 			// 공지사항 조회
@@ -630,6 +641,40 @@ click-able rows
 								class="btn_nav bold">메인</span> <a href="../dashboard/dashboard.do"
 								class="btn_set refresh">새로고침</a>
 						</p>
+						<div>
+								        <table>
+										    <tbody>
+										          <tr>
+										               <td><b><h6>제품목록</h6></b></td>
+										               <td>
+										                       <select id="proall"  name="proall" > </select>
+										               </td>
+										               <td><b><h6>창고담당자</h6></b></td>
+										               <td>
+										                       <select id="whpall"  name="whpall" > </select>
+										               </td>
+										               <td><b><h6>창고담당자2</h6></b></td>
+										               <td>
+										                       <select id="whmngall"  name="whmngall" > </select>
+										               </td>
+										               <td><b><h6>창고</h6></b></td>
+										               <td>
+										                       <select id="whall"  name="whall" > </select>
+										               </td>
+										           </tr>
+										           <tr>
+										               <td><b><h6>제품분류</h6></b></td>
+										               <td >
+										                       <select id="prolargeall"  name="prolargeall" > </select>
+										               </td>
+										               <td><b><h6>제품</h6></b></td>
+										               <td colspan=5>
+										                       <select id="prodall"  name="prodall" > </select>
+										               </td>
+										           </tr>
+										     </tbody>
+										  </table>               
+						</div>
                          <div >
 						        <p class="conTitle" style="margin-bottom: 1%;">
 									<span>VueJS 개요</span> 

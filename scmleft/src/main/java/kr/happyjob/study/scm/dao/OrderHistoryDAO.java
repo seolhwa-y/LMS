@@ -5,7 +5,7 @@ import java.util.List;
 
 import kr.happyjob.study.scm.model.OrderHistoryModel;
 
-public interface OrderHistoryDao {
+public interface OrderHistoryDAO {
 	// 일별 수주 내역 불러오기
 	public List<OrderHistoryModel> getOrderHistoryList (HashMap<String, Object> paramMap);
 	

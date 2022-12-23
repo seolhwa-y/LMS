@@ -5,6 +5,10 @@ import org.springframework.stereotype.Repository;
 // lombok 사용 X
 @Repository
 public class OrderHistoryModel {
+	private String type;
+	private String startDate;
+	private String endDate;
+	
 	private String jordCode; // 주문코드
 	private String jordDate; // 주문일자
 	private String loginId; // 주문한 기업회원 코드 + 배송 담당자 + 지시서 작성자
@@ -39,6 +43,24 @@ public class OrderHistoryModel {
 	
 	// 파라미터 값 나중에 추가하기
 	
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+	public String getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
 	public String getJordCode() {
 		return jordCode;
 	}

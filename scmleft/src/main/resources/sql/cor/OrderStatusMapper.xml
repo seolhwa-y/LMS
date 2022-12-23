@@ -3,7 +3,7 @@
 <mapper namespace="kr.happyjob.study.cor.dao.OrderStatusDAO">
 
 <!-- 기업회원별 주문이력 조회 -->
-<select id="getOrderStatusList" parameterType="string" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
+<select id="getOrderStatusList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
 	SELECT    JI.JORD_NO AS 'jordNo',  
 	          SUM(JI.JORD_AMT) AS 'cnt', 
 	          SUM(JI.JORD_AMT * PD.PD_PRICE) AS 'total', 
@@ -12,8 +12,11 @@
 	          JI.JORD_IN AS 'jordIn',
 	          SI.SH_TYPE AS 'shType'
 	FROM      JORDER_INFO JI INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE
-	                         INNER JOIN SHIP_INFO SI ON JI.JORD_CODE = SI.JORD_CODE 
-	WHERE     JI.loginID = #{loginId}
+	                         LEFT OUTER JOIN SHIP_INFO SI ON JI.JORD_CODE = SI.JORD_CODE 
+	WHERE JI.loginID = #{loginId}
+		<if test="startDate != null and endDate != null">
+			AND JI.JORD_DATE BETWEEN #{startDate} AND #{endDate}
+		</if>
 	GROUP BY  JI.JORD_NO, JI.JORD_DATE, JI.JORD_WISHDATE, JI.JORD_IN
 </select>
 
