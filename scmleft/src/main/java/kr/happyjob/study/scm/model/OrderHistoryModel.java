@@ -8,6 +8,7 @@ public class OrderHistoryModel {
 	private String type;
 	private String startDate;
 	private String endDate;
+	private String reType;
 	
 	private String jordCode; // 주문코드
 	private String jordDate; // 주문일자
@@ -60,6 +61,12 @@ public class OrderHistoryModel {
 	}
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
+	}
+	public String getRetype() {
+		return reType;
+	}
+	public void setReType(String reType) {
+		this.reType = reType;
 	}
 	public String getJordCode() {
 		return jordCode;

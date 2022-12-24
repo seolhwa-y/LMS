@@ -116,9 +116,10 @@ public class OrderHistoryService implements OrderHistoryInter {
 		 * 비고 :  */
 		
 	}
-	
+	@SuppressWarnings("unchecked")
 	private void getSearchHistoryCtl(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
+		List<OrderHistoryModel> ohList = (List<OrderHistoryModel>) this.sql.selectList("getOrderHistoryList", map);
+		map.put("newOrderSearchList", ohList);
 		System.err.println(map);
 	}
 

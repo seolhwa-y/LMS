@@ -3,7 +3,7 @@
 <mapper namespace="kr.happyjob.study.scm.dao.OrderHistoryDAO">
 
 <!-- 일별수주내역 조회 -->
-<select id="getOrderHistoryList" parameterType="kr.happyjob.study.scm.model.OrderHistoryModel" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+<select id="getOrderHistoryList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
 	SELECT  JI.JORD_CODE AS 'JORDCODE',
 			JI.JORD_DATE AS 'JORDDATE',
 			JI.loginID AS 'LOGINID',
@@ -44,15 +44,25 @@
 	<where>
 		<choose>
 			<when test="type != null">
-				<if test="type.eq('jorder') AND startDate != null AND endDate != null">
-					JI.JORD_DATE BETWEEN #{startDate} AND #{endDate}
+				<if test="type.equals('jorder')">
+					AND JI.JORD_DATE BETWEEN #{startDate} AND #{endDate}
 				</if>
-				<if test="type.eq('return') AND startDate != null AND endDate != null">
-					RI.RE_DATE BETWEEN #{startDate} AND #{endDate}
-				</if>	
+				<if test="type.equals('return')">
+					AND RI.RE_DATE BETWEEN #{startDate} AND #{endDate}
+				</if>
 			</when>
 		</choose>
-	</where>										
+		<choose>
+			<when test="reType != null">
+				<if test="reType.equals('true')">
+					AND RI.RE_DATE IS NOT NULL
+				</if>
+				<if test="reType.equals('false')">
+					AND RI.RE_DATE IS NULL
+				</if>
+			</when>
+		</choose>
+	</where>					
 </select>
 
 <!-- 지시서  -->

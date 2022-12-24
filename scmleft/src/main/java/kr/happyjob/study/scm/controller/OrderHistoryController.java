@@ -85,8 +85,8 @@ public class OrderHistoryController {
 		/* 담당자 : 염설화
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 작성한 배송지시서를 DB에 Insert 한다. */
-		
 		this.ohs.backController(session, map, 4);
+		
 		return map;
 	}
 	

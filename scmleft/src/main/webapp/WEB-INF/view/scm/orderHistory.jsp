@@ -31,203 +31,191 @@ click-able rows
 }
 </style>
 <script type="text/javascript">
-        var pageSizeinf  = 3;
-        var pageBlockSizeinquiry  = 10;
-		
-		/** 버튼 이벤트 등록 */
-		function fRegisterButtonClickEvent() {
-			$('a[name=btn]').click(function(e) {
-				e.preventDefault();
+	var pageSizeinf = 3;
+	var pageBlockSizeinquiry = 10;
 
-				var btnId = $(this).attr('id');
-				switch (btnId) {
-					case 'btnClose' :
-					gfCloseModal();
-					break;
-					case 'btnCloseGrpCod' :
-						gfCloseModal();
-						break;					
-					case 'btnSaveGrpCod' :
-						fSaveGrpCod();
-						break;							
-						
+	/** 버튼 이벤트 등록 */
+	function fRegisterButtonClickEvent() {
+		$('a[name=btn]').click(function(e) {
+			e.preventDefault();
+
+			var btnId = $(this).attr('id');
+			switch (btnId) {
+			case 'btnClose':
+				gfCloseModal();
+				break;
+			case 'btnCloseGrpCod':
+				gfCloseModal();
+				break;
+			case 'btnSaveGrpCod':
+				fSaveGrpCod();
+				break;
+
 			}
 		});
 	}
-				  
-				
+
 	/** 공지사항 조회 */
 	function fListInf(currentPage) {
-		
+
 		currentPage = currentPage || 1;
-		
+
 		//console.log("currentPage : " + currentPage);
-						    
+
 		var param = {
-					currentPage : currentPage
-				,	pageSize : pageSizeinf
+			currentPage : currentPage,
+			pageSize : pageSizeinf
 		}
-		
+
 		var resultCallback = function(data) {
 			fListInfResult(data, currentPage);
 		};
-		
+
 		//Ajax실행 방식
 		//callAjax("Url",type,return,async or sync방식,넘겨준거,값,Callback함수 이름)
 		//html로 받을거라 text
-		callAjax("/inf/listinfvue.do", "post", "json", true, param, resultCallback);
+		callAjax("/inf/listinfvue.do", "post", "json", true, param,
+				resultCallback);
 	}
-	
-	
+
 	/** 공지사항 조회 콜백 함수 */
 	function fListInfResult(data, currentPage) {
 
 		//console.log(data);		
 		noticeareavar.listitem = data.notice;
-		
+
 		// 총 개수 추출
 		var totalCntlistInf = data.noticeCnt;
 		var list = $("#selectedInfNo").val();
 		// 페이지 네비게이션 생성
-		var paginationHtml = getPaginationHtml(currentPage, totalCntlistInf, pageSizeinf, pageBlockSizeinquiry, 'fListInf',[list]);
+		var paginationHtml = getPaginationHtml(currentPage, totalCntlistInf,
+				pageSizeinf, pageBlockSizeinquiry, 'fListInf', [ list ]);
 		//console.log("paginationHtml : " + paginationHtml);
-	
-		$("#listInfPagination").empty().append( paginationHtml );
-	 
-	}
-		
-	 /*공지사항 상세 조회*/
-	 function fNoticeModal(noticeNo) {
-	
-		 var param = {noticeNo : noticeNo};
-		 var resultCallback2 = function(data){
-			 fdetailResult(data);
-		 };
-		 
-		 callAjax("/system/detailNotice.do", "post", "json", true, param, resultCallback2);
-	 }
-	
-	 /*  공지사항 상세 조회 -> 콜백함수   */
-	 function fdetailResult(data){
 
-		 if(data.resultMsg == "SUCCESS"){
-			 //모달 띄우기 
-			 gfModalPop("#notice");
-			 
+		$("#listInfPagination").empty().append(paginationHtml);
+
+	}
+
+	/*공지사항 상세 조회*/
+	function fNoticeModal(noticeNo) {
+
+		var param = {
+			noticeNo : noticeNo
+		};
+		var resultCallback2 = function(data) {
+			fdetailResult(data);
+		};
+
+		callAjax("/system/detailNotice.do", "post", "json", true, param,
+				resultCallback2);
+	}
+
+	/*  공지사항 상세 조회 -> 콜백함수   */
+	function fdetailResult(data) {
+
+		if (data.resultMsg == "SUCCESS") {
+			//모달 띄우기 
+			gfModalPop("#notice");
+
 			// 모달에 정보 넣기 
 			frealPopModal(data.result);
-		 
-		 }else{
-			 alert(data.resultMsg);
-		 }
-	 }
-	
-	 /* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
-	 function frealPopModal(object){
-		 
-		 noticeeditvue.loginId = object.loginId;
-		 noticeeditvue.noticeTitle = object.noticeTitle;
-		 noticeeditvue.noticeContent = object.noticeContent;
-		 
-		 noticeeditvue.loginIdread = "readonly";
-		 noticeeditvue.noticeTitleread = "readonly";
-		 noticeeditvue.noticeContentread = "readonly";
-		 
-		 $("#noticeNo").val(object.noticeNo); // 중요한 num 값도 숨겨서 받아온다. 
-		 
-	 }
-	 
-	 function init() {
+
+		} else {
+			alert(data.resultMsg);
+		}
+	}
+
+	/* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
+	function frealPopModal(object) {
+
+		noticeeditvue.loginId = object.loginId;
+		noticeeditvue.noticeTitle = object.noticeTitle;
+		noticeeditvue.noticeContent = object.noticeContent;
+
+		noticeeditvue.loginIdread = "readonly";
+		noticeeditvue.noticeTitleread = "readonly";
+		noticeeditvue.noticeContentread = "readonly";
+
+		$("#noticeNo").val(object.noticeNo); // 중요한 num 값도 숨겨서 받아온다. 
+
+	}
+
+	function init() {
 		let ohList = ${orderHistoryList};
+
+		makeOHTable(ohList);
+	}
+
+	// 날짜인풋 :: 수주리스트 조회기간 설정
+	function getOrderList() {
+		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
+		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝
+		const dateType = document.getElementById("selClass").value; // 조회 타입
+		let reInput = document.getElementsByName("returnType"), reType = "";
+
+		reInput.forEach(function(reInput) {
+			if (reInput.checked) reType = reInput.value;
+		});
+
+		if (dateType != "" && stDate != "" && edDate != "") {
+			// Ajax = 파라미터
+			const param = {
+				type : dateType,
+				startDate : stDate,
+				endDate : edDate,
+				reType : reType
+			}
+
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				callSearchList(returndata);
+			}
+			callAjax("/scm/searchOrderHistoryList", "post", "json", true,
+					param, callafterback);
+		} else return;
+	}
+
+	function callSearchList(ajax) {
+		let newList = ajax.newOrderSearchList;
+		
+		makeOHTable(newList);
+	}
+
+	function makeOHTable(list) {
 		let tbody = document.getElementById("orderHistoryTBody");
 		let content = "";
-		
-		console.log(ohList);
 
+		console.log(list);
 
-		for(i = 0; i < ohList.length; i++) {
-			content += "<tr>"
-					+ "<td>" + ohList[i].jordCode + "</td>"
-					+ "<td>" + cngDateType(ohList[i].jordDate) + "</td>"
-					+ "<td>" + ohList[i].companyName + "</td>"
-					+ "<td>" + ohList[i].pdName + "</td>"
-					+ "<td>" + ohList[i].whStock.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + ohList[i].pdPrice.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + ohList[i].jordAmt.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + ohList[i].totalAmt.toLocaleString('ko-KR') + "</td>";
-			
-			ohList[i].reDate != null ? content += "<td>Y</td><td>" + ohList[i].reDate + "</td>" : content += "<td>N</td><td></td>";
-			ohList[i].jordIn == "0" ? content += "<td>미입금</td>" : content += "<td>입금</td>";
-			ohList[i].bordCode != null ? content += "<td>작성완료</td>" : content += "<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"Border\")' /></td>";
-			ohList[i].shCode != null ? content += "<td>작성완료</td>" : content += "<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"Sorder\")' /></td>";
+		for (i = 0; i < list.length; i++) {
+			content += "<tr>" + "<td>" + list[i].jordCode + "</td>" 
+					+ "<td>" + cngDateType(list[i].jordDate) + "</td>" 
+					+ "<td>" + list[i].companyName + "</td>" 
+					+ "<td>" + list[i].pdName + "</td>" 
+					+ "<td>" + list[i].whStock.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + list[i].pdPrice.toLocaleString('ko-KR') + "</td>" 
+					+ "<td>" + list[i].jordAmt.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + list[i].totalAmt.toLocaleString('ko-KR') + "</td>";
+
+			list[i].reDate != null ? content += "<td>Y</td><td>" + list[i].reDate + "</td>"
+									: content += "<td>N</td><td></td>";
+			list[i].jordIn == "0" ? content += "<td>미입금</td>"
+									: content += "<td>입금</td>";
+			list[i].bordCode != null ? content += "<td>작성완료</td>"
+									: content += "<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"Border\")' /></td>";
+			list[i].shCode != null ? content += "<td>작성완료</td>"
+									: content += "<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"Sorder\")' /></td>";
 		}
-		
-		tbody.innerHTML = content;	
-	 }
-	 
+		tbody.innerHTML = "";
+		tbody.innerHTML = content;
+	}
+
 	// 타입 변환 :: 스트링 -> 날짜
 	function cngDateType(strDate) {
 		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
 	}
 
-	
-	// 날짜인풋 :: 수주리스트 조회기간 설정
-	function getOrderList() {
-		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
-		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝
-		const dateType = document.getElementById("selClass").value;
-		
-		console.log(dateType + " : " + stDate + "~" + edDate + "기간 확인 ok");
-			
-		if(dateType != "" && stDate != "" && edDate != "") {
-			console.log(stDate + "~" + edDate + "기간 확인 ok");
-			
-			// Ajax = 파라미터
-			const param = { type : dateType,
-							startDate : stDate, 
-							endDate : edDate }
-			
-			// Ajax = 호출
-			var callafterback = function(returndata) {
-				callSearchList(returndata);
-			}
-			
-			callAjax("/scm/searchOrderHistoryList", "post", "json", true, param, callafterback);	
-		} else return;
-	}
 
-	function callSearchList(ajax) {
-		let newList = ajax;
-		console.log(newList);
-
-	}
-	
-	
-	
-	
-	
-	// 라디오버튼 :: 전체 or 반품
-	function getReturnList(checkBox) {
-		console.log(checkBox.checked);
-		console.log(checkBox.getAttribute("value"));
-
-		if(checkBox.checked == true) {
-			// 체크완료			
-			if(checkBox.getAttribute("value") == "all") {
-				console.log(checkBox.getAttribute("value") + " 전체 조회");
-			} else if(checkBox.getAttribute("value") == "true") {
-				console.log(checkBox.getAttribute("value") + " 반품 요청 조회");
-			} else if(checkBox.getAttribute("value") == "false") {
-				console.log(checkBox.getAttribute("value") + " 반품 미요청 조회");
-			}
-		} 
-		
-	}
-	
-	function showDirection(type) {
-		console.log(type);
-	}
-	
 </script>
 
 </head>
@@ -267,12 +255,12 @@ click-able rows
 										<option value = 'jorder'>주문일자</option>
 										<option value = 'return'>반품처리일</option>
 									</select>
-									<input type = "date" id = "inpStartDate" />
+									<input type = "date" id = "inpStartDate" onchange = "getOrderList(this)"/>
 									<span> ~ </span>
-									<input type = "date" id = "inpEndDate" onchange="getOrderList()"/>
-									<input type = "radio" name = "returnType" value = "all" onchange = "getReturnList(this)" /> <span>전체</span>
-									<input type = "radio" name = "returnType" value = "true" onchange = "getReturnList(this)" /> <span>반품요청</span>
-									<input type = "radio" name = "returnType" value = "false" onchange = "getReturnList(this)" /> <span>반품미요청</span>
+									<input type = "date" id = "inpEndDate" onchange = "getOrderList(this)"/>
+									<input type = "radio" name = "returnType" value = "all" onchange = "getOrderList(this)" /> <span>전체</span>
+									<input type = "radio" name = "returnType" value = "true" onchange = "getOrderList(this)" /> <span>반품요청</span>
+									<input type = "radio" name = "returnType" value = "false" onchange = "getOrderList(this)" /> <span>반품미요청</span>
 								</div>
 
 							<!-- 일별 수주 내역 -->
