@@ -1,5 +1,6 @@
 package kr.happyjob.study.cor.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,7 +12,6 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
@@ -49,8 +49,9 @@ public class OrderStatusService implements OrderStatusInter {
 		
 		switch (serviceCode) {
 		case 1 : this.getDetailOrderCtl(map); break; // 상세 주문내역 불러오기
-		case 2 : this.insertReturnInfoCtl(map); break; // 반품신청
-		case 3 : this.getNewOrderListCtl(map); break;
+		case 2 : this.updateJorderStatusCtl(map); break;
+		case 3 : this.insertReturnInfoCtl(map); break; // 반품신청
+		case 4 : this.getNewOrderListCtl(map); break;
 		default : break;
 		}
 	}
@@ -85,6 +86,20 @@ public class OrderStatusService implements OrderStatusInter {
 		map.remove("jordNo");
 		map.put("osdList", osdList);
 	}
+	
+	// 입금하기
+	@SuppressWarnings("unchecked")
+	private void updateJorderStatusCtl(HashMap<String, Object> map) {
+		String massage = "입금을 실패하셨습니다.";
+		
+		if(this.convertToBoolean(this.sql.update("updateJorderInStatus", map))) {
+			List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", map);
+			map.put("newOsList", osList);
+			massage = "입금이 성공적으로 완료되었습니다."; 
+		} else System.err.println("업데이트 실패");		
+		
+		map.put("message", massage);
+	}
 
 	// 반품신청
 	@Transactional
@@ -93,6 +108,29 @@ public class OrderStatusService implements OrderStatusInter {
 		 * 개발기간 : 
 		 * 비고 :  */
 		
+		System.err.print(map);
+		List<OrderStatusModel> osList = new ArrayList<OrderStatusModel>();
+		String j = (String)map.get("jordCode"), 
+				m = (String)map.get("modelCode"),
+				w = (String)map.get("whCode"),
+				b = (String)map.get("bordCode"),
+				r = (String)map.get("reAmt");
+		String jCode[] = j.split("&"), mCode[] = m.split("&"),
+				wCode[] = w.split("&"), bCode[] = b.split("&"),
+				rAmt[] = r.split("&");  
+
+		for(int i = 0; i < jCode.length; i++) {
+			osm.setJordCode((String)jCode[i]);
+			osm.setModelCode((String)mCode[i]);
+			osm.setWhCode((String)wCode[i]);
+			osm.setBordCode(Integer.parseInt((String)bCode[i]));
+			osm.setReAmt(Integer.parseInt((String)rAmt[i]));
+			osList.add(osm);
+		}
+		System.out.println(osList.get(0).getJordCode());
+		if(this.convertToBoolean(this.sql.insert("insertReturnInfo", osList))) {
+			System.out.println("insert 완료");
+		} else System.out.println("실패");
 	}
 	
 	// 기간 + 제품명 검색

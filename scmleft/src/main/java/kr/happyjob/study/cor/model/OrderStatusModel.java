@@ -24,7 +24,7 @@ public class OrderStatusModel {
 	private String jordAmt; // 주문한 수량
 	
 	private String loginId; // 기업회원코드
-	private String bankCode; // 은행코드
+	private int bankCode; // 은행코드
 	private String bankName; // 은행명
 	private String account; // 계좌번호
 	
@@ -33,7 +33,7 @@ public class OrderStatusModel {
 	private String jordCode; // 제품별 주문코드
 	private String whCode; // 창고코드
 	private String modelCode; // 제품별코드
-	private String bordCode; // 발주코드
+	private int bordCode; // 발주코드
 	private int reAmt; // 반품수량
 	private String reDate; // 반품완료일자
 	private String reType; // 반품 승인여부 (0 - 미승인, 1 - 승인, 2 - 반려)
@@ -136,10 +136,10 @@ public class OrderStatusModel {
 	public void setLoginId(String loginId) {
 		this.loginId = loginId;
 	}
-	public String getBankCode() {
+	public int getBankCode() {
 		return bankCode;
 	}
-	public void setBankCode(String bankCode) {
+	public void setBankCode(int bankCode) {
 		this.bankCode = bankCode;
 	}
 	public String getBankName() {
@@ -184,17 +184,17 @@ public class OrderStatusModel {
 	public void setModelCode(String modelCode) {
 		this.modelCode = modelCode;
 	}
-	public String getBordCode() {
+	public int getBordCode() {
 		return bordCode;
 	}
-	public void setBordCode(String bordCode) {
+	public void setBordCode(int bordCode) {
 		this.bordCode = bordCode;
 	}
 	public int getReAmt() {
 		return reAmt;
 	}
-	public void setReAmt(int reAmt) {
-		this.reAmt = reAmt;
+	public void setReAmt(int rAmt) {
+		this.reAmt = rAmt;
 	}
 	public String getReDate() {
 		return reDate;

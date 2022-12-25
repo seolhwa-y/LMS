@@ -13,5 +13,5 @@ public interface OrderStatusDAO {
 	public List<OrderStatusModel> getOrderDetails (OrderStatusModel osm);
 	
 	// 반품신청
-	public OrderStatusModel insertReturnInfo (OrderStatusModel osm);
+	public int insertReturnInfo (List<OrderStatusModel> osList);
 }

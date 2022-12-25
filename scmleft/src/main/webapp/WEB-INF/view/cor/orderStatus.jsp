@@ -47,21 +47,23 @@ click-able rows
 	
 	// 상세 제품정보 CALLBACK
 	function callDatail(ajax){
-		let osdList = ajax.osdList;
 		let tbody = document.getElementById("detailOrderStatusTBody");
-		let content = "";
+		let content = "", osdList = "";
+		
+		tbody.innerHTML = "";
+		ajax != null ? osdList = ajax.osdList : "";
 		
 		console.log(osdList);
 		for(i = 0; i < osdList.length; i++) {
 			// 체크박스 주문번호 제품명 제품번호 제조사 단가 수량 합계금액
-			content += "<tr><td><input type = 'checkBox' class = 'cheReturn'/></td>"
-					+ "<td>" + osdList[i].jordNo + "</tb>"
-					+ "<td>" + osdList[i].pdName + "</tb>"
-					+ "<td>" + osdList[i].pdCode + "</tb>"
-					+ "<td>" + osdList[i].pdCorp + "</tb>"
-					+ "<td>" + osdList[i].pdPrice.toLocaleString('ko-KR') + "</tb>"
-					+ "<td>" + osdList[i].jordAmt.toLocaleString('ko-KR') + "</tb>"
-					+ "<td>" + osdList[i].total.toLocaleString('ko-KR') + "</tb>";
+			content += "<tr><td><input type = 'checkBox' name = 'cheReturn' value = '" + osdList[i].jordCode + "&" + osdList[i].modelCode + "&" + osdList[i].whCode + "&" + osdList[i].bordCode + "&" + osdList[i].jordAmt + "' / ></td>"
+					+ "<td>" + osdList[i].jordNo + "</td>"
+					+ "<td>" + osdList[i].pdName + "</td>"
+					+ "<td>" + osdList[i].pdCode + "</td>"
+					+ "<td>" + osdList[i].pdCorp + "</td>"
+					+ "<td>" + osdList[i].pdPrice.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + osdList[i].jordAmt.toLocaleString('ko-KR') + "</td>"
+					+ "<td>" + osdList[i].total.toLocaleString('ko-KR') + "</td></tr>";
 		}
 		console.log(content);
 		tbody.innerHTML = content;
@@ -94,6 +96,76 @@ click-able rows
 		makeOrderList(newList);
 	}
 	
+	// 입금하기 상세 목록 가져오기
+	function updJordIn(no) {
+		// Ajax = 파라미터
+		const param = { jordNo : no, 
+						jordIn : "1" }
+			
+		// Ajax = 호출
+		var callafterback = function(returndata) {
+			calStatus(returndata);
+		}
+			
+		callAjax("/cor/updJorderStatus", "post", "json", true, param, callafterback);	
+
+	}
+	
+	function calStatus(ajax) {
+		let osList = ajax.newOsList;
+		
+		makeOrderList(osList);
+		alert(ajax.message);
+	}
+	
+	// 반품하기
+	function insReturnInfo() {		
+		let checkBox = document.getElementsByName("cheReturn");
+		let b = [], jCode = "", mCode = "", wCode = "", bCode = "", rAmt = "";
+		
+		checkBox.forEach(function(checkBox){
+			checkBox.checked ? (b.push(checkBox.value.split("&"))) : "NO CHECK";
+		})
+
+		for(i = 0; i < b.length; i++) {
+			// 0 1 2 3 4
+			jCode += b[i][0]
+				  + (b.length - 1 != i ? "&" : "");
+			mCode += b[i][1]
+				  + (b.length - 1 != i ? "&" : "");
+			wCode += b[i][2]
+				  + (b.length - 1 != i ? "&" : "");
+			bCode += b[i][3]
+				  + (b.length - 1 != i ? "&" : "");	
+			rAmt += b[i][4]
+				 + (b.length - 1 != i ? "&" : "");
+		}
+		console.log(bCode);
+		
+		if(jCode != null && mCode != null) {			
+			// Ajax = 파라미터
+			let param = { 
+				jordCode : jCode, 
+				modelCode : mCode,
+				whCode : wCode,
+				bordCode : bCode,
+				reAmt : rAmt}
+			
+			console.log(param);
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				console.log("다녀옴");
+				callReturn(returndata);
+			}
+			
+			callAjax("/cor/insReturnProduct", "post", "json", true, param, callafterback);	
+		} else return;
+	}
+	
+	function callReturn(ajax) {
+		console.log(ajax);
+	}
+	
 	// 주문내역 테이블 그리기
 	function makeOrderList(list){
 		let tbody = document.getElementById("orderStatusTBody");
@@ -105,12 +177,13 @@ click-able rows
 					+ "<td>" + list[i].cnt.toLocaleString('ko-KR') + "</td>"
 					+ "<td>" + list[i].total.toLocaleString('ko-KR') + "</td>"
 					+ "<td>" + cngDateType(list[i].jordDate) + "</td>"
-					+ "<td>" + cngDateType(list[i].jordWishdate) + "</td>";
-			content += "<td>" + (list[i].shType == "0" ? "미배송" : "배송완료") + "</td>"
-					+ "<td><input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + list[i].jordNo + ")' /></td></tr>";
+					+ "<td>" + cngDateType(list[i].jordWishdate) + "</td>"
+			 		+ "<td>" + (list[i].shType != null ? (list[i].shType == "0" ? "미배송" : "배송완료") : "미배송") + "</td>"
+					+ "<td>" + (list[i].jordIn == "0" ? "미입금" : "입금완료") + "</td>"
+					+ "<td>" + (list[i].jordIn == "0" ? ("<input type = 'button' class = 'btnIn' value = '입금하기' onClick = 'updJordIn(" + list[i].jordNo + ")' />") :  "" ) + "</td>"
+					+ "<td>" + (list[i].shType != null ? (list[i].shType == "0" ? "" : "<input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + list[i].jordNo + ")' />") : "") + "</td></tr>";
 		}
 		tbody.innerHTML = content;
-		console.log(content);
 	}
 	
 	// 타입 변환 :: 스트링 -> 날짜
@@ -172,7 +245,9 @@ click-able rows
 											<th scope="col">구매일자</th>
 											<th scope="col">배송희망일자</th>
 											<th scope="col">배송상태</th>
-											<th scope="col">반품선택</th>
+											<th scope="col">입금상태</th>
+											<th scope="col">입금</th>
+											<th scope="col">반품</th>
 										</tr>
 									</thead>
 									<tbody id = "orderStatusTBody">

@@ -1,6 +1,7 @@
 package kr.happyjob.study.cor.controller;
 
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -54,11 +55,21 @@ public class OrderStatusController {
 		return map;
 	}
 	
+	// 입금 상태 변경
+	@ResponseBody
+	@PostMapping("/updJorderStatus")
+	public HashMap<String, Object> updateJordetStatus(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		map.put("loginId", session.getAttribute("loginId"));
+		this.oss.backController(session, map, 2);
+	
+		return map;
+	}
+	
 	// 선택한 상품 반품요청
 	@ResponseBody
-	@PostMapping("/")
-	public HashMap<String, Object> insertReturnInfo(Model model, HttpSession session, @RequestParam HashMap<String, Object> map) {
-		this.oss.backController(session, map, 2);
+	@PostMapping("/insReturnProduct")
+	public HashMap<String, Object> insertReturnInfo(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		this.oss.backController(session, map, 3);
 	
 		return map;
 	}
@@ -69,7 +80,7 @@ public class OrderStatusController {
 	@PostMapping("/searchOrderList")
 	public HashMap<String, Object> searchNewOrderList(HttpSession session, @RequestParam HashMap<String, Object> map) {
 		map.put("loginId", session.getAttribute("loginId"));
-		this.oss.backController(session, map, 3);
+		this.oss.backController(session, map, 4);
 		
 		return map;
 	}
