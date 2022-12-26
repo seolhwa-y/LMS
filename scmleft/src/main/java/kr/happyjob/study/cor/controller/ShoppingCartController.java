@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -39,16 +41,22 @@ public class ShoppingCartController {
 	
 	// 선택 항목 장바구니 목록 삭제
 	@ResponseBody
-	public HashMap<String, Object> deleteSoppingCart(Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute ShoppingCartModel scm) {
-		this.scs.backController(session, model, 1);
+	@PostMapping("delBasketProduct")
+	public HashMap<String, Object> deleteSoppingCart(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		map.put("loginId", session.getAttribute("loginId"));
+		this.scs.backController(session, map, 1);
 		
 		return map;
 	}
 
 	// 주문하기
 	@ResponseBody
-	public HashMap<String, Object> insertJorderInfo(Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute ShoppingCartModel scm) {
-		this.scs.backController(session, model, 2);
+	@PostMapping("insJorder")
+	public HashMap<String, Object> insertJorderInfo(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		map.put("loginId", session.getAttribute("loginId"));
+		System.err.println(map);
+		this.scs.backController(session, map, 2);
+		
 		return map;
 	}
 }

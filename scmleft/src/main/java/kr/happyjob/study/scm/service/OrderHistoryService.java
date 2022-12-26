@@ -55,7 +55,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 		System.err.println("현재 실행되고 있는 클래스 이름 : " + className + " : " + serviceCode);
 		
 		switch (serviceCode) {
-		case 1 : this.getBorderWarehouseCtl(map); break; // 발주지시서 보기
+		case 1 : this.getDirectionInfoCtl(map); break; // 지시서 보기
 		case 2 : this.insertBorderDirectionCtl(map); break; // 발주지시서 작성완료
 		case 3 : this.getShipWarehouseCtl(map); break; // 배송지시서 보기
 		case 4 : this.insertShipDirectionCtl(map); break; // 배송지시서 작성완료
@@ -84,12 +84,32 @@ public class OrderHistoryService implements OrderHistoryInter {
 	} 
 	
 	// 발주 창고정보 Select
-	private void getBorderWarehouseCtl(HashMap<String, Object> map) {
+	private void getDirectionInfoCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
+		System.out.println(map);
+		String type = (String)map.get("type");
+		// 창고정보는 발주 배송 모두 필요
+		map.put("whInfo", this.sql.selectList("getWHInfo", map));
+		
+		switch (type) {
+		case "b":	
+			map.put("bordInfo", this.sql.selectOne("getBorderInfo", map));
+			break;
+			
+		case "s": /* 배송 : 창고 + 주문정보 + 배달요원 */
+			map.put("shipInfo", this.sql.selectList("getShipInfo", map));
+			map.put("deliInfo", this.sql.selectList("getDeliInfo", map));
+			break;
+			
+		default:
+			break;
+		}
 		
 	}
+	
+	
 
 	// 발주정보 + 발주지시서 Insert
 	@Transactional

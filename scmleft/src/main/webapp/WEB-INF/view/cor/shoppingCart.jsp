@@ -142,17 +142,104 @@ click-able rows
 	}
 	
 	// 버튼 :: 주문하기
-	function insOrderInfo() {
-		console.log("주문하기");
+	function confOrder() {
+		let inType = false;
+		
+		if(confirm("입금도 같이 진행하시겠습니까?")) {
+			inType = true;
+		}
+		
+		insOrderInfo(inType);
+	}
+	
+	function insOrderInfo(isCheck) {
+		let checkBox = document.getElementsByName("delProduct");
+		let s = [], val = "", amt = "", wish = "", type = "", length = checkBox.length-1;
+		
+		
+		checkBox.forEach(function(checkBox, index){
+			if(checkBox.checked) {
+				s.push(checkBox.value.split("&"));
+				
+				for(i = 0; i < s.length; i++) {
+					val += s[i][0];
+					amt += s[i][1];
+					wish += s[i][2];
+					type += isCheck;
+					
+					length != index ? val += "&" : val += "";
+					length != index ? amt += "&" : amt	+= "";
+					length != index ? wish += "&" : wish += "";
+					length != index ? type += "&" : type += "";
+				}
+			}
+		})
+		
+ 		if(val != null) {			
+			// Ajax = 파라미터
+			let param = { 
+					modelCode : val, 
+					jordIn : type,
+					jordWishdate : wish,
+					jordAmt : amt
+			} 
+			
+			console.log(param);
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				calInsJorder(returndata);
+			}
+			
+ 			 callAjax("/cor/insJorder", "post", "json", true, param, callafterback);	  
+		} else return; 
+	}
+	
+	function calInsJorder(ajax) {
+		console.log(ajax);
+	}
+	
+	// 제품 삭제
+	function delBaProduct() {
+		let checkBox = document.getElementsByName("delProduct");
+		let val = "", length = checkBox.length-1;
+
+		checkBox.forEach(function(checkBox, index){
+			if(checkBox.checked) {
+				val += checkBox.value;
+				if(length != index) val += "&";
+			}
+		})
+
+		if(val != null) {			
+			// Ajax = 파라미터
+			let param = { modelCode : val }
+			
+			console.log(param);
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				callDelProduct(returndata);
+			}
+			
+			callAjax("/cor/delBasketProduct", "post", "json", true, param, callafterback);	
+		} else return;
+	}
+	
+	function callDelProduct(ajax) {
+		let baList = ajax.delBaList;
+		
+		makeBasketList(baList);
+		alert(ajax.message);
 	}
 	
 	// 테이블 그리기
-	function makeBasketList (list) {
+	function makeBasketList(list) {
+		console.log(list);
+		
 		let tbody = document.getElementById("shoppingCartTBody");
 		let content = "";
-		// 선택 제품명 단가 수량 합계 납품희망일자
+		
 		for(i = 0; i < list.length; i++) {
-			content += "<tr><td><input type = 'checkBox' class = 'deleteProduct' value = '" + list[i].loginId + "&" + list[i].modelCode +"' /></td>"
+			content += "<tr><td><input type = 'checkBox' name = 'delProduct' value = '" + list[i].modelCode + "&" + list[i].baAmt + "&" + list[i].baWishdate + "' /></td>"
 					+ "<td>"+ list[i].pdName +"</td>"
 					+ "<td>"+ list[i].pdPrice +"</td>"
 					+ "<td>"+ list[i].baAmt +"</td>"
@@ -218,12 +305,12 @@ click-able rows
 								</table>
 							</div>
 							<br>
-							
+							<input type = 'button' value = '제품삭제' onClick = "delBaProduct()" />
 							<div id = "divOrderTotal">
 									<p style="font-size: 1.3rem;">장바구니 총액</p>
 									<p style="font-size: 1rem;">합계금액</p>
 									<p style="font-size: 1rem;"><!-- ${basketOrderTotal} --></p>
-									<input type = "button" id = "btnOrderMoney" value = "주문하기" onclick="insOrderInfo()" />
+									<input type = "button" id = "btnOrderMoney" value = "주문하기" onclick="confOrder()" />
 							</div>
 						</div>
 

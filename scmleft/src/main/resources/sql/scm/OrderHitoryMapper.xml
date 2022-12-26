@@ -65,6 +65,55 @@
 	</where>					
 </select>
 
+<!-- 창고 정보 -->
+<select id="getWHInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT	WI.WH_CODE AS 'whCode', 
+			WI.WH_NAME AS 'whName', 
+			WS.MODEL_CODE AS 'modelCode', 
+			PD.PD_NAME AS 'pdName', 
+			WS.WH_STOCK AS 'whStock'
+	FROM	WHOUSE_STOCK WS INNER JOIN WHOUSE_INFO WI ON WS.WH_CODE = WI.WH_CODE
+						   	INNER JOIN PD_INFO PD ON WS.MODEL_CODE = PD.MODEL_CODE
+	WHERE	WS.MODEL_CODE = #{modelCode}
+</select>
+
+<!-- 발주지시서 정보 -->
+<select id="getBorderInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	PD.MODEL_CODE AS 'modelCode',
+			PD.PD_NAME AS 'pdName',
+			PD.PD_CODE AS 'pdCode',
+			PD.PD_CORP AS 'pdCorp',
+			PD.loginID AS 'loginId',
+			UI.company AS 'companyName'
+	FROM 	PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
+	WHERE 	PD.MODEL_CODE = #{modelCode}
+</select>
+
+<!-- 배송지시서 정보 --> 
+<select id="getShipInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	JI.JORD_CODE AS 'jordCode',
+			JI.JORD_DATE AS 'jordDate',
+			UI.company AS 'companyName', 
+			JI.MODEL_CODE AS 'modelCode',
+			PD.PD_NAME AS 'pdName',
+			PD.PD_CODE AS 'pdCode',
+			JI.JORD_AMT AS 'jordAmt',
+			JI.JORD_IN AS 'jordIn'
+	FROM 	JORDER_INFO JI INNER JOIN tb_userinfo UI ON JI.loginID = UI.loginID  
+						   INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE 
+	WHERE 	JI.JORD_CODE = #{jordCode} AND JI.MODEL_CODE = #{modelCode}
+</select>
+
+<!-- 배달 요원 -->
+<select id="getDeliInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	loginID, 
+			name AS 'DELINAME'
+	FROM 	tb_userinfo TB
+	WHERE 	user_type ='B'AND addr LIKE CONCAT('%', (SELECT SUBSTR(addr, 1, 2)
+													 FROM tb_userinfo tu 
+											         WHERE loginID = #{loginId}), '%')
+</select>
+
 <!-- 지시서  -->
 <insert id="insertDirection" parameterType="kr.happyjob.study.scm.model.OrderHistoryModel">
 

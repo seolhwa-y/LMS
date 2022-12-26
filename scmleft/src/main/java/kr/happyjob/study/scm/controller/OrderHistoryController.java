@@ -43,13 +43,14 @@ public class OrderHistoryController {
 		return mav;
 	}
 	
-	// 발주지시서 보기
+	// 지시서 보기
 	@ResponseBody
-	public HashMap<String, Object> showBorderWarehouseInfo (Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute OrderHistoryModel ohm) {
+	@PostMapping("showDirection")
+	public HashMap<String, Object> showDirectionInfo (HttpSession session, @RequestParam HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 클릭한 발주지시서의 재고가 있는 창고 리스트를 가져와서 보내준다. */
-		
+		map.put("loginId", session.getAttribute("loginId"));
 		this.ohs.backController(session, map, 1);
 		
 		return map;
@@ -57,7 +58,7 @@ public class OrderHistoryController {
 	
 	// 발주지시서 작성완료
 	@ResponseBody
-	public HashMap<String, Object> insertBorderDirection (Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute OrderHistoryModel ohm) {
+	public HashMap<String, Object> insertBorderDirection (HttpSession session, @RequestParam HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 2022-12-21 ~ 
 		 * 비고 : Service 단에서 SCM 담당자가 작성한 발주지시서를 DB에 Insert 한다. */

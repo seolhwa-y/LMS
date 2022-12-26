@@ -18,8 +18,33 @@
 </select>
 
 <!-- 주문하기 -->
-<insert id="insertJorderInfo" parameterType="kr.happyjob.study.cor.model.ShoppingCartModel">
+<select id="getJordCodeMax" resultType="int">
+	SELECT  MAX(JORD_CODE) + 1
+	FROM	JORDER_INFO
+</select>
 
+<select id="getJordNoMax" resultType="int">
+	SELECT  MAX(JORD_NO) + 1
+	FROM	JORDER_INFO
+</select>
+
+<insert id="insertJorderInfo" parameterType="kr.happyjob.study.cor.model.ShoppingCartModel">
+<!-- 	<selectKey resultType="int" keyColumn="jordNo" order="BEFORE">
+		SELECT MAX(JORD_NO) + 1 AS 'JORDNO'
+		FROM	JORDER_INFO
+	</selectKey> -->
+	<foreach collection="list" item="jo" separator=",">
+		INSERT INTO JORDER_INFO (JORD_CODE, MODEL_CODE, loginID, JORD_NO, JORD_DATE, JORD_IN, JORD_WISHDATE, JORD_AMT)
+		VALUES (#{jo.jordCode}, #{jo.modelCode}, #{jo.loginId}, #{jo.jordNo}, DATE_FORMAT(now(), '%Y%m%d'), #{jo.jordIn}, #{jo.jordAmt})
+	</foreach>
 </insert>
+
+<!-- 장바구니 삭제 -->
+<delete id="deleteBasketList" parameterType="kr.happyjob.study.cor.model.ShoppingCartModel">
+	<foreach collection="list" item="ba" separator=",">
+		DELETE FROM BASKET
+		WHERE loginID = #{ba.loginId} AND MODEL_CODE = #{ba.modelCode}
+	</foreach> 
+</delete>
 
 </mapper>

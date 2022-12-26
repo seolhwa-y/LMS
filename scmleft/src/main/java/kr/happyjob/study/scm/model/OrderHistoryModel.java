@@ -9,7 +9,7 @@ public class OrderHistoryModel {
 	private String startDate;
 	private String endDate;
 	private String reType;
-	
+	private String pdCode;
 	private String jordCode; // 주문코드
 	private String jordDate; // 주문일자
 	private String loginId; // 주문한 기업회원 코드 + 배송 담당자 + 지시서 작성자
@@ -41,8 +41,9 @@ public class OrderHistoryModel {
 	private String shDate; // 배송 완료일자
 	private int shAmt; // 배송수량
 	private String shType; // 배송완료여부 (0 - 배송전, 1 - 배송중, 2 - 배송완료)
+	private String deliName;
 	
-	// 파라미터 값 나중에 추가하기
+	
 	
 	public String getType() {
 		return type;
@@ -62,11 +63,17 @@ public class OrderHistoryModel {
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
 	}
-	public String getRetype() {
+	public String getReType() {
 		return reType;
 	}
 	public void setReType(String reType) {
 		this.reType = reType;
+	}
+	public String getPdCode() {
+		return pdCode;
+	}
+	public void setPdCode(String pdCode) {
+		this.pdCode = pdCode;
 	}
 	public String getJordCode() {
 		return jordCode;
@@ -230,5 +237,13 @@ public class OrderHistoryModel {
 	public void setShType(String shType) {
 		this.shType = shType;
 	}
+	public String getDeliName() {
+		return deliName;
+	}
+	public void setDeliName(String deliName) {
+		this.deliName = deliName;
+	}
+	
+
 	
 }

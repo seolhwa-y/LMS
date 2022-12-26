@@ -14,11 +14,6 @@
 <script src="https://unpkg.com/lodash@4.13.1/lodash.min.js"></script>
 <!-- D3 -->
 <style>
-tbody > tr:hover {
-  background-color: lightgray;
-  cursor:pointer;
-}
-
 //
 click-able rows
 	.clickable-rows {tbody tr td { 
@@ -29,6 +24,18 @@ click-able rows
 	cursor: default;
 }
 }
+.blue{
+    display: inline-block;
+    padding-right: 10px;
+    min-width: 80px;
+    height: 31px;
+    line-height: 31px;
+    font-family: '나눔바른고딕',NanumBarunGothic;
+    font-size: 15px;
+    color: #fff;
+    text-align: center;
+    font-weight: 400;
+    background: url(/images/admin/comm/set_btnBg.png) 100% 0px no-repeat;}
 </style>
 <script type="text/javascript">
 	var pageSizeinf = 3;
@@ -125,21 +132,6 @@ click-able rows
 		}
 	}
 
-	/* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
-	function frealPopModal(object) {
-
-		noticeeditvue.loginId = object.loginId;
-		noticeeditvue.noticeTitle = object.noticeTitle;
-		noticeeditvue.noticeContent = object.noticeContent;
-
-		noticeeditvue.loginIdread = "readonly";
-		noticeeditvue.noticeTitleread = "readonly";
-		noticeeditvue.noticeContentread = "readonly";
-
-		$("#noticeNo").val(object.noticeNo); // 중요한 num 값도 숨겨서 받아온다. 
-
-	}
-
 	function init() {
 		let ohList = ${orderHistoryList};
 
@@ -180,6 +172,134 @@ click-able rows
 		
 		makeOHTable(newList);
 	}
+	
+	// 지시서 작성하기
+	function showDirection(t, jCode, mCode) {
+		console.log("code = " + t + ":" + jCode + ":" + mCode);
+		type = "";
+		
+		t == "b" ? type = "발주" : type = "배송";
+		console.log(type);
+		
+		
+		if (t != null && jCode != null && mCode != null) {
+			// Ajax = 파라미터
+			const param = {
+				type : t,
+				jordCode : jCode,
+				modelCode : mCode
+			}
+
+			// Ajax = 호출
+			var callafterback = function(returndata) {
+				callDirectionList(returndata);
+			}
+			callAjax("/scm/showDirection", "post", "json", true, param, callafterback);
+		} else return;
+		
+	}
+
+	function callDirectionList(ajax) {
+		const type = ajax.type;
+		let whInfo = "", bordInfo = "", shipInfo = "", deliInfo = "";
+		let bdTBody = document.getElementById("borderDrectionTBody");
+		let sdTBody = document.getElementById("shipDrectionTBody");
+		
+		switch(type) {
+		case "b" :
+			whInfo = makeWhSelect(ajax.whInfo);
+			bordInfo = makeBorderInfo(ajax.bordInfo, ajax.loginId);
+			
+			fillDirectionModal(whInfo, bordInfo);
+			gfModalPop("#bDirection");
+			break;
+		case "s" :
+			// 배송정보 + 창고 + 배송자
+			whInfo = makeWhSelect(ajax.whInfo);
+			deliInfo = makeDeliSelect(ajax.deliInfo);
+			shipInfo = makeShipInfo(ajax.shipInfo);
+			
+			fillDirectionModal(whInfo, shipInfo, deliInfo);
+			gfModalPop("#sDirection");
+			break;
+		}
+	}
+	
+	// 모달 내용 채우기
+	function fillDirectionModal (wh, main, deli) {
+		let bdTBody = document.getElementById("borderDrectionTBody");
+		let sdTBody = document.getElementById("shipDrectionTBody");
+		let selBW = document.getElementById("selBWInfo");
+		let selSW = document.getElementById("selSWInfo");
+
+		bdTBody.innerHTML = "";
+		sdTBody.innerHTML = "";
+		
+		if(deli != null) {
+			sdTBody.innerHTML = main;
+			selSW.innerHTML = wh;
+		} else {
+			bdTBody.innerHTML = main;
+			selBW.innerHTML = wh;
+		}
+	}
+	
+	// 창고정보 셀렉트
+	function makeWhSelect (list) {
+		let selectBox = "<option selected disabled>창고선택</option>";
+
+		if(list.length != 0){
+			for(i = 0; i < list.length; i++) {
+				selectBox += "<option value = '" + list[i].whCode + "&" + list[i].whStock + "&" + list[i].whName + "'>" + list[i].whName + "</option>";
+			}
+		} else selectBox += "<option disabled>선택할 수 있는 창고가 없습니다.</option>";
+
+		return selectBox;
+	}
+	
+	// 배송담당자 정보 셀렉트
+	function makeDeliSelect (list) {
+		let selectBox = "<select id = 'selDeliInfo'>"
+		  	  + "<option disabled>배송담당자 선택<option>";
+
+		if(list.length != 0){
+			for(i = 0; i < list.length; i++) {
+				selectBox += "<option value = '" + list[i].loginId + "&" + list[i].deliName + "'>" + list[i].deliName + "<option>";
+			}
+		} else selectBox += "<option disabled>선택할 수 있는 배송담당자가 없습니다.<option>";
+		
+		selectBox += "</select>";
+		
+		return selectBox;
+	}
+	
+	// 발주지시서 정보
+	function makeBorderInfo (list, direc) {
+		console.log(list);
+		let content = "<tr><td id = 'modelCode'>" + list.modelCode + "</td>"
+					+ "<td id = 'pdName'>" + list.pdName + "</td>"
+					+ "<td id = 'pdCode'>" + list.pdCode + "</td>"
+					+ "<td id = 'bCorp'>" + list.companyName + "</td>"
+					+ "<td id = 'bDirec'>" + direc + "</td></tr>";
+					
+		return content;
+	}
+	
+	// 배송지시서 정보
+	function makeShipInfo (list) {
+		console.log(list);
+		let content = "<tr><td id = 'modelCode'>" + list[0].jordCode + "</td>"
+					+ "<td id = 'pdName'>" + list[0].jordDate + "</td>"
+					+ "<td id = 'pdCode'>" + list[0].companyName + "</td>"
+					+ "<td id = 'bCorp'>" + list[0].pdName + "</td>"
+					+ "<td id = 'bDirec'>" + list[0].jordAmt + "</td></tr>";
+					
+		return content;
+	}
+	
+	function insBordDirec() {
+		console.log("hi");
+	}
 
 	function makeOHTable(list) {
 		let tbody = document.getElementById("orderHistoryTBody");
@@ -202,9 +322,9 @@ click-able rows
 			list[i].jordIn == "0" ? content += "<td>미입금</td>"
 									: content += "<td>입금</td>";
 			list[i].bordCode != null ? content += "<td>작성완료</td>"
-									: content += "<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"Border\")' /></td>";
+									: content += "<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"b\", " + list[i].jordCode + "," + list[i].modelCode + ")' /></td>";
 			list[i].shCode != null ? content += "<td>작성완료</td>"
-									: content += "<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"Sorder\")' /></td>";
+									: content += "<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"s\", " + list[i].jordCode + "," + list[i].modelCode + ")' /></td>";
 		}
 		tbody.innerHTML = "";
 		tbody.innerHTML = content;
@@ -294,116 +414,127 @@ click-able rows
 							</div>
 							<br>
 						</div>
-						
-						
-		
 					</li>
 				</ul>
 			</div>
 		</div>
 		
-		<!-- 모달팝업 -->
-		<div id="notice" class="layerPop layerType2" style="width: 600px;">
-			<input type="hidden" id="noticeNo" name="noticeNo" value="${noticeNo}">
-			<!-- 수정시 필요한 num 값을 넘김  -->
-
+		<!-- 발주 모달팝업 -->
+		<div id="bDirection" class="layerPop layerType2" style="width:60rem; height: 25rem;">
 			<dl>
-				<dt>
-					<strong><!-- 제목 --></strong>
-				</dt>
+				<dt><strong>발주지시서 작성</strong></dt>
 				<dd class="content">
-					<!-- s : 여기에 내용입력 -->
-					<table class="row">
-						<caption>caption</caption>
-
-						<tbody>
-							<tr>
-								<th scope="row">작성자 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100" name="loginId" id="loginId"/></td>
-								<!-- <th scope="row">작성일<span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="write_date" id="write_date" /></td> -->
-							</tr>
-							<tr>
-								<th scope="row">제목 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="text" class="inputTxt p100" name="noticeTitle" id="noticeTitle"/></td>
-							</tr>
-							<tr>
-								<th scope="row">내용</th>
-								<td colspan="3"><textarea class="inputTxt p100" name="noticeContent" id="noticeContent">
-								</textarea></td>
-							</tr>
-
-						</tbody>
-					</table>
-
+					<div>
+						<table class='col'>
+							<thead>
+								<tr>
+									<th scope='col'>제품번호</th>
+									<th scope='col'>제품명</th>
+									<th scope='col'>제품CODE</th>
+									<th scope='col'>납품기업</th>
+									<th scope='col'>발주자</th>
+								</tr>
+							</thead>
+							<tbody id = 'borderDrectionTBody'>
+							</tbody>
+						</table>
+					</div>
+					<!-- 창고정보 -->
+					<div id = "whInfo">
+						<span>창고선택</span>
+						<select id = "selBWInfo" onchange="totalStock(this)"></select>
+						<span>재고수량</span><input type="text" id = "totalBStock" readonly="readonly" />
+						<span>수량</span><input type="text" maxlength="2" />
+						<input type = "button" value = "추가" onClick = "" /> 
+					</div>
+					
+					<div id = realInfo>
+						<table class='col'>
+							<thead>
+								<tr>
+									<th scope='col'>제품번호</th>
+									<th scope='col'>제품명</th>
+									<th scope='col'>제품CODE</th>
+									<th scope='col'>납품기업</th>
+									<th scope='col'>창고번호</th>
+									<th scope='col'>창고명</th>
+									<th scope='col'>개수</th>
+									<th scope='col'>발주자</th>
+									<th scope='col'>삭제</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
 					<!-- e : 여기에 내용입력 -->
 
 					<div class="btn_areaC mt30">
+						<input type = "button" class = "btnType blue" value = "완료" onClick = "insBordDirec()">
 						<a href="" class="btnType gray" id="btnClose" name="btn"><span>닫기</span></a>
 					</div>
 				</dd>
 
 			</dl>
 		</div>
-
-
-		<div id="layer2" class="layerPop layerType2" style="width: 600px;">
-			<input type="hidden" id="action" name="action" value="U">
+		
+		<!-- 배송 모달팝업 -->
+		<div id="sDirection" class="layerPop layerType2" style="width:60rem; height: 25rem;">
 			<dl>
-				<dt>
-					<strong>그룹코드 관리</strong>
-				</dt>
+				<dt><strong>배송지시서 작성</strong></dt>
 				<dd class="content">
-					<!-- s : 여기에 내용입력 -->
-					<table class="row">
-						<caption>caption</caption>
-						<colgroup>
-							<col width="120px">
-							<col width="*">
-							<col width="120px">
-							<col width="*">
-						</colgroup>
-
-						<tbody>
-							<tr>
-								<th scope="row">그룹 코드 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100" name="grp_cod"
-									id="grp_cod" v-model="grp_cod" /></td>
-								<th scope="row">그룹 코드 명 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100"
-									name="grp_cod_nm" id="grp_cod_nm" v-model="grp_cod_nm" /></td>
-							</tr>
-							<tr>
-								<th scope="row">코드 설명 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="text" class="inputTxt p100"
-									name="grp_cod_eplti" id="grp_cod_eplti" v-model="grp_cod_eplti" /></td>
-							</tr>
-
-							<tr>
-								<th scope="row">사용 유무 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="radio" id="radio1-1"
-									name="grp_use_poa" id="grp_use_poa_1" value='Y'
-									v-model="use_poa" /> <label for="radio1-1">사용</label>
-									&nbsp;&nbsp;&nbsp;&nbsp; <input type="radio" id="radio1-2"
-									name="grp_use_poa" id="grp_use_poa_2" value="N"
-									v-model="use_poa" /> <label for="radio1-2">미사용</label></td>
-							</tr>
-						</tbody>
-					</table>
-
+					<div>
+						<table class='col'>
+							<thead>
+								<tr>
+									<th scope='col'>주문번호</th>
+									<th scope='col'>주문일자</th>
+									<th scope='col'>기업명</th>
+									<th scope='col'>제품명</th>
+									<th scope='col'>수량</th>
+								</tr>
+							</thead>
+							<tbody id = 'shipDrectionTBody'>
+							</tbody>
+						</table>
+					</div>
+					<!-- 창고정보 -->
+					<div id = "whInfo">
+						<span>창고선택</span>
+						<select id = "selSWInfo" onchange="totalStock(this)"></select>
+						<span>재고수량</span><input type="text" id = "totalSStock" readonly="readonly" />
+						<span>수량</span><input type="text" maxlength="2">
+					</div>
+					
+					<div id = realInfo>
+						<table class='col'>
+							<thead>
+								<tr>
+									<th scope='col'>제품번호</th>
+									<th scope='col'>제품명</th>
+									<th scope='col'>제품CODE</th>
+									<th scope='col'>납품기업</th>
+									<th scope='col'>창고번호</th>
+									<th scope='col'>창고명</th>
+									<th scope='col'>개수</th>
+									<th scope='col'>발주자</th>
+									<th scope='col'>삭제</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
 					<!-- e : 여기에 내용입력 -->
 
 					<div class="btn_areaC mt30">
-						<a href="" class="btnType blue" id="btnSaveGrpCod" name="btn"><span>저장</span></a>
-						<a href="" class="btnType blue" id="btnDeleteGrpCod" name="btn"
-							v-show="delshow"><span>삭제</span></a> <a href=""
-							class="btnType gray" id="btnCloseGrpCod" name="btn"><span>취소</span></a>
+						<input type = "button" class = "btnType blue" value = "완료" onClick = "insBordDirec()">
+						<a href="" class="btnType gray" id="btnClose" name="btn"><span>닫기</span></a>
 					</div>
 				</dd>
-			</dl>
-			<a href="" class="closePop"><span class="hidden">닫기</span></a>
-		</div>
 
+			</dl>
+		</div>
 	</form>
 </body>
 </html>

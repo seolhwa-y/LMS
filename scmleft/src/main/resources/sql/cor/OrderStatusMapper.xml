@@ -52,13 +52,10 @@
 	<selectKey resultType="int" keyProperty="reCode" order="BEFORE">
         SELECT MAX(RE_CODE) + 1 AS 'reCode'
         FROM RETURN_INFO       
-    </selectKey>  
-	
+    </selectKey>
 	<foreach collection="list" item="os" separator=",">
 		INSERT INTO RETURN_INFO (RE_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, BORD_CODE, RE_AMT, RE_DATE, RE_TYPE, RE_OUT)
 		VALUES (#{reCode}, DEFAULT, #{os.jordCode}, #{os.whCode}, #{os.modelCode}, DEFAULT, #{os.reAmt}, NULL, "0", "0")		
-		
-		
 	</foreach>
 </insert>
 

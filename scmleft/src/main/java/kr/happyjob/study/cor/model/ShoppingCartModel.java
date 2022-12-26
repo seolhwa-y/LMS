@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ShoppingCartModel {
 	private String loginId; // 장바구니 주인 이름 + 주문한 사람
-	private String modelCode; // 제품 모델 코드
+	private int modelCode; // 제품 모델 코드
 	private String pdNadd; // 제품 이미지 링크
 	private String pdName; // 제품 이름
 	private int pdPrice; // 제품 가격
@@ -14,8 +14,8 @@ public class ShoppingCartModel {
 	private long total; // 제품별 합계금액
 	private String baWishdate; // 제품별 배송희망일자
 	
-	private String jordCode; // 제품별 주문코드
-	private String jordNo; // 전체 주문코드
+	private int jordCode; // 제품별 주문코드
+	private int jordNo; // 전체 주문코드
 	private String jordDate; // 주문일자
 	private String jordIn; // 입금여부 (0 - 미입금, 1 - 입금)
 	private String jordWishdate; // 배송희망일자
@@ -29,10 +29,10 @@ public class ShoppingCartModel {
 	public void setLoginId(String loginId) {
 		this.loginId = loginId;
 	}
-	public String getModelCode() {
+	public int getModelCode() {
 		return modelCode;
 	}
-	public void setModelCode(String modelCode) {
+	public void setModelCode(int modelCode) {
 		this.modelCode = modelCode;
 	}
 	public String getPdNadd() {
@@ -71,16 +71,16 @@ public class ShoppingCartModel {
 	public void setBaWishdate(String baWishdate) {
 		this.baWishdate = baWishdate;
 	}
-	public String getJordCode() {
+	public int getJordCode() {
 		return jordCode;
 	}
-	public void setJordCode(String jordCode) {
+	public void setJordCode(int jordCode) {
 		this.jordCode = jordCode;
 	}
-	public String getJordNo() {
+	public int getJordNo() {
 		return jordNo;
 	}
-	public void setJordNo(String jordNo) {
+	public void setJordNo(int jordNo) {
 		this.jordNo = jordNo;
 	}
 	public String getJordDate() {

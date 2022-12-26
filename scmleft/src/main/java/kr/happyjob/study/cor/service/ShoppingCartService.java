@@ -1,5 +1,7 @@
 package kr.happyjob.study.cor.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -20,6 +22,7 @@ import kr.happyjob.study.cor.model.ShoppingCartModel;
 @Service
 public class ShoppingCartService implements ShoppingCartInter {
 
+	private static final String String = null;
 	private final Logger logger = LogManager.getLogger(this.getClass());
 	private final String className = this.getClass().toString();
 
@@ -41,12 +44,12 @@ public class ShoppingCartService implements ShoppingCartInter {
 		}
 	}
 
-	public void backController (HttpSession session, Model model, int serviceCode) {
+	public void backController (HttpSession session, HashMap<String, Object> map, int serviceCode) {
 		System.err.println("현재 실행되고 있는 클래스 이름 : " + className + " : " + serviceCode);
 		
 		switch (serviceCode) {
-		case 1 : this.deleteShoppingCartCtl(model); break; // 일별 수주 내역 불러오기
-		case 2 : this.insertJorderInfoCtl(model); break;
+		case 1 : this.deleteShoppingCartCtl(map); break; // 일별 수주 내역 불러오기
+		case 2 : this.insertJorderInfoCtl(map); break;
 
 		default : break;
 		}
@@ -71,19 +74,58 @@ public class ShoppingCartService implements ShoppingCartInter {
 	
 	// 장바구니 목록 일부 삭제하기
 	@Transactional
-	private void deleteShoppingCartCtl(Model model) {
+	private void deleteShoppingCartCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
+		List<ShoppingCartModel> scList = new ArrayList<ShoppingCartModel>();
+		String[] mCode = ((String)map.get("modelCode")).split("&");
+		String message = "장바구니 삭제를 실패하셨습니다.";
+		
+		for(int i = 0; i < mCode.length; i++) {
+			scm.setLoginId((String)map.get("loginId"));
+			scm.setModelCode(Integer.parseInt(mCode[i]));
+		}
+		scList.add(scm);
+		
+		if(this.convertToBoolean(this.sql.delete("deleteBasketList", scList))) {
+			map.put("delBaList", this.sql.selectList("getBasketList", scm.getLoginId()));
+			map.put("message", "장바구니 삭제를 성공적으로 완료했습니다.");
+		}
 		
 	}
 
 	// 주문정보 Insert
 	@Transactional
-	private void insertJorderInfoCtl(Model model) {
+	private void insertJorderInfoCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
+		List<ShoppingCartModel> scList = new ArrayList<ShoppingCartModel>();
+		int jordCode = (int) this.sql.selectOne("getJordCodeMax");
+		int jordNo = (int) this.sql.selectOne("getJordNoMax");
+
+		String[] mCode = ((String)map.get("modelCode")).split("&");
+		String message = "주문을 실패했습니다.";
 		
+		
+		for(int i = 0; i < mCode.length; i++) {
+			scm.setJordCode(jordCode + i);
+			scm.setJordNo(jordNo);
+			scm.setLoginId((String)map.get("loginId"));
+			scm.setModelCode(Integer.parseInt(mCode[i]));
+			scm.setJordWishdate((String)map.get("jordWishdate"));
+			scm.setJordAmt((int) map.get("jordAmt"));
+			
+			if(map.get("jordIn") != "true")  scm.setJordIn("0"); 
+			else scm.setJordIn("1");
+		}
+		scList.add(scm);
+		System.out.println(scList);
+	}
+	
+	// Insert / Update / Delete
+	private Boolean convertToBoolean(int booleanCheck){
+		return booleanCheck == 0 ? false : true;
 	}
 }
