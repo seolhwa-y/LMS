@@ -87,6 +87,7 @@ click-able rows
 	// 차트 그리기
     function makeChart (list) {
 		let name = [], price = [];
+		document.querySelector("#chart").innerHTML = "";
 		
 		list.forEach(function(srList) {
 			name.push(srList.companyName);
@@ -159,7 +160,8 @@ click-able rows
 									<span> ~ </span>
 									<input type = "date" id = "inpEndDate" onchange = "getRankList()" />
 							</div>
-
+							
+							<div style="display: flex; justify-content: space-between;">
 							<!-- 매출 TOP 10 -->
 							<div id="divSalesRanking">
 								<table class="col">
@@ -182,9 +184,9 @@ click-able rows
 								</table>
 								<br>
 							</div>
-							<br>
 							
 							<div id = "chart"></div>
+							</div>
 						</div>
 
 					</li>

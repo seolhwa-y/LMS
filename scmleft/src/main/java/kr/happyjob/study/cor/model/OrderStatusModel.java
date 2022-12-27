@@ -9,11 +9,13 @@ public class OrderStatusModel {
 	private String endDate;
 	
 	private String jordNo; // 전체 주문코드
+	private int count;
 	private int cnt; // 주문 수량
 	private long total; // 총주문금액
 	private String jordDate; // 주문일자
 	private String jordWishdate; // 주문희망일자
 	private String jordIn; // 입금여부 (0 - 미입금, 1 - 입금)
+	private String shDate;
 	private String shType; // 배송여부 (0 - 미배송, 1 - 배송완료, 2 - 배송중)
 	
 	private String modelName; // 모델분류
@@ -39,6 +41,7 @@ public class OrderStatusModel {
 	private String reType; // 반품 승인여부 (0 - 미승인, 1 - 승인, 2 - 반려)
 	private int reOut; // 송금여부
 	
+		
 	// 파라미터 값 나중에 추가하기
 	public String getStartDate() {
 		return startDate;
@@ -57,6 +60,12 @@ public class OrderStatusModel {
 	}
 	public void setJordNo(String jordNo) {
 		this.jordNo = jordNo;
+	}
+	public int getCount() {
+		return count;
+	}
+	public void setCount(int count) {
+		this.count = count;
 	}
 	public int getCnt() {
 		return cnt;
@@ -87,6 +96,12 @@ public class OrderStatusModel {
 	}
 	public void setJordIn(String jordIn) {
 		this.jordIn = jordIn;
+	}
+	public String getShDate() {
+		return shDate;
+	}
+	public void setShDate(String shDate) {
+		this.shDate = shDate;
 	}
 	public String getShType() {
 		return shType;
@@ -193,8 +208,8 @@ public class OrderStatusModel {
 	public int getReAmt() {
 		return reAmt;
 	}
-	public void setReAmt(int rAmt) {
-		this.reAmt = rAmt;
+	public void setReAmt(int reAmt) {
+		this.reAmt = reAmt;
 	}
 	public String getReDate() {
 		return reDate;

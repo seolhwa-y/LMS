@@ -110,7 +110,8 @@ public class OrderStatusService implements OrderStatusInter {
 		
 		System.err.print(map);
 		List<OrderStatusModel> osList = new ArrayList<OrderStatusModel>();
-		String j = (String)map.get("jordCode"), 
+		String  message = "반품신청이 실패하셨습니다. \n 나중에 다시 시도해주세요.",
+				j = (String)map.get("jordCode"), 
 				m = (String)map.get("modelCode"),
 				w = (String)map.get("whCode"),
 				b = (String)map.get("bordCode"),
@@ -129,8 +130,12 @@ public class OrderStatusService implements OrderStatusInter {
 		}
 		System.out.println(osList.get(0).getJordCode());
 		if(this.convertToBoolean(this.sql.insert("insertReturnInfo", osList))) {
-			System.out.println("insert 완료");
-		} else System.out.println("실패");
+			System.out.println("return insert 완료");
+			message = "반품신청이 완료 되었습니다.";
+			map.put("message", message);
+		} else  {
+			System.out.println("return 실패");
+		}
 	}
 	
 	// 기간 + 제품명 검색

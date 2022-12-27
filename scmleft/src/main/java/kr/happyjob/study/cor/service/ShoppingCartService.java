@@ -115,7 +115,7 @@ public class ShoppingCartService implements ShoppingCartInter {
 			scm.setLoginId((String)map.get("loginId"));
 			scm.setModelCode(Integer.parseInt(mCode[i]));
 			scm.setJordWishdate((String)map.get("jordWishdate"));
-			scm.setJordAmt((int) map.get("jordAmt"));
+			scm.setJordAmt((int)map.get("jordAmt"));
 			
 			if(map.get("jordIn") != "true")  scm.setJordIn("0"); 
 			else scm.setJordIn("1");

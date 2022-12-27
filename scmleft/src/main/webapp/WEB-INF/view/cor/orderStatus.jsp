@@ -33,7 +33,9 @@ click-able rows
 	}
 	
 	// 주문내역에서 상세 제품정보 불러오기
-	function getDetailList(no) {
+	function getDetailList(no, sh) {
+		if(sh == null) return alert("아직 배송이 진행되지 않았습니다.");
+		
 		// Ajax = 파라미터
 		const param = { jordNo : no }
 		
@@ -49,7 +51,7 @@ click-able rows
 	function callDatail(ajax){
 		let tbody = document.getElementById("detailOrderStatusTBody");
 		let content = "", osdList = "";
-		
+		console.log(ajax);
 		tbody.innerHTML = "";
 		ajax != null ? osdList = ajax.osdList : "";
 		
@@ -164,14 +166,32 @@ click-able rows
 	
 	function callReturn(ajax) {
 		console.log(ajax);
+		callDatail();
+		alert(ajax.message);
 	}
 	
 	// 주문내역 테이블 그리기
 	function makeOrderList(list){
 		let tbody = document.getElementById("orderStatusTBody");
 		let content = "", num = 0;
-
+		
+		console.log(list);
+		
 		for(i = 0; i < list.length; i++) {
+			num = i + 1;
+			content += "<tr onClick ='getDetailList(" + list[i].jordNo + "," + list[i].shDate + ")'><td>" + num + "</td>"
+					+ "<td>" + list[i].jordNo + "</td>"
+					+ "<td>" + list[i].pdName + (list[i].count != "1" ? (" 외 " + (list[i].count - 1) + "개") : "") + "</td>"
+					+ "<td>" + cngNumberType(list[i].total) + "</td>"
+					+ "<td>" + cngDateType(list[i].jordDate) + "</td>"
+					+ "<td>" + (list[i].shDate != null ? cngDateType(list[i].shDate) : "") + "</td>";
+					
+					if(list[i].jordIn == "0") {
+						content += "<td>" + "<input type = 'button' class = 'btnIn' value = '입금하기' onClick = 'updJordIn(" + list[i].jordNo + ")' />"  + "</td>";
+					} else content += "<td></td></tr>";
+		}
+		
+/* 		for(i = 0; i < list.length; i++) {
 			num = i + 1;
 			content += "<tr><td>" + num + "</td>"
 					+ "<td>" + list[i].cnt.toLocaleString('ko-KR') + "</td>"
@@ -182,13 +202,17 @@ click-able rows
 					+ "<td>" + (list[i].jordIn == "0" ? "미입금" : "입금완료") + "</td>"
 					+ "<td>" + (list[i].jordIn == "0" ? ("<input type = 'button' class = 'btnIn' value = '입금하기' onClick = 'updJordIn(" + list[i].jordNo + ")' />") :  "" ) + "</td>"
 					+ "<td>" + (list[i].shType != null ? (list[i].shType == "0" ? "" : "<input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + list[i].jordNo + ")' />") : "") + "</td></tr>";
-		}
+		} */
 		tbody.innerHTML = content;
 	}
 	
 	// 타입 변환 :: 스트링 -> 날짜
 	function cngDateType(strDate) {
 		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
+	}
+	
+	function cngNumberType(num) {
+		return num.toLocaleString('ko-KR');
 	}
 </script>
 
@@ -240,14 +264,12 @@ click-able rows
 									<thead>
 										<tr>
 											<th scope="col">일련번호</th>
-											<th scope="col">주문수량</th>
-											<th scope="col">결제금액</th>
-											<th scope="col">구매일자</th>
-											<th scope="col">배송희망일자</th>
-											<th scope="col">배송상태</th>
+											<th scope="col">주문번호</th>
+											<th scope="col">제품명</th>
+											<th scope="col">금액</th>
+											<th scope="col">구매일</th>
+											<th scope="col">배송일</th>
 											<th scope="col">입금상태</th>
-											<th scope="col">입금</th>
-											<th scope="col">반품</th>
 										</tr>
 									</thead>
 									<tbody id = "orderStatusTBody">

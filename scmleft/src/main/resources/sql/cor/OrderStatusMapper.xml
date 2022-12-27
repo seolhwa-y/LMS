@@ -6,11 +6,14 @@
 <select id="getOrderStatusList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
 	SELECT    JI.JORD_CODE AS 'JORDCODE',
 			  JI.JORD_NO AS 'JORDNO',  
+			  PD.PD_NAME AS 'PDNAME',
+			  COUNT(JI.JORD_NO) AS 'COUNT',
 	          SUM(JI.JORD_AMT) AS 'cnt', 
 	          SUM(JI.JORD_AMT * PD.PD_PRICE) AS 'TOTAL', 
 	          JI.JORD_DATE AS 'JORDDATE', 
 	          JI.JORD_WISHDATE AS 'JORDWISHDATE', 
 	          JI.JORD_IN AS 'JORDIN',
+	          SI.SH_DATE AS 'SHDATE',
 	          SI.SH_TYPE AS 'SHTYPE'
 	FROM      JORDER_INFO JI INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE
 	                         LEFT OUTER JOIN SHIP_INFO SI ON JI.JORD_CODE = SI.JORD_CODE 
