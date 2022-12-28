@@ -1,6 +1,7 @@
 package kr.happyjob.study.cor.controller;
 
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -49,12 +50,13 @@ public class ShoppingCartController {
 		return map;
 	}
 
-	// 주문하기
+	// 주문하기	
 	@ResponseBody
 	@PostMapping("insJorder")
 	public HashMap<String, Object> insertJorderInfo(HttpSession session, @RequestParam HashMap<String, Object> map) {
 		map.put("loginId", session.getAttribute("loginId"));
 		System.err.println(map);
+		
 		this.scs.backController(session, map, 2);
 		
 		return map;

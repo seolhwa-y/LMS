@@ -1,9 +1,9 @@
 package kr.happyjob.study.cor.model;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 //lombok 사용 X
-@Component
+@Repository
 public class ShoppingCartModel {
 	private String loginId; // 장바구니 주인 이름 + 주문한 사람
 	private int modelCode; // 제품 모델 코드

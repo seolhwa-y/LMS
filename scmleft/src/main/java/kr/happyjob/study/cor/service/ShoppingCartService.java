@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.poi.util.SystemOutLogger;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class ShoppingCartService implements ShoppingCartInter {
 
 	@Autowired
 	private SqlSessionTemplate sql;
-	@Autowired(required = true)
+	@Autowired
 	ShoppingCartModel scm;
 	
 	public ShoppingCartService() {}
@@ -64,12 +65,11 @@ public class ShoppingCartService implements ShoppingCartInter {
 		 * 비고 : DB에 param으로 보낼 session에 저장된 userId를 가져와야 한다.
 		  		  DB에서 내역을 가져와서 List에 담아 JSON으로 바꿔 화면단에 넘겨준다. */
 		Gson gson = new Gson();
-		
-		List<ShoppingCartModel> scList = (List<ShoppingCartModel>) this.sql.selectList("getBasketList", session.getAttribute("loginId"));
-		mav.addObject("shoppingCartList", gson.toJson(scList));
+		System.out.println(session.getAttribute("loginId"));
+		mav.addObject("shoppingCartList", gson.toJson(this.sql.selectList("getBasketList", session.getAttribute("loginId"))));
+		mav.addObject("basketTotal", (int)this.sql.selectOne("getBasketTotal", session.getAttribute("loginId")));
 		mav.setViewName("cor/shoppingCart");
 		
-		System.err.println(mav.getModel().get("shoppingCartList"));
 	}
 	
 	// 장바구니 목록 일부 삭제하기
@@ -81,18 +81,18 @@ public class ShoppingCartService implements ShoppingCartInter {
 		List<ShoppingCartModel> scList = new ArrayList<ShoppingCartModel>();
 		String[] mCode = ((String)map.get("modelCode")).split("&");
 		String message = "장바구니 삭제를 실패하셨습니다.";
-		
+
 		for(int i = 0; i < mCode.length; i++) {
 			scm.setLoginId((String)map.get("loginId"));
 			scm.setModelCode(Integer.parseInt(mCode[i]));
+			
+			if(this.convertToBoolean(this.sql.delete("deleteBasketList", scm))) {
+				System.out.println(scm.getModelCode() + " basket delete 성공");
+				message = "장바구니 삭제가 성공적으로 완료되었습니다.";	
+			}
 		}
-		scList.add(scm);
-		
-		if(this.convertToBoolean(this.sql.delete("deleteBasketList", scList))) {
-			map.put("delBaList", this.sql.selectList("getBasketList", scm.getLoginId()));
-			map.put("message", "장바구니 삭제를 성공적으로 완료했습니다.");
-		}
-		
+		map.put("delBaList", this.sql.selectList("getBasketList", scm.getLoginId()));
+		map.put("message", message);
 	}
 
 	// 주문정보 Insert
@@ -101,27 +101,31 @@ public class ShoppingCartService implements ShoppingCartInter {
 		/* 담당자 : 염설화
 		 * 개발기간 : 
 		 * 비고 :  */
-		List<ShoppingCartModel> scList = new ArrayList<ShoppingCartModel>();
-		int jordCode = (int) this.sql.selectOne("getJordCodeMax");
-		int jordNo = (int) this.sql.selectOne("getJordNoMax");
-
-		String[] mCode = ((String)map.get("modelCode")).split("&");
+		String[] mCode = ((String)map.get("modelCode")).split("&"),
+				 wish = ((String)map.get("jordWishdate")).split("&"),
+				 amt = ((String)map.get("jordAmt")).split("&"),
+				 type = ((String)map.get("jordIn")).split("&");
 		String message = "주문을 실패했습니다.";
-		
-		
+
+		scm.setJordNo((int)this.sql.selectOne("getJordNoMax"));
 		for(int i = 0; i < mCode.length; i++) {
-			scm.setJordCode(jordCode + i);
-			scm.setJordNo(jordNo);
+			scm.setJordCode((int)this.sql.selectOne("getJordCodeMax"));
 			scm.setLoginId((String)map.get("loginId"));
 			scm.setModelCode(Integer.parseInt(mCode[i]));
-			scm.setJordWishdate((String)map.get("jordWishdate"));
-			scm.setJordAmt((int)map.get("jordAmt"));
-			
-			if(map.get("jordIn") != "true")  scm.setJordIn("0"); 
-			else scm.setJordIn("1");
+			scm.setJordWishdate(wish[i]);
+			scm.setJordAmt(Integer.parseInt(amt[i]));
+			scm.setJordIn(type[i]);
+	
+			if(this.convertToBoolean(this.sql.insert("insertJorderInfo", scm))) {
+				if(this.convertToBoolean(this.sql.delete("deleteBasketList", scm))) {
+					message = "주문이 성공적으로 완료되었습니다.";
+					System.out.println("basket delete & jorder insert 완료");
+				} else System.out.println("basket delete 실패");
+			} else System.out.println("jorder insert 실패");
 		}
-		scList.add(scm);
-		System.out.println(scList);
+		 
+		map.put("insBaList", this.sql.selectList("getBasketList", scm.getLoginId()));
+		map.put("message", message);
 	}
 	
 	// Insert / Update / Delete

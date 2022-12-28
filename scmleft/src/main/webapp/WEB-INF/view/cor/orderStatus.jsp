@@ -190,19 +190,6 @@ click-able rows
 						content += "<td>" + "<input type = 'button' class = 'btnIn' value = '입금하기' onClick = 'updJordIn(" + list[i].jordNo + ")' />"  + "</td>";
 					} else content += "<td></td></tr>";
 		}
-		
-/* 		for(i = 0; i < list.length; i++) {
-			num = i + 1;
-			content += "<tr><td>" + num + "</td>"
-					+ "<td>" + list[i].cnt.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + list[i].total.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + cngDateType(list[i].jordDate) + "</td>"
-					+ "<td>" + cngDateType(list[i].jordWishdate) + "</td>"
-			 		+ "<td>" + (list[i].shType != null ? (list[i].shType == "0" ? "미배송" : "배송완료") : "미배송") + "</td>"
-					+ "<td>" + (list[i].jordIn == "0" ? "미입금" : "입금완료") + "</td>"
-					+ "<td>" + (list[i].jordIn == "0" ? ("<input type = 'button' class = 'btnIn' value = '입금하기' onClick = 'updJordIn(" + list[i].jordNo + ")' />") :  "" ) + "</td>"
-					+ "<td>" + (list[i].shType != null ? (list[i].shType == "0" ? "" : "<input type = 'button' class = 'btnReturn' value = '반품' onClick = 'getDetailList(" + list[i].jordNo + ")' />") : "") + "</td></tr>";
-		} */
 		tbody.innerHTML = content;
 	}
 	
@@ -211,6 +198,7 @@ click-able rows
 		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
 	}
 	
+	// 금액 콤마
 	function cngNumberType(num) {
 		return num.toLocaleString('ko-KR');
 	}

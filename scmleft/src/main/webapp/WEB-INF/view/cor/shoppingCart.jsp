@@ -26,115 +26,6 @@ click-able rows
 }
 </style>
 <script type="text/javascript">
-	var pageSizeinf = 3;
-	var pageBlockSizeinquiry = 10;
-
-	/** 버튼 이벤트 등록 */
-	function fRegisterButtonClickEvent() {
-		$('a[name=btn]').click(function(e) {
-			e.preventDefault();
-
-			var btnId = $(this).attr('id');
-			switch (btnId) {
-			case 'btnClose':
-				gfCloseModal();
-				break;
-			case 'btnCloseGrpCod':
-				gfCloseModal();
-				break;
-			case 'btnSaveGrpCod':
-				fSaveGrpCod();
-				break;
-
-			}
-		});
-	}
-
-	/** 공지사항 조회 */
-	function fListInf(currentPage) {
-
-		currentPage = currentPage || 1;
-
-		//console.log("currentPage : " + currentPage);
-
-		var param = {
-			currentPage : currentPage,
-			pageSize : pageSizeinf
-		}
-
-		var resultCallback = function(data) {
-			fListInfResult(data, currentPage);
-		};
-
-		//Ajax실행 방식
-		//callAjax("Url",type,return,async or sync방식,넘겨준거,값,Callback함수 이름)
-		//html로 받을거라 text
-		callAjax("/inf/listinfvue.do", "post", "json", true, param,
-				resultCallback);
-	}
-
-	/** 공지사항 조회 콜백 함수 */
-	function fListInfResult(data, currentPage) {
-
-		//console.log(data);		
-		noticeareavar.listitem = data.notice;
-
-		// 총 개수 추출
-		var totalCntlistInf = data.noticeCnt;
-		var list = $("#selectedInfNo").val();
-		// 페이지 네비게이션 생성
-		var paginationHtml = getPaginationHtml(currentPage, totalCntlistInf,
-				pageSizeinf, pageBlockSizeinquiry, 'fListInf', [ list ]);
-		//console.log("paginationHtml : " + paginationHtml);
-
-		$("#listInfPagination").empty().append(paginationHtml);
-
-	}
-
-	/*공지사항 상세 조회*/
-	function fNoticeModal(noticeNo) {
-
-		var param = {
-			noticeNo : noticeNo
-		};
-		var resultCallback2 = function(data) {
-			fdetailResult(data);
-		};
-
-		callAjax("/system/detailNotice.do", "post", "json", true, param,
-				resultCallback2);
-	}
-
-	/*  공지사항 상세 조회 -> 콜백함수   */
-	function fdetailResult(data) {
-
-		if (data.resultMsg == "SUCCESS") {
-			//모달 띄우기 
-			gfModalPop("#notice");
-
-			// 모달에 정보 넣기 
-			frealPopModal(data.result);
-
-		} else {
-			alert(data.resultMsg);
-		}
-	}
-
-	/* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
-	function frealPopModal(object) {
-
-		noticeeditvue.loginId = object.loginId;
-		noticeeditvue.noticeTitle = object.noticeTitle;
-		noticeeditvue.noticeContent = object.noticeContent;
-
-		noticeeditvue.loginIdread = "readonly";
-		noticeeditvue.noticeTitleread = "readonly";
-		noticeeditvue.noticeContentread = "readonly";
-
-		$("#noticeNo").val(object.noticeNo); // 중요한 num 값도 숨겨서 받아온다. 
-
-	}
-	
 	function init() {
 		let scList = ${shoppingCartList};
 
@@ -143,78 +34,62 @@ click-able rows
 	
 	// 버튼 :: 주문하기
 	function confOrder() {
-		let inType = false;
-		
-		if(confirm("입금도 같이 진행하시겠습니까?")) {
-			inType = true;
-		}
-		
-		insOrderInfo(inType);
+		confirm("입금도 같이 진행하시겠습니까?") == true ? insOrderInfo('1') : insOrderInfo('0');
 	}
 	
 	function insOrderInfo(isCheck) {
-		let checkBox = document.getElementsByName("delProduct");
-		let s = [], val = "", amt = "", wish = "", type = "", length = checkBox.length-1;
+		let checkBox = document.querySelectorAll("input[name='delProduct']:checked");
+		let param = new Object;
+        let value = [], type = '0', model = "", amt = "", wish = "", jin = "";
+
+        checkBox.forEach((checkBox, index) => { value.push(checkBox.value.split("&")); })
+    
+        value.forEach((value, index) => { value.push(isCheck); })
+
+        value.forEach((value, index) => { 
+								        	model += (index == 0 ? "" : "&" ) + value[0];
+								            amt += (index == 0 ? "" : "&" ) + value[1];
+								            wish += (index == 0 ? "" : "&" ) + value[2];
+								            jin += (index == 0 ? "" : "&" ) + value[3];
+								        })
 		
-		
-		checkBox.forEach(function(checkBox, index){
-			if(checkBox.checked) {
-				s.push(checkBox.value.split("&"));
-				
-				for(i = 0; i < s.length; i++) {
-					val += s[i][0];
-					amt += s[i][1];
-					wish += s[i][2];
-					type += isCheck;
-					
-					length != index ? val += "&" : val += "";
-					length != index ? amt += "&" : amt	+= "";
-					length != index ? wish += "&" : wish += "";
-					length != index ? type += "&" : type += "";
-				}
-			}
-		})
-		
- 		if(val != null) {			
-			// Ajax = 파라미터
-			let param = { 
-					modelCode : val, 
-					jordIn : type,
-					jordWishdate : wish,
-					jordAmt : amt
-			} 
-			
-			console.log(param);
+        param['modelCode'] = model, param['jordAmt'] = amt, param['jordWishdate'] = wish, param['jordIn'] = jin;
+        
+        console.log(param);
+        
+        if(param != null) {
 			// Ajax = 호출
 			var callafterback = function(returndata) {
 				calInsJorder(returndata);
 			}
 			
  			 callAjax("/cor/insJorder", "post", "json", true, param, callafterback);	  
-		} else return; 
+		} else return;  
 	}
 	
 	function calInsJorder(ajax) {
-		console.log(ajax);
+		makeBasketList(ajax.insBaList);
+		alert(ajax.message);
 	}
 	
 	// 제품 삭제
 	function delBaProduct() {
 		let checkBox = document.getElementsByName("delProduct");
-		let val = "", length = checkBox.length-1;
-
+		let val = "", code = "", length = checkBox.length-1;
+		
 		checkBox.forEach(function(checkBox, index){
 			if(checkBox.checked) {
-				val += checkBox.value;
+				code = checkBox.value;
+				val += code.substring(0, code.indexOf("&"));
 				if(length != index) val += "&";
+				else val += "";
 			}
 		})
 
 		if(val != null) {			
 			// Ajax = 파라미터
 			let param = { modelCode : val }
-			
-			console.log(param);
+
 			// Ajax = 호출
 			var callafterback = function(returndata) {
 				callDelProduct(returndata);
@@ -226,7 +101,7 @@ click-able rows
 	
 	function callDelProduct(ajax) {
 		let baList = ajax.delBaList;
-		
+		console.log(baList);
 		makeBasketList(baList);
 		alert(ajax.message);
 	}
@@ -237,17 +112,28 @@ click-able rows
 		
 		let tbody = document.getElementById("shoppingCartTBody");
 		let content = "";
+		tbody.innerHTML = "";
 		
 		for(i = 0; i < list.length; i++) {
 			content += "<tr><td><input type = 'checkBox' name = 'delProduct' value = '" + list[i].modelCode + "&" + list[i].baAmt + "&" + list[i].baWishdate + "' /></td>"
 					+ "<td>"+ list[i].pdName +"</td>"
-					+ "<td>"+ list[i].pdPrice +"</td>"
+					+ "<td>"+ cngNumberType(list[i].pdPrice) +"</td>"
 					+ "<td>"+ list[i].baAmt +"</td>"
-					+ "<td>"+ list[i].total +"</td>"
-					+ "<td>"+ list[i].baWishdate +"</td>";
+					+ "<td>"+ cngNumberType(list[i].total) +"</td>"
+					+ "<td>"+ cngDateType(list[i].baWishdate) +"</td>";
 		}
 		tbody.innerHTML = content;
 		console.log(content);
+	}
+	
+	// 타입 변환 :: 스트링 -> 날짜
+	function cngDateType(strDate) {
+		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
+	}
+	
+	// 금액 콤마
+	function cngNumberType(num) {
+		return num.toLocaleString('ko-KR');
 	}
 </script>
 
@@ -309,7 +195,7 @@ click-able rows
 							<div id = "divOrderTotal">
 									<p style="font-size: 1.3rem;">장바구니 총액</p>
 									<p style="font-size: 1rem;">합계금액</p>
-									<p style="font-size: 1rem;"><!-- ${basketOrderTotal} --></p>
+									<p style="font-size: 1rem;">${basketTotal}</p>
 									<input type = "button" id = "btnOrderMoney" value = "주문하기" onclick="confOrder()" />
 							</div>
 						</div>
