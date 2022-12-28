@@ -27,6 +27,8 @@
 <!-- 주문별 항목 조회 -->
 <select id="getOrderDetails" parameterType="kr.happyjob.study.cor.model.OrderStatusModel" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
 	SELECT  JI.JORD_CODE AS 'JORDCODE',
+			SI.SH_TYPE AS 'SHTYPE',
+			SI.RE_CODE AS 'RECODE',
 			SI.BORD_CODE AS 'BORDCODE',
 			JI.JORD_NO AS 'JORDNO',
 			WS.WH_CODE AS 'WHCODE',
@@ -52,14 +54,27 @@
 
 <!-- 반품신청 -->
 <insert id="insertReturnInfo" parameterType="kr.happyjob.study.cor.model.OrderStatusModel">
-	<selectKey resultType="int" keyProperty="reCode" order="BEFORE">
-        SELECT MAX(RE_CODE) + 1 AS 'reCode'
-        FROM RETURN_INFO       
-    </selectKey>
-	<foreach collection="list" item="os" separator=",">
-		INSERT INTO RETURN_INFO (RE_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, BORD_CODE, RE_AMT, RE_DATE, RE_TYPE, RE_OUT)
-		VALUES (#{reCode}, DEFAULT, #{os.jordCode}, #{os.whCode}, #{os.modelCode}, DEFAULT, #{os.reAmt}, NULL, "0", "0")		
-	</foreach>
+	INSERT INTO RETURN_INFO (RE_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, BORD_CODE, RE_AMT, RE_OUT)
+	VALUES ((SELECT R.CODE
+        	 FROM (SELECT MAX(RE_CODE) + 1 AS 'CODE'
+        		   FROM RETURN_INFO) R), NULL, #{jordCode}, #{whCode}, #{modelCode},
+																        		   <if test="bordCode.equals(0)">
+																        		   		NULL, #{reAmt}, "0")	
+																        		   </if>
+																        		   <if test="bordCode.equals(1)">
+																        		    	#{bordCode}, #{reAmt}, "0")	
+																        		   </if>
 </insert>
 
+<update id="updateShipInfo" parameterType="kr.happyjob.study.cor.model.OrderStatusModel">
+	UPDATE 	SHIP_INFO
+	SET 	RE_CODE = (SELECT	R.RECODE
+					   FROM 	(SELECT	MAX(RE_CODE) AS 'RECODE'
+								 FROM 	RETURN_INFO) R)
+	WHERE 	SH_CODE = (SELECT	S.SHCODE
+					   FROM		(SELECT	SH_CODE AS 'SHCODE'
+								 FROM	SHIP_INFO
+							   	 WHERE	JORD_CODE = #{jordCode} AND MODEL_CODE = #{modelCode} AND WH_CODE = #{whCode}) S) 
+			AND JORD_CODE = #{jordCode} AND MODEL_CODE = #{modelCode} 
+</update>
 </mapper>

@@ -49,27 +49,11 @@ click-able rows
 	
 	// 상세 제품정보 CALLBACK
 	function callDatail(ajax){
-		let tbody = document.getElementById("detailOrderStatusTBody");
-		let content = "", osdList = "";
 		console.log(ajax);
-		tbody.innerHTML = "";
-		ajax != null ? osdList = ajax.osdList : "";
-		
-		console.log(osdList);
-		for(i = 0; i < osdList.length; i++) {
-			// 체크박스 주문번호 제품명 제품번호 제조사 단가 수량 합계금액
-			content += "<tr><td><input type = 'checkBox' name = 'cheReturn' value = '" + osdList[i].jordCode + "&" + osdList[i].modelCode + "&" + osdList[i].whCode + "&" + osdList[i].bordCode + "&" + osdList[i].jordAmt + "' / ></td>"
-					+ "<td>" + osdList[i].jordNo + "</td>"
-					+ "<td>" + osdList[i].pdName + "</td>"
-					+ "<td>" + osdList[i].pdCode + "</td>"
-					+ "<td>" + osdList[i].pdCorp + "</td>"
-					+ "<td>" + osdList[i].pdPrice.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + osdList[i].jordAmt.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + osdList[i].total.toLocaleString('ko-KR') + "</td></tr>";
-		}
-		console.log(content);
-		tbody.innerHTML = content;
+		makeOrderDetailList(ajax.osdList);
 	}
+	
+	
 
 	// 날짜인풋 :: 수주리스트 조회기간 설정
 	function getOrderStatusList() {
@@ -166,7 +150,7 @@ click-able rows
 	
 	function callReturn(ajax) {
 		console.log(ajax);
-		callDatail();
+		makeOrderDetailList(ajax.osdList);
 		alert(ajax.message);
 	}
 	
@@ -191,6 +175,33 @@ click-able rows
 					} else content += "<td></td></tr>";
 		}
 		tbody.innerHTML = content;
+	}
+	
+	// 주문 상세 내역 테이블 그리기
+	function makeOrderDetailList(list) {
+		console.log(list);
+		let tbody = document.getElementById("detailOrderStatusTBody");
+		let content = "";
+		
+		tbody.innerHTML = "";
+		
+		if(list != null) {
+			for(i = 0; i < list.length; i++) {
+				// 체크박스 주문번호 제품명 제품번호 제조사 단가 수량 합계금액
+				content += "<tr><td><input type = 'checkBox' name = 'cheReturn' value = '" + list[i].jordCode + "&" + list[i].modelCode + "&" 
+						+ list[i].whCode + "&" + list[i].bordCode + "&" + list[i].jordAmt + "' " 
+						+ ((list[i].shType == "1" ? "" : "disabled") || (list[i].reCode == "0" ? "" : "disabled")) + "/ ></td>"
+						+ "<td>" + list[i].jordNo + "</td>"
+						+ "<td>" + list[i].pdName + "</td>"
+						+ "<td>" + list[i].pdCode + "</td>"
+						+ "<td>" + list[i].pdCorp + "</td>"
+						+ "<td>" + cngNumberType(list[i].pdPrice)  + "</td>"
+						+ "<td>" + cngNumberType(list[i].jordAmt) + "</td>"
+						+ "<td>" + cngNumberType(list[i].total) + "</td></tr>";
+			}
+			console.log(content);
+			tbody.innerHTML = content;
+		}
 	}
 	
 	// 타입 변환 :: 스트링 -> 날짜

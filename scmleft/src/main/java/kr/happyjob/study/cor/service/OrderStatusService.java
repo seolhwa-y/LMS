@@ -69,8 +69,7 @@ public class OrderStatusService implements OrderStatusInter {
 		Gson gson = new Gson();
 		map.put("loginId", session.getAttribute("loginId"));
 
-		List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", map);
-		mav.addObject("orderStatusList", gson.toJson(osList));
+		mav.addObject("orderStatusList", gson.toJson(this.sql.selectList("getOrderStatusList", map)));
 		mav.setViewName("cor/orderStatus");
 
 	}
@@ -81,7 +80,6 @@ public class OrderStatusService implements OrderStatusInter {
 		/* 담당자 : 염설화
 		 * 개발기간 : 2022-12-22 ~ 2022-12-22
 		 * 비고 :  DB에 접근해서 주문한 제품들을 List에 담아서 보내준다. */
-		
 		List<OrderStatusModel> osdList = (List<OrderStatusModel>) this.sql.selectList("getOrderDetails", map.get("jordNo"));
 		map.remove("jordNo");
 		map.put("osdList", osdList);
@@ -93,15 +91,15 @@ public class OrderStatusService implements OrderStatusInter {
 		String massage = "입금을 실패하셨습니다.";
 		
 		if(this.convertToBoolean(this.sql.update("updateJorderInStatus", map))) {
-			List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", map);
-			map.put("newOsList", osList);
 			massage = "입금이 성공적으로 완료되었습니다."; 
 		} else System.err.println("업데이트 실패");		
 		
+		map.put("newOsList", this.sql.selectList("getOrderStatusList", map));
 		map.put("message", massage);
 	}
 
 	// 반품신청
+	@SuppressWarnings("null")
 	@Transactional
 	private void insertReturnInfoCtl(HashMap<String, Object> map) {
 		/* 담당자 : 염설화
@@ -111,39 +109,34 @@ public class OrderStatusService implements OrderStatusInter {
 		System.err.print(map);
 		List<OrderStatusModel> osList = new ArrayList<OrderStatusModel>();
 		String  message = "반품신청이 실패하셨습니다. \n 나중에 다시 시도해주세요.",
-				j = (String)map.get("jordCode"), 
-				m = (String)map.get("modelCode"),
-				w = (String)map.get("whCode"),
-				b = (String)map.get("bordCode"),
+				j = (String)map.get("jordCode"), m = (String)map.get("modelCode"), w = (String)map.get("whCode"), b = (String)map.get("bordCode"),
 				r = (String)map.get("reAmt");
-		String jCode[] = j.split("&"), mCode[] = m.split("&"),
-				wCode[] = w.split("&"), bCode[] = b.split("&"),
-				rAmt[] = r.split("&");  
+		String jCode[] = j.split("&"), mCode[] = m.split("&"), wCode[] = w.split("&"), bCode[] = b.split("&"), rAmt[] = r.split("&");  
 
 		for(int i = 0; i < jCode.length; i++) {
-			osm.setJordCode((String)jCode[i]);
-			osm.setModelCode((String)mCode[i]);
-			osm.setWhCode((String)wCode[i]);
+			osm.setJordCode(Integer.parseInt((String)jCode[i]));
+			osm.setModelCode(Integer.parseInt((String)mCode[i]));
+			osm.setWhCode(Integer.parseInt((String)wCode[i]));
 			osm.setBordCode(Integer.parseInt((String)bCode[i]));
 			osm.setReAmt(Integer.parseInt((String)rAmt[i]));
-			osList.add(osm);
+			osm.setBordCode(Integer.parseInt((String)bCode[i]));
+			
+			System.out.println("bordCode check :: " + osm.getBankCode());
+			if(this.convertToBoolean(this.sql.insert("insertReturnInfo", osm))) {
+				if(this.convertToBoolean(this.sql.update("updateShipInfo", osm))) {
+					System.out.println("ship update & return insert 완료");
+					message = "반품신청이 완료 되었습니다.";
+				}
+			} else  System.out.println("ship update & return insert 실패");
 		}
-		System.out.println(osList.get(0).getJordCode());
-		if(this.convertToBoolean(this.sql.insert("insertReturnInfo", osList))) {
-			System.out.println("return insert 완료");
-			message = "반품신청이 완료 되었습니다.";
-			map.put("message", message);
-		} else  {
-			System.out.println("return 실패");
-		}
+		map.put("osdList", this.sql.selectList("getOrderDetails", osm));
+		map.put("message", message);
 	}
 	
 	// 기간 + 제품명 검색
 	private void getNewOrderListCtl(HashMap<String, Object> map) {
 		System.out.println(map);
-		List<OrderStatusModel> osList = (List<OrderStatusModel>) this.sql.selectList("getOrderStatusList", map);
-		System.err.println(osList);
-		map.put("newOrder", osList);
+		map.put("newOrder", this.sql.selectList("getOrderStatusList", map));
 	}
 	
 	// Insert / Update / Delete

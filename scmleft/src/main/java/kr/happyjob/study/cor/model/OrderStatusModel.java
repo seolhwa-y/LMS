@@ -8,7 +8,7 @@ public class OrderStatusModel {
 	private String startDate;
 	private String endDate;
 	
-	private String jordNo; // 전체 주문코드
+	private int jordNo; // 전체 주문코드
 	private int count;
 	private int cnt; // 주문 수량
 	private long total; // 총주문금액
@@ -30,16 +30,18 @@ public class OrderStatusModel {
 	private String bankName; // 은행명
 	private String account; // 계좌번호
 	
-	private String reCode; // 반품코드
-	private String dirCode; // 지시서코드
-	private String jordCode; // 제품별 주문코드
-	private String whCode; // 창고코드
-	private String modelCode; // 제품별코드
+	private int shCode;
+	private int reCode; // 반품코드
+	private int dirCode; // 지시서코드
+	private int jordCode; // 제품별 주문코드
+	private int whCode; // 창고코드
+	private int modelCode; // 제품별코드
 	private int bordCode; // 발주코드
 	private int reAmt; // 반품수량
 	private String reDate; // 반품완료일자
 	private String reType; // 반품 승인여부 (0 - 미승인, 1 - 승인, 2 - 반려)
-	private int reOut; // 송금여부
+	private String reOut; // 송금여부
+	
 	
 		
 	// 파라미터 값 나중에 추가하기
@@ -55,10 +57,10 @@ public class OrderStatusModel {
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
 	}
-	public String getJordNo() {
+	public int getJordNo() {
 		return jordNo;
 	}
-	public void setJordNo(String jordNo) {
+	public void setJordNo(int jordNo) {
 		this.jordNo = jordNo;
 	}
 	public int getCount() {
@@ -169,34 +171,40 @@ public class OrderStatusModel {
 	public void setAccount(String account) {
 		this.account = account;
 	}
-	public String getReCode() {
+	public int getShCode() {
+		return shCode;
+	}
+	public void setShCode(int shCode) {
+		this.shCode = shCode;
+	}
+	public int getReCode() {
 		return reCode;
 	}
-	public void setReCode(String reCode) {
+	public void setReCode(int reCode) {
 		this.reCode = reCode;
 	}
-	public String getDirCode() {
+	public int getDirCode() {
 		return dirCode;
 	}
-	public void setDirCode(String dirCode) {
+	public void setDirCode(int dirCode) {
 		this.dirCode = dirCode;
 	}
-	public String getJordCode() {
+	public int getJordCode() {
 		return jordCode;
 	}
-	public void setJordCode(String jordCode) {
+	public void setJordCode(int jordCode) {
 		this.jordCode = jordCode;
 	}
-	public String getWhCode() {
+	public int getWhCode() {
 		return whCode;
 	}
-	public void setWhCode(String whCode) {
+	public void setWhCode(int whCode) {
 		this.whCode = whCode;
 	}
-	public String getModelCode() {
+	public int getModelCode() {
 		return modelCode;
 	}
-	public void setModelCode(String modelCode) {
+	public void setModelCode(int modelCode) {
 		this.modelCode = modelCode;
 	}
 	public int getBordCode() {
@@ -223,11 +231,10 @@ public class OrderStatusModel {
 	public void setReType(String reType) {
 		this.reType = reType;
 	}
-	public int getReOut() {
+	public String getReOut() {
 		return reOut;
 	}
-	public void setReOut(int reOut) {
+	public void setReOut(String reOut) {
 		this.reOut = reOut;
 	}
-	
 }
