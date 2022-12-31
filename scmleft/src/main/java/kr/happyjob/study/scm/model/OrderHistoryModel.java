@@ -2,7 +2,6 @@ package kr.happyjob.study.scm.model;
 
 import org.springframework.stereotype.Repository;
 
-// lombok 사용 X
 @Repository
 public class OrderHistoryModel {
 	private String type;
@@ -10,40 +9,34 @@ public class OrderHistoryModel {
 	private String endDate;
 	private String reType;
 	private String pdCode;
-	private String jordCode; // 주문코드
-	private String jordDate; // 주문일자
-	private String loginId; // 주문한 기업회원 코드 + 배송 담당자 + 지시서 작성자
-	private String companyName; // 주문한 기업회원 이름
-	private String modelCode; // 제품 모델 코드
-	private String pdName; // 제품 이름
-	private int pdPrice; // 제품 단가
-	private int jordAmt; // 제품 수량
-	private long totalAmt; // 제품 주문한 토탈가격
-	private String reDate; // 반품일자
-	private String jordIn; // 입금여부
-
-	private String whCode; // 창고코드
-	private String whName; // 창고이름
-	private int whStock; // 제품 재고
-	
-	private String dirCode; // 지시서 코드
-	private String dirType; // 지시서 타입 (0 - 발주, 1 - 배송, 2 - 반품)
-	private String dirDate; // 지시서 작성일자
-	private int dirAmt; // 지시서 수량
-	
-	private String bordCode; // 발주코드 - 발주지시서 작성여부
-	private int bordAmt; // 발주수량
-	private String bordDate; // 발주 완료일자
-	private String bordType; // 발주 승인여부 (0 - 미승인, 1 - 승인, 2 - 반려)
-	
-	private String shCode; // 배송코드 - 배송지시서 작성여부
-	private String reCode; // 반품코드
-	private String shDate; // 배송 완료일자
-	private int shAmt; // 배송수량
-	private String shType; // 배송완료여부 (0 - 배송전, 1 - 배송중, 2 - 배송완료)
+	private int jordCode;
+	private String jordDate;
+	private String loginId;
+	private String companyName;
+	private int modelCode;
+	private String pdName;
+	private int pdPrice;
+	private int jordAmt;
+	private long totalAmt;
+	private String reDate;
+	private String jordIn;
+	private int whCode;
+	private String whName;
+	private int whStock;
+	private int dirCode;
+	private String dirType;
+	private String dirDate;
+	private int dirAmt;
+	private int bordCode;
+	private int bordAmt;
+	private String bordDate;
+	private String bordType;
+	private int shCode;
+	private int reCode;
+	private String shDate;
+	private int shAmt;
+	private String shType;
 	private String deliName;
-	
-	
 	
 	public String getType() {
 		return type;
@@ -75,10 +68,10 @@ public class OrderHistoryModel {
 	public void setPdCode(String pdCode) {
 		this.pdCode = pdCode;
 	}
-	public String getJordCode() {
+	public int getJordCode() {
 		return jordCode;
 	}
-	public void setJordCode(String jordCode) {
+	public void setJordCode(int jordCode) {
 		this.jordCode = jordCode;
 	}
 	public String getJordDate() {
@@ -99,10 +92,10 @@ public class OrderHistoryModel {
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
 	}
-	public String getModelCode() {
+	public int getModelCode() {
 		return modelCode;
 	}
-	public void setModelCode(String modelCode) {
+	public void setModelCode(int modelCode) {
 		this.modelCode = modelCode;
 	}
 	public String getPdName() {
@@ -141,10 +134,10 @@ public class OrderHistoryModel {
 	public void setJordIn(String jordIn) {
 		this.jordIn = jordIn;
 	}
-	public String getWhCode() {
+	public int getWhCode() {
 		return whCode;
 	}
-	public void setWhCode(String whCode) {
+	public void setWhCode(int whCode) {
 		this.whCode = whCode;
 	}
 	public String getWhName() {
@@ -159,10 +152,10 @@ public class OrderHistoryModel {
 	public void setWhStock(int whStock) {
 		this.whStock = whStock;
 	}
-	public String getDirCode() {
+	public int getDirCode() {
 		return dirCode;
 	}
-	public void setDirCode(String dirCode) {
+	public void setDirCode(int dirCode) {
 		this.dirCode = dirCode;
 	}
 	public String getDirType() {
@@ -183,10 +176,10 @@ public class OrderHistoryModel {
 	public void setDirAmt(int dirAmt) {
 		this.dirAmt = dirAmt;
 	}
-	public String getBordCode() {
+	public int getBordCode() {
 		return bordCode;
 	}
-	public void setBordCode(String bordCode) {
+	public void setBordCode(int bordCode) {
 		this.bordCode = bordCode;
 	}
 	public int getBordAmt() {
@@ -207,16 +200,16 @@ public class OrderHistoryModel {
 	public void setBordType(String bordType) {
 		this.bordType = bordType;
 	}
-	public String getShCode() {
+	public int getShCode() {
 		return shCode;
 	}
-	public void setShCode(String shCode) {
+	public void setShCode(int shCode) {
 		this.shCode = shCode;
 	}
-	public String getReCode() {
+	public int getReCode() {
 		return reCode;
 	}
-	public void setReCode(String reCode) {
+	public void setReCode(int reCode) {
 		this.reCode = reCode;
 	}
 	public String getShDate() {
@@ -243,7 +236,4 @@ public class OrderHistoryModel {
 	public void setDeliName(String deliName) {
 		this.deliName = deliName;
 	}
-	
-
-	
 }

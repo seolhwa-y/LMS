@@ -2,15 +2,13 @@ package kr.happyjob.study.cmp.model;
 
 import org.springframework.stereotype.Repository;
 
-//lombok 사용 X
 @Repository
 public class SalesRankingModel {
 	private String startDate;
 	private String endDate;
-	
-	private String loginId; // 기업코드
-	private String companyName; // 기업이름
-	private int total; // 매출합계
+	private String loginId;
+	private String companyName;
+	private int total;
 	
 	
 	public String getLoginId() {

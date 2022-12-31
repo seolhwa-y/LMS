@@ -24,22 +24,10 @@ click-able rows
 	cursor: default;
 }
 }
-.blue{
-    display: inline-block;
-    padding-right: 10px;
-    min-width: 80px;
-    height: 31px;
-    line-height: 31px;
-    font-family: '나눔바른고딕',NanumBarunGothic;
-    font-size: 15px;
-    color: #fff;
-    text-align: center;
-    font-weight: 400;
-    background: url(/images/admin/comm/set_btnBg.png) 100% 0px no-repeat;}
 </style>
 <script type="text/javascript">
-	var pageSizeinf = 3;
-	var pageBlockSizeinquiry = 10;
+	let listCount = 5;
+	let pageCount = 10;
 
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {
@@ -48,224 +36,167 @@ click-able rows
 
 			var btnId = $(this).attr('id');
 			switch (btnId) {
-			case 'btnClose':
-				gfCloseModal();
-				break;
-			case 'btnCloseGrpCod':
-				gfCloseModal();
-				break;
-			case 'btnSaveGrpCod':
-				fSaveGrpCod();
-				break;
+			case 'btnBModalClose' : 
+			case 'btnSModalClose' : gfCloseModal(); break;
+			case 'btnBorderDirec' : insBordDirec(); break;
+			case 'btnShipDirec' : insShipDirec(); break;
 
 			}
 		});
 	}
 
-	/** 공지사항 조회 */
-	function fListInf(currentPage) {
-
-		currentPage = currentPage || 1;
-
-		//console.log("currentPage : " + currentPage);
-
-		var param = {
-			currentPage : currentPage,
-			pageSize : pageSizeinf
-		}
-
-		var resultCallback = function(data) {
-			fListInfResult(data, currentPage);
-		};
-
-		//Ajax실행 방식
-		//callAjax("Url",type,return,async or sync방식,넘겨준거,값,Callback함수 이름)
-		//html로 받을거라 text
-		callAjax("/inf/listinfvue.do", "post", "json", true, param,
-				resultCallback);
-	}
-
-	/** 공지사항 조회 콜백 함수 */
-	function fListInfResult(data, currentPage) {
-
-		//console.log(data);		
-		noticeareavar.listitem = data.notice;
-
-		// 총 개수 추출
-		var totalCntlistInf = data.noticeCnt;
-		var list = $("#selectedInfNo").val();
-		// 페이지 네비게이션 생성
-		var paginationHtml = getPaginationHtml(currentPage, totalCntlistInf,
-				pageSizeinf, pageBlockSizeinquiry, 'fListInf', [ list ]);
-		//console.log("paginationHtml : " + paginationHtml);
-
-		$("#listInfPagination").empty().append(paginationHtml);
-
-	}
-
-	/*공지사항 상세 조회*/
-	function fNoticeModal(noticeNo) {
-
-		var param = {
-			noticeNo : noticeNo
-		};
-		var resultCallback2 = function(data) {
-			fdetailResult(data);
-		};
-
-		callAjax("/system/detailNotice.do", "post", "json", true, param,
-				resultCallback2);
-	}
-
-	/*  공지사항 상세 조회 -> 콜백함수   */
-	function fdetailResult(data) {
-
-		if (data.resultMsg == "SUCCESS") {
-			//모달 띄우기 
-			gfModalPop("#notice");
-
-			// 모달에 정보 넣기 
-			frealPopModal(data.result);
-
-		} else {
-			alert(data.resultMsg);
-		}
-	}
-
 	function init() {
-		let ohList = ${orderHistoryList};
-
-		makeOHTable(ohList);
+		fRegisterButtonClickEvent();
+		makeOHTable(${orderHistoryList});
 	}
 
 	// 날짜인풋 :: 수주리스트 조회기간 설정
 	function getOrderList() {
-		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
-		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝
-		const dateType = document.getElementById("selClass").value; // 조회 타입
+		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", "");
+		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
+		const dateType = document.getElementById("selClass").value; 
 		let reInput = document.getElementsByName("returnType"), reType = "";
 
-		reInput.forEach(function(reInput) {
-			if (reInput.checked) reType = reInput.value;
-		});
+		reInput.forEach((reInput) => { if (reInput.checked) reType = reInput.value; });
 
 		if (dateType != "" && stDate != "" && edDate != "") {
-			// Ajax = 파라미터
-			const param = {
-				type : dateType,
-				startDate : stDate,
-				endDate : edDate,
-				reType : reType
-			}
+			let param = { type : dateType, startDate : stDate, endDate : edDate, reType : reType }
 
-			// Ajax = 호출
-			var callafterback = function(returndata) {
-				callSearchList(returndata);
-			}
+			let callafterback = (ajax) => { makeOHTable(ajax.newOrderSearchList); }
 			callAjax("/scm/searchOrderHistoryList", "post", "json", true,
 					param, callafterback);
 		} else return;
 	}
-
-	function callSearchList(ajax) {
-		let newList = ajax.newOrderSearchList;
-		
-		makeOHTable(newList);
-	}
 	
 	// 지시서 작성하기
-	function showDirection(t, jCode, mCode) {
-		console.log("code = " + t + ":" + jCode + ":" + mCode);
-		type = "";
+	function showDirection(ty, jCode, mCode, jIn) {
+		if(ty == "s" && jIn != 1) return alert("미입금 상태라 배송지시서 작성이 불가능 합니다."); 
 		
-		t == "b" ? type = "발주" : type = "배송";
-		console.log(type);
-		
-		
-		if (t != null && jCode != null && mCode != null) {
-			// Ajax = 파라미터
-			const param = {
-				type : t,
-				jordCode : jCode,
-				modelCode : mCode
-			}
-
-			// Ajax = 호출
-			var callafterback = function(returndata) {
+		if (ty != null && jCode != null && mCode != null) {
+			let param = { type : ty, jordCode : jCode, modelCode : mCode }
+			console.log(param);
+			let callafterback = function(returndata) {
 				callDirectionList(returndata);
 			}
 			callAjax("/scm/showDirection", "post", "json", true, param, callafterback);
 		} else return;
 		
 	}
-
+	
+	// 지시서 내용 리스트 정리
 	function callDirectionList(ajax) {
 		const type = ajax.type;
-		let whInfo = "", bordInfo = "", shipInfo = "", deliInfo = "";
+		let whInfo = makeWhSelect(ajax.whInfo), bordInfo = "", shipInfo = "", deliInfo = "";
 		let bdTBody = document.getElementById("borderDrectionTBody");
 		let sdTBody = document.getElementById("shipDrectionTBody");
 		
 		switch(type) {
 		case "b" :
-			whInfo = makeWhSelect(ajax.whInfo);
-			bordInfo = makeBorderInfo(ajax.bordInfo, ajax.loginId);
-			
-			fillDirectionModal(whInfo, bordInfo);
+			makeBorderInfo(ajax.bordInfo, ajax.loginId);
+			fillDirectionModal(whInfo);
 			gfModalPop("#bDirection");
 			break;
-		case "s" :
-			// 배송정보 + 창고 + 배송자
-			whInfo = makeWhSelect(ajax.whInfo);
-			deliInfo = makeDeliSelect(ajax.deliInfo);
-			shipInfo = makeShipInfo(ajax.shipInfo);
 			
-			fillDirectionModal(whInfo, shipInfo, deliInfo);
+		case "s" :
+			deliInfo = makeDeliSelect(ajax.deliInfo);
+			makeShipInfo(ajax.shipInfo);
+			fillDirectionModal(whInfo, deliInfo);
 			gfModalPop("#sDirection");
 			break;
 		}
 	}
 	
-	// 모달 내용 채우기
-	function fillDirectionModal (wh, main, deli) {
-		let bdTBody = document.getElementById("borderDrectionTBody");
-		let sdTBody = document.getElementById("shipDrectionTBody");
-		let selBW = document.getElementById("selBWInfo");
-		let selSW = document.getElementById("selSWInfo");
-
-		bdTBody.innerHTML = "";
-		sdTBody.innerHTML = "";
+	// 창고선택
+	function inTotalStock(val){
+		let data = val.split("&");
+		let stock = document.querySelectorAll(".totalStock"), amt = document.querySelectorAll(".countAmt");
+	
+		stock.forEach((stock, index) => { stock.value = data[1]; })
+	}
+	
+	// 항목 추가
+	function appendDetail(type) {
+		let bName = ["modelCode", "pdName_B", "pdCode", "bCorp", "bDirec"], sName = ["jordCode", "jordDate", "companyName", "pdName_S", "sAmt"];
+		let borderWhCode = document.querySelector("#selBWInfo").value, shipWhCode = document.querySelector("#selSWInfo").value;
+		let bBoby = document.getElementById("detailBorder"), sBody = document.getElementById("detailReturn");
+		let bAmt = document.querySelector("#bAmt").value, sAmt = document.querySelector("#sAmt").value;
+		let data = [];
 		
-		if(deli != null) {
-			sdTBody.innerHTML = main;
-			selSW.innerHTML = wh;
-		} else {
-			bdTBody.innerHTML = main;
-			selBW.innerHTML = wh;
+		switch (type) {
+		case 'b' : 
+			if(borderWhCode == "창고선택") return alert("창고를 선택하세요.");
+			if(bAmt == "") return alert("수량을 입력하세요.");
+			
+		 	bName.forEach((bName, index) => {
+				data.push(document.getElementById(bName).innerText);
+			})
+			
+			data.push(borderWhCode.substring(0, borderWhCode.indexOf("&")));
+		 	data.push(bAmt);
+		 	
+			makeDetailDirect(type, data); 
+			break;
+			
+		case 's' :
+			if(shipWhCode == "창고선택") return alert("창고를 선택하세요.");
+			if(sAmt == "") return alert("수량을 입력하세요.");
+			
+			sName.forEach((sName, index) => {
+				data.push(document.getElementById(sName).innerText);
+			})
+			
+			data.push(shipWhCode.substring(0, shipWhCode.indexOf("&")));
+		 	data.push(sAmt);
+		 	
+			makeDetailDirect(type, data, sAmt);
+			break;
+			
+		default:
+			break;
 		}
 	}
 	
-	// 창고정보 셀렉트
-	function makeWhSelect (list) {
-		let selectBox = "<option selected disabled>창고선택</option>";
+	// 디테일 테이블  :: 배열데이터, 창고정보, 수량
+	function makeDetailDirect(type, data, amt) {
+		console.log(type);
+		console.log(data);
+		console.log(amt);
+	}
+	
+	// 항목 삭제 
+	function removeDetail(type) {
+		console.log(type);
+		//document.querySelector("#detailBorder").removeChild(document.querySelector("#detailBorder").childNodes[0]);
+		//document.querySelector("#detailReturn").removeChild(document.querySelector("#detailReturn").childNodes[0]);
+	}
+	
+	// 발주지시서 작성완료
+	function insBordDirec() {
+		console.log("bd");
+	}
+	
+	// 배송지시서 작성완료
+	function insShipDirec() {
+		console.log("sd");
+	}
 
-		if(list.length != 0){
-			for(i = 0; i < list.length; i++) {
-				selectBox += "<option value = '" + list[i].whCode + "&" + list[i].whStock + "&" + list[i].whName + "'>" + list[i].whName + "</option>";
-			}
-		} else selectBox += "<option disabled>선택할 수 있는 창고가 없습니다.</option>";
-
-		return selectBox;
+	// 모달 내용 채우기
+	function fillDirectionModal (wh, deli) {
+		let selBW = document.getElementById("selBWInfo"), selSW = document.getElementById("selSWInfo");
+		let stock = document.querySelectorAll(".totalStock"), amt = document.querySelectorAll(".countAmt");
+		
+		stock.forEach((stock, index) => {
+			stock.value = "", amt[index].value = "";
+		})
+		deli != null ? selSW.innerHTML = wh : selBW.innerHTML = wh;
 	}
 	
 	// 배송담당자 정보 셀렉트
 	function makeDeliSelect (list) {
-		let selectBox = "<select id = 'selDeliInfo'>"
-		  	  + "<option disabled>배송담당자 선택<option>";
+		let selectBox = "<select id = 'selDeliInfo'><option disabled>배송담당자 선택<option>";
 
 		if(list.length != 0){
-			for(i = 0; i < list.length; i++) {
-				selectBox += "<option value = '" + list[i].loginId + "&" + list[i].deliName + "'>" + list[i].deliName + "<option>";
-			}
+			list.forEach((list, index) => { selectBox += "<option value = '" + list.loginId + "&" + list.deliName + "'>" + list.deliName + "<option>"; })
 		} else selectBox += "<option disabled>선택할 수 있는 배송담당자가 없습니다.<option>";
 		
 		selectBox += "</select>";
@@ -275,57 +206,63 @@ click-able rows
 	
 	// 발주지시서 정보
 	function makeBorderInfo (list, direc) {
-		console.log(list);
-		let content = "<tr><td id = 'modelCode'>" + list.modelCode + "</td>"
-					+ "<td id = 'pdName'>" + list.pdName + "</td>"
-					+ "<td id = 'pdCode'>" + list.pdCode + "</td>"
-					+ "<td id = 'bCorp'>" + list.companyName + "</td>"
-					+ "<td id = 'bDirec'>" + direc + "</td></tr>";
-					
-		return content;
+		let name = ['#modelCode', '#pdName_B', '#pdCode', '#bCorp', '#bDirec'];
+		let value = [list.modelCode, list.pdName, list.pdCode, list.companyName, direc];
+		
+		name.forEach((name, index) => {
+			document.querySelector(name).innerText = value[index];
+		})
 	}
 	
 	// 배송지시서 정보
 	function makeShipInfo (list) {
-		console.log(list);
-		let content = "<tr><td id = 'modelCode'>" + list[0].jordCode + "</td>"
-					+ "<td id = 'pdName'>" + list[0].jordDate + "</td>"
-					+ "<td id = 'pdCode'>" + list[0].companyName + "</td>"
-					+ "<td id = 'bCorp'>" + list[0].pdName + "</td>"
-					+ "<td id = 'bDirec'>" + list[0].jordAmt + "</td></tr>";
-					
-		return content;
+		console.log(list.pdName);
+		let name = ['#jordCode', '#jordDate', '#companyName', '#pdName_S', '#sAmt'];
+		let value = [list.jordCode, cngDateType(list.jordDate), list.companyName, list.pdName, list.jordAmt];
+		
+		name.forEach((name, index) => {
+			document.querySelector(name).innerText = value[index];
+		})
 	}
 	
-	function insBordDirec() {
-		console.log("hi");
-	}
+	// 창고정보 셀렉트
+	function makeWhSelect (list) {
+		let selectBox = "<option selected disabled>창고선택</option>";
 
+		if(list.length != 0){
+			list.forEach((list, index) => { selectBox += "<option value = '" + list.whCode + "&" + list.whStock + "&" + list.whName + "'>" + list.whName + "</option>"; })
+		} else selectBox += "<option disabled>선택할 수 있는 창고가 없습니다.</option>";
+
+		return selectBox;
+	}
+	
+	// 일별수주내역 테이블 그리기
 	function makeOHTable(list) {
 		let tbody = document.getElementById("orderHistoryTBody");
 		let content = "";
 
 		console.log(list);
 
-		for (i = 0; i < list.length; i++) {
-			content += "<tr>" + "<td>" + list[i].jordCode + "</td>" 
-					+ "<td>" + cngDateType(list[i].jordDate) + "</td>" 
-					+ "<td>" + list[i].companyName + "</td>" 
-					+ "<td>" + list[i].pdName + "</td>" 
-					+ "<td>" + list[i].whStock.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + list[i].pdPrice.toLocaleString('ko-KR') + "</td>" 
-					+ "<td>" + list[i].jordAmt.toLocaleString('ko-KR') + "</td>"
-					+ "<td>" + list[i].totalAmt.toLocaleString('ko-KR') + "</td>";
+		list.forEach((list, index) => {
+			content += "<tr>" + "<td>" + list.jordCode + "</td>" 
+			+ "<td>" + cngDateType(list.jordDate) + "</td>" 
+			+ "<td>" + list.companyName + "</td>" 
+			+ "<td>" + list.pdName + "</td>" 
+			+ "<td>" + cngNumberType(list.whStock) + "</td>"
+			+ "<td>" + cngNumberType(list.pdPrice) + "</td>" 
+			+ "<td>" + cngNumberType(list.jordAmt) + "</td>"
+			+ "<td>" + cngNumberType(list.totalAmt) + "</td>";
 
-			list[i].reDate != null ? content += "<td>Y</td><td>" + list[i].reDate + "</td>"
-									: content += "<td>N</td><td></td>";
-			list[i].jordIn == "0" ? content += "<td>미입금</td>"
-									: content += "<td>입금</td>";
-			list[i].bordCode != null ? content += "<td>작성완료</td>"
-									: content += "<td><input type = 'button' id = 'btnBordDirec' value = '작성' onClick = 'showDirection(\"b\", " + list[i].jordCode + "," + list[i].modelCode + ")' /></td>";
-			list[i].shCode != null ? content += "<td>작성완료</td>"
-									: content += "<td><input type = 'button' id = 'btnShipDirec' value = '작성' onClick = 'showDirection(\"s\", " + list[i].jordCode + "," + list[i].modelCode + ")' /></td>";
-		}
+		list.reDate != null? content += "<td>Y</td><td>" + cngDateType(list.reDate) + "</td>" : content += "<td>N</td><td></td>";
+		list.jordIn == "0" ? content += "<td>미입금</td>" : content += "<td>입금</td>";
+		list.bordCode != "0" ? content += "<td>작성완료</td>"
+							 : content += "<td><a id = 'btnBordDirec' class = 'btnType blue' onClick = 'showDirection(\"b\", " 
+									   + list.jordCode + "," + list.modelCode + ")'><span>작성</span></a></td>";
+		list.shCode != "0" ? content += "<td>작성완료</td>"
+						   : content += "<td><a id = 'btnShipDirec' class = 'btnType blue' onClick = 'showDirection(\"s\", " 
+								     + list.jordCode + "," + list.modelCode + "," + list.jordIn + ")'><span>작성</span></a></td>";
+		})
+
 		tbody.innerHTML = "";
 		tbody.innerHTML = content;
 	}
@@ -334,8 +271,11 @@ click-able rows
 	function cngDateType(strDate) {
 		return strDate.substr(0, 4) + "-" + strDate.substr(4, 2) + "-" + strDate.substr(6, 2);
 	}
-
-
+	
+	// 금액 콤마
+	function cngNumberType(num) {
+		return num.toLocaleString('ko-KR');
+	}
 </script>
 
 </head>
@@ -370,17 +310,21 @@ click-able rows
 								</p>
 							</div>
 							
-								<div id = "divSearchBar">
-									<select id = "selClass">
-										<option value = 'jorder'>주문일자</option>
-										<option value = 'return'>반품처리일</option>
-									</select>
-									<input type = "date" id = "inpStartDate" onchange = "getOrderList(this)"/>
-									<span> ~ </span>
-									<input type = "date" id = "inpEndDate" onchange = "getOrderList(this)"/>
-									<input type = "radio" name = "returnType" value = "all" onchange = "getOrderList(this)" /> <span>전체</span>
-									<input type = "radio" name = "returnType" value = "true" onchange = "getOrderList(this)" /> <span>반품요청</span>
-									<input type = "radio" name = "returnType" value = "false" onchange = "getOrderList(this)" /> <span>반품미요청</span>
+								<div id = "divSearchBar" style="padding: 2% 2%; display: flex; justify-content: space-between;">
+									<div style="width: 28rem; display: flex; justify-content: space-evenly; align-items: baseline;">
+										<select id = "selClass" style="width: 5rem; height: 100%; margin-right: 1rem;">
+											<option value = 'jorder'>주문일자</option>
+											<option value = 'return'>반품처리일</option>
+										</select>
+										<input type = "date" id = "inpStartDate" onchange = "getOrderList(this)"/>
+										<span> ~ </span>
+										<input type = "date" id = "inpEndDate" onchange = "getOrderList(this)"/>
+									</div>
+									<div style="width: 16rem; display: flex; justify-content: space-evenly; align-items: baseline;">
+										<input type = "radio" name = "returnType" value = "all" onchange = "getOrderList(this)" /> <span>전체</span>
+										<input type = "radio" name = "returnType" value = "true" onchange = "getOrderList(this)" /> <span>반품요청</span>
+										<input type = "radio" name = "returnType" value = "false" onchange = "getOrderList(this)" /> <span>반품미요청</span>
+									</div>
 								</div>
 
 							<!-- 일별 수주 내역 -->
@@ -408,9 +352,8 @@ click-able rows
 
 									</tbody>
 								</table>
-								<br>
 								<!-- 페이징라인 -->
-								<div class="paging_area" id="comnGrpCodPagination" ></div>
+								<div class="paging_area" id="orderHistoryPaging" ></div>
 							</div>
 							<br>
 						</div>
@@ -436,16 +379,23 @@ click-able rows
 								</tr>
 							</thead>
 							<tbody id = 'borderDrectionTBody'>
+								<tr>
+									<td id = 'modelCode'></td>
+									<td id = 'pdName_B'></td>
+									<td id = 'pdCode'></td>
+									<td id = 'bCorp'></td>
+									<td id = 'bDirec'></td>
+								</tr>
 							</tbody>
 						</table>
 					</div>
 					<!-- 창고정보 -->
-					<div id = "whInfo">
+					<div id = "whInfo" style="display: flex; justify-content: space-around;">
 						<span>창고선택</span>
-						<select id = "selBWInfo" onchange="totalStock(this)"></select>
-						<span>재고수량</span><input type="text" id = "totalBStock" readonly="readonly" />
-						<span>수량</span><input type="text" maxlength="2" />
-						<input type = "button" value = "추가" onClick = "" /> 
+						<select id = "selBWInfo" onchange="inTotalStock(this.value)"></select>
+						<span>재고수량</span><input type="text" class = "totalStock" readonly="readonly" />
+						<span>수량</span><input type="number" class = 'countAmt' id = "bAmt"/>
+						<input type = "button" value = "추가" onClick = "appendDetail('b')" /> 
 					</div>
 					
 					<div id = realInfo>
@@ -463,15 +413,16 @@ click-able rows
 									<th scope='col'>삭제</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody id = "detailBorder">
+
 							</tbody>
 						</table>
 					</div>
 					<!-- e : 여기에 내용입력 -->
 
-					<div class="btn_areaC mt30">
-						<input type = "button" class = "btnType blue" value = "완료" onClick = "insBordDirec()">
-						<a href="" class="btnType gray" id="btnClose" name="btn"><span>닫기</span></a>
+					<div class="btn_areaC mt30">				
+						<a class="btnType blue" id="btnBorderDirec" name="btn"><span>완료</span></a>
+						<a class="btnType gray" id="btnBModalClose" name="btn"><span>닫기</span></a>
 					</div>
 				</dd>
 
@@ -495,15 +446,23 @@ click-able rows
 								</tr>
 							</thead>
 							<tbody id = 'shipDrectionTBody'>
+								<tr>
+									<td id = 'jordCode'></td>
+									<td id = 'jordDate'></td>
+									<td id = 'companyName'></td>
+									<td id = 'pdName_S'></td>
+									<td id = 'sAmt'></td>
+								</tr>
 							</tbody>
 						</table>
 					</div>
 					<!-- 창고정보 -->
-					<div id = "whInfo">
+					<div id = "whInfo" style="display: flex; justify-content: space-around;">
 						<span>창고선택</span>
-						<select id = "selSWInfo" onchange="totalStock(this)"></select>
-						<span>재고수량</span><input type="text" id = "totalSStock" readonly="readonly" />
-						<span>수량</span><input type="text" maxlength="2">
+						<select id = "selSWInfo" onchange="inTotalStock(this.value)"></select>
+						<span>재고수량</span><input type="text" class = "totalStock" readonly="readonly" />
+						<span>수량</span><input type="number" class = "countAmt" id = "sAmt"/>
+						<input type = "button" value = "추가" onClick = "appendDetail('s')" /> 
 					</div>
 					
 					<div id = realInfo>
@@ -521,15 +480,15 @@ click-able rows
 									<th scope='col'>삭제</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody id = "detailReturn">
 							</tbody>
 						</table>
 					</div>
 					<!-- e : 여기에 내용입력 -->
 
 					<div class="btn_areaC mt30">
-						<input type = "button" class = "btnType blue" value = "완료" onClick = "insBordDirec()">
-						<a href="" class="btnType gray" id="btnClose" name="btn"><span>닫기</span></a>
+						<a class="btnType blue" id="btnShipDirec" name="btn"><span>완료</span></a>
+						<a class="btnType gray" id="btnSModalClose" name="btn"><span>닫기</span></a>
 					</div>
 				</dd>
 

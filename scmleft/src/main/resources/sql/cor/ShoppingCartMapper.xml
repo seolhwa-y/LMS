@@ -4,32 +4,27 @@
 
 <!-- 장바구니 조회 -->
 <select id="getBasketList" parameterType="string" resultType="kr.happyjob.study.cor.model.ShoppingCartModel">
-	SELECT  BA.loginID AS 'loginId', 
-			BA.MODEL_CODE AS 'modelCode', 
-			PF.PD_NADD AS 'pdNadd', 
-			PD.PD_NAME AS 'pdName', 
-			PD.PD_PRICE AS 'pdPrice', 
-			BA.B_AMT AS 'baAmt', 
-			(PD.PD_PRICE * BA.B_AMT) AS 'total', 
-			BA.B_WISHDATE AS 'baWishdate'
+	SELECT  BA.loginID AS 'LOGINID', 
+			BA.MODEL_CODE AS 'MODELCODE', 
+			PF.PD_NADD AS 'PDNADD', 
+			PD.PD_NAME AS 'PDNAME', 
+			PD.PD_PRICE AS 'PDPRICE', 
+			BA.B_AMT AS 'BAAMT', 
+			(PD.PD_PRICE * BA.B_AMT) AS 'TOTAL', 
+			BA.B_WISHDATE AS 'BAWISHDATE'
 	FROM    BASKET BA RIGHT OUTER JOIN PD_INFO PD ON BA.MODEL_CODE = PD.MODEL_CODE
                   	  LEFT OUTER JOIN PD_FILE PF ON PD.PDFILE_CODE = PF.PDFILE_CODE
 	WHERE   BA.loginID = #{loginId}
 </select>
 
-<select id="getBasketTotal" resultType="int" parameterType="string">
-	SELECT 	(BA.B_AMT * PD.PD_PRICE) AS 'BASKETTOTAL'
+<select id="getBasketTotal" resultType="String" parameterType="string">
+	SELECT 	FORMAT(COALESCE(SUM(BA.B_AMT * PD.PD_PRICE), 0), 0) AS 'BASKETTOTAL'
 	FROM 	BASKET BA INNER JOIN PD_INFO PD ON BA.MODEL_CODE = PD.MODEL_CODE 
 	WHERE 	BA.loginID = #{loginId}
 	GROUP BY BA.loginID
 </select>
 
 <!-- 주문하기 -->
-<select id="getJordCodeMax" resultType="int">
-	SELECT  MAX(JORD_CODE) + 1 AS 'JORDCODE'
-	FROM	JORDER_INFO
-</select>
-
 <select id="getJordNoMax" resultType="int">
 	SELECT  MAX(JORD_NO) + 1 AS 'JORDNO'
 	FROM	JORDER_INFO
@@ -38,7 +33,9 @@
 <insert id="insertJorderInfo"  parameterType="kr.happyjob.study.cor.model.ShoppingCartModel" >
 <!-- selectKey 여러개로 받아서 foreach를 돌리면 값이 null로 들어옴 해결이 안됨 -->
 	INSERT INTO JORDER_INFO (JORD_CODE, MODEL_CODE, loginID, JORD_NO, JORD_DATE, JORD_IN, JORD_WISHDATE, JORD_AMT)
-	VALUES (#{jordCode}, #{modelCode}, #{loginId}, #{jordNo}, DATE_FORMAT(now(), '%Y%m%d%H%i%S'), #{jordIn}, #{jordWishdate}, #{jordAmt})
+	VALUES ((SELECT  J.JORDCODE
+			 FROM	 (SELECT  MAX(JORD_CODE) + 1 AS 'JORDCODE'
+					  FROM	JORDER_INFO)J), #{modelCode}, #{loginId}, #{jordNo}, DATE_FORMAT(now(), '%Y%m%d%H%i%S'), #{jordIn}, #{jordWishdate}, #{jordAmt})
 </insert>
 
 <!-- 장바구니 삭제 -->

@@ -20,29 +20,22 @@ import kr.happyjob.study.cmp.service.SalesRankingService;
 public class SalesRankingController {
 	@Autowired
 	SalesRankingService srs;
-	
-	/* 1. 매출 TOP10 보기
-	 * 2. 기간 재선택 (x) */
-	
+
 	// 매출 상위 10개 업체 페이지 이동
 	@RequestMapping("salesRanking.do")
-	public ModelAndView moveSalesRankingPage(ModelAndView mav, HttpSession session)  throws Exception {
-		/* 담당자 : 염설화
-		 * 개발기간 : 2022-12-22 ~ 2022-12-22
-		 * 비고 : Service 단에서 기간별 매출 TOP10 내역을 가져와서 페이지에 보내준다. */
+	public String moveSalesRankingPage(Model model, HttpSession session)  throws Exception {
+		String page = "login/login";
 		
-		this.srs.backController(session, mav, 1); // 매출 TOP10 내역 불러오기
+		if(session.getAttribute("loginId") != null) page = "cmp/salesRanking";
+		this.srs.backController(session, model, 1); // 매출 TOP10 내역 불러오기
 		
-		return mav;
+		return page;
 	}
 	
-	//
+	// 조회
 	@ResponseBody
 	@PostMapping("/searchRank")
 	public HashMap<String, Object> showDetailOrder(HttpSession session, @RequestParam HashMap<String, Object> map) {
-		/* 담당자 : 염설화
-		 * 개발기간 : 2022-12-22 ~ 2022-12-22
-		 * 비고 : Service 단에서 회원의 주문내역 제품들을 가져와서 페이지에 보내준다. */
 		this.srs.backController(map, 1);
 	
 		return map;

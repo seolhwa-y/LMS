@@ -7,10 +7,9 @@ import kr.happyjob.study.cor.model.ShoppingCartModel;
 public interface ShoppingCartDAO {
 	// 장바구니 목록
 	public List<ShoppingCartModel> getBasketList (String loginId);
-	public int getBasketTotal(String loginId);	
+	public String getBasketTotal(String loginId);	
 	
 	// 주문하기
-	public int getJordCodeMax();
 	public int getJordNoMax();
 	public int insertJorderInfo (ShoppingCartModel scm);
 	

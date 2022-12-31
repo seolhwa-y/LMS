@@ -26,180 +26,171 @@ click-able rows
 }
 </style>
 <script type="text/javascript">
+	let listCount = 5;
+	let pageCount = 10;
+    
+	// 페이지 로드
 	function init() {
-		let osList =${orderStatusList};
+		let pageLine = document.querySelector("#orderStatusPaging");
+		
+		fRegisterButtonClickEvent();
+		makeOrderList(${orderStatusList});
+		pageLine.innerHTML = getPaginationHtml(1, ${orderCount}, listCount, pageCount, 'getOrderStatusList');
+       	pageLine.appendChild( createInput("orderCount", ${orderCount}));
+	}
 	
-		makeOrderList(osList);
+	// 주문현황 조회
+	function getOrderStatusList(pageNum) {
+		let currentPage = pageNum || 1;
+		let pageLine = document.querySelector("#orderStatusPaging");
+		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", "");
+		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
+	
+		if((edDate - stDate) < 0) return alert("날짜를 다시 선택하세요.");
+
+		let param = { pageNum : currentPage, listCount : listCount, startDate : stDate, endDate : edDate }
+		console.log(param);
+		let callafterback = (ajax) => { 
+			console.log(ajax);
+			
+			makeOrderList(ajax.newOrder); 
+			
+			pageLine.innerHTML = "";
+			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.orderCount, listCount, pageCount, 'getOrderStatusList');
+	        pageLine.appendChild(createInput("orderCount", ajax.orderCount));
+		}
+		
+		callAjax("/cor/searchOrderList", "post", "json", true, param, callafterback);	
 	}
 	
 	// 주문내역에서 상세 제품정보 불러오기
-	function getDetailList(no, sh) {
+	function getDetailList(no, sh, jIn, pageNum) {
+		let currentPage = pageNum || 1;
+		let pageLine = document.querySelector("#detailStatusPaging");
+		
+		if(jIn == "0") return ;
 		if(sh == null) return alert("아직 배송이 진행되지 않았습니다.");
-		
-		// Ajax = 파라미터
-		const param = { jordNo : no }
-		
-		// Ajax = 호출
-		var callafterback = function(returndata) {
-			callDatail(returndata);
+
+		let param = { pageNum : currentPage, listCount : listCount, jordNo : no }
+		let callafterback = (ajax) => { 
+			makeOrderDetailList(ajax.osdList);
+
+			pageLine.innerHTML = "";
+			pageLine.innerHTML = getPaginationHtml(1, ${orderCount}, listCount, pageCount, 'getOrderStatusList');
+	       	pageLine.appendChild( createInput("orderCount", ${orderCount}));
 		}
 		
 		callAjax("/cor/refundHistory", "post", "json", true, param, callafterback);
 	}
 	
-	// 상세 제품정보 CALLBACK
-	function callDatail(ajax){
-		console.log(ajax);
-		makeOrderDetailList(ajax.osdList);
-	}
-	
-	
-
-	// 날짜인풋 :: 수주리스트 조회기간 설정
-	function getOrderStatusList() {
-		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""); // 조회 시작
-		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", ""); // 조회 끝*/
-	
-		if(stDate != "" & edDate != "") {
-			console.log(stDate + "~" + edDate + "기간 확인 ok");
-			
-			// Ajax = 파라미터
-			const param = { startDate : stDate, 
-							endDate : edDate }
-			
-			// Ajax = 호출
-			var callafterback = function(returndata) {
-				callNewOrderList(returndata);
-			}
-			
-			callAjax("/cor/searchOrderList", "post", "json", true, param, callafterback);	
-		} else return;
-	}
-	
-	function callNewOrderList(ajax) {
-		let newList = ajax.newOrder;
-		console.log(newList);
-		makeOrderList(newList);
-	}
-	
 	// 입금하기 상세 목록 가져오기
 	function updJordIn(no) {
-		// Ajax = 파라미터
-		const param = { jordNo : no, 
-						jordIn : "1" }
-			
-		// Ajax = 호출
-		var callafterback = function(returndata) {
-			calStatus(returndata);
+		let param = { jordNo : no, jordIn : "1" }
+		let callafterback = (ajax) => { 
+			makeOrderList(ajax.newOsList);
+			alert(ajax.message);
 		}
 			
 		callAjax("/cor/updJorderStatus", "post", "json", true, param, callafterback);	
-
-	}
-	
-	function calStatus(ajax) {
-		let osList = ajax.newOsList;
-		
-		makeOrderList(osList);
-		alert(ajax.message);
 	}
 	
 	// 반품하기
 	function insReturnInfo() {		
-		let checkBox = document.getElementsByName("cheReturn");
+		let checkBox = document.querySelectorAll("input[name='cheReturn']:checked");
 		let b = [], jCode = "", mCode = "", wCode = "", bCode = "", rAmt = "";
 		
-		checkBox.forEach(function(checkBox){
-			checkBox.checked ? (b.push(checkBox.value.split("&"))) : "NO CHECK";
+		checkBox.forEach((checkBox) => {
+			b.push(checkBox.value.split("&"));
 		})
-
-		for(i = 0; i < b.length; i++) {
-			// 0 1 2 3 4
-			jCode += b[i][0]
-				  + (b.length - 1 != i ? "&" : "");
-			mCode += b[i][1]
-				  + (b.length - 1 != i ? "&" : "");
-			wCode += b[i][2]
-				  + (b.length - 1 != i ? "&" : "");
-			bCode += b[i][3]
-				  + (b.length - 1 != i ? "&" : "");	
-			rAmt += b[i][4]
-				 + (b.length - 1 != i ? "&" : "");
-		}
-		console.log(bCode);
+		
+		b.forEach((b, index) => {
+			jCode += (index != 0 ? "&" : "") + b[0];
+			mCode += (index != 0 ? "&" : "") + b[1];
+			wCode += (index != 0 ? "&" : "") + b[2];
+			bCode += (index != 0 ? "&" : "") + b[3];
+			rAmt += (index != 0 ? "&" : "") + b[4];
+		})
 		
 		if(jCode != null && mCode != null) {			
-			// Ajax = 파라미터
-			let param = { 
-				jordCode : jCode, 
-				modelCode : mCode,
-				whCode : wCode,
-				bordCode : bCode,
-				reAmt : rAmt}
-			
-			console.log(param);
-			// Ajax = 호출
-			var callafterback = function(returndata) {
-				console.log("다녀옴");
-				callReturn(returndata);
+			let param = { jordCode : jCode, modelCode : mCode, whCode : wCode, bordCode : bCode, reAmt : rAmt}
+			let callafterback = (ajax) => { 
+				makeOrderDetailList(ajax.osdList);
+				alert(ajax.message);
 			}
 			
 			callAjax("/cor/insReturnProduct", "post", "json", true, param, callafterback);	
 		} else return;
 	}
+
 	
-	function callReturn(ajax) {
-		console.log(ajax);
-		makeOrderDetailList(ajax.osdList);
-		alert(ajax.message);
-	}
-	
-	// 주문내역 테이블 그리기
+	// 주문내역 테이블 그리기 + 페이징
 	function makeOrderList(list){
 		let tbody = document.getElementById("orderStatusTBody");
-		let content = "", num = 0;
+		let content = "";
 		
-		console.log(list);
-		
-		for(i = 0; i < list.length; i++) {
-			num = i + 1;
-			content += "<tr onClick ='getDetailList(" + list[i].jordNo + "," + list[i].shDate + ")'><td>" + num + "</td>"
-					+ "<td>" + list[i].jordNo + "</td>"
-					+ "<td>" + list[i].pdName + (list[i].count != "1" ? (" 외 " + (list[i].count - 1) + "개") : "") + "</td>"
-					+ "<td>" + cngNumberType(list[i].total) + "</td>"
-					+ "<td>" + cngDateType(list[i].jordDate) + "</td>"
-					+ "<td>" + (list[i].shDate != null ? cngDateType(list[i].shDate) : "") + "</td>";
-					
-					if(list[i].jordIn == "0") {
-						content += "<td>" + "<input type = 'button' class = 'btnIn' value = '입금하기' onClick = 'updJordIn(" + list[i].jordNo + ")' />"  + "</td>";
-					} else content += "<td></td></tr>";
-		}
+		tbody.innerHTML = "";
+		list.forEach((list, index) => {
+			content += "<tr onClick ='getDetailList(" + list.jordNo + "," + list.shDate + "," + list.jordIn + ")'><td>" + (index + 1) + "</td>"
+					+ "<td>" + list.jordNo + "</td>"
+					+ "<td>" + list.pdName + (list.count != "1" ? (" 외 " + (list.count - 1) + "개") : "") + "</td>"
+					+ "<td>" + cngNumberType(list.total) + "</td>"
+					+ "<td>" + cngDateType(list.jordDate) + "</td>"
+					+ "<td>" + (list.shDate != null ? cngDateType(list.shDate) : "") + "</td>";
+			if(list.jordIn == "0") {
+				content += "<td>" + "<a class='btnType blue' id='btnIn' name='btn' onClick = 'updJordIn(" + list.jordNo + ")'><span>입금하기</span></a>"  + "</td>";
+			} else content += "<td></td></tr>";
+		})
 		tbody.innerHTML = content;
+	}
+	
+	/**
+	 *	paging(maxNum, pageNum, pageName)
+	 */
+	 function paging(maxNum, pageNum, pageName) {
+        // 전체 글의 숫자, 현재 페이지 번호, 페이지당 나타낼 글의 갯수, 페이지 그룹당 페이지 갯수, 페이지 종류
+        let totalPage = (maxNum % listCount > 0) ? maxNum / listCount + 1 : maxNum / listCount;
+        let totalGroup = (totalPage % pageCount > 0) ? totalPage / pageCount + 1 : totalPage / pageCount;
+        let currentGroup = (pageNum % pageCount > 0) ? pageNum / pageCount + 1 : pageNum / pageCount;
+
+       	let html =  makeHtml(currentGroup, totalPage, pageName, pageNum);
+		
+       	return html;
+    }  
+	
+	function makeHtml(currentGroup, totalPage, pageName, pageNum) {
+		let sb = "";
+        let start = (currentGroup * pageCount) - (pageCount) > 0 ? (currentGroup * pageCount) - (pageCount) : ((currentGroup * pageCount) - (pageCount)) - 1;
+        let end = (currentGroup > 1) ? ((1 * pageCount >= totalPage) ? totalPage : currentGroup * pageCount) : ((currentGroup * pageCount >= totalPage) ? totalPage : currentGroup * pageCount) ;
+
+        for (i = start; i <= end; i++) {
+            if (pageNum != i) sb += "<a href= " + pageName + " ?pageNum= " + i + ">[" + i + "]</a>";
+            else sb += "<font style='color:red;' >[" + i + "]</font>";
+	    }
+    
+        if (end != totalPage) sb += "<a href=" + pageName + "?pageNum=" + (end + 1) + ">[다음]</a>";
+        
+        return sb;
 	}
 	
 	// 주문 상세 내역 테이블 그리기
 	function makeOrderDetailList(list) {
-		console.log(list);
 		let tbody = document.getElementById("detailOrderStatusTBody");
 		let content = "";
 		
 		tbody.innerHTML = "";
-		
 		if(list != null) {
-			for(i = 0; i < list.length; i++) {
-				// 체크박스 주문번호 제품명 제품번호 제조사 단가 수량 합계금액
-				content += "<tr><td><input type = 'checkBox' name = 'cheReturn' value = '" + list[i].jordCode + "&" + list[i].modelCode + "&" 
-						+ list[i].whCode + "&" + list[i].bordCode + "&" + list[i].jordAmt + "' " 
-						+ ((list[i].shType == "1" ? "" : "disabled") || (list[i].reCode == "0" ? "" : "disabled")) + "/ ></td>"
-						+ "<td>" + list[i].jordNo + "</td>"
-						+ "<td>" + list[i].pdName + "</td>"
-						+ "<td>" + list[i].pdCode + "</td>"
-						+ "<td>" + list[i].pdCorp + "</td>"
-						+ "<td>" + cngNumberType(list[i].pdPrice)  + "</td>"
-						+ "<td>" + cngNumberType(list[i].jordAmt) + "</td>"
-						+ "<td>" + cngNumberType(list[i].total) + "</td></tr>";
-			}
-			console.log(content);
+			list.forEach((list, index) => {
+				content += "<tr><td><input type = 'checkBox' name = 'cheReturn' value = '" + list.jordCode + "&" + list.modelCode + "&" 
+						+ list.whCode + "&" + list.bordCode + "&" + list.jordAmt + "' " 
+						+ ((list.shType == "1" ? "" : "disabled") || (list.reCode == "0" ? "" : "disabled")) + "/ ></td>"
+						+ "<td>" + list.jordNo + "</td>"
+						+ "<td>" + list.pdName + "</td>"
+						+ "<td>" + list.pdCode + "</td>"
+						+ "<td>" + list.pdCorp + "</td>"
+						+ "<td>" + cngNumberType(list.pdPrice)  + "</td>"
+						+ "<td>" + cngNumberType(list.jordAmt) + "</td>"
+						+ "<td>" + cngNumberType(list.total) + "</td></tr>";
+			})
 			tbody.innerHTML = content;
 		}
 	}
@@ -212,6 +203,30 @@ click-able rows
 	// 금액 콤마
 	function cngNumberType(num) {
 		return num.toLocaleString('ko-KR');
+	}
+	
+	// 버튼 이벤트 등록
+	function fRegisterButtonClickEvent() {
+		$('a[name=btn]').click(function(e) {
+			e.preventDefault();
+
+			var btnId = $(this).attr('id');
+			switch (btnId) {
+				case 'btnClose' : gfCloseModal(); break;
+				case 'btnReturn' : insReturnInfo(); break;
+			}
+		});
+	}
+	
+	// <input type = 'hidden' /> 
+	function createInput(id, value) {
+		let input = document.createElement("input");
+		
+		input.setAttribute("type", "hidden");
+		input.setAttribute("id", id);
+		input.setAttribute("value", value);	
+		
+		return input;
 	}
 </script>
 
@@ -249,9 +264,9 @@ click-able rows
 								</p>
 							</div>
 
-							<div id = "divSearchBar">
+							<div id = "divSearchBar" style="width: 23rem; padding: 2% 2%; display: flex; justify-content: space-between;">
 								<span>구매일자</span>
-								<input type = "date" id = "inpStartDate" />
+								<input type = "date" id = "inpStartDate" onchange="getOrderStatusList()" />
 								<span> ~ </span>
 								<input type = "date" id = "inpEndDate" onchange="getOrderStatusList()" />
 							</div>
@@ -259,7 +274,6 @@ click-able rows
 							<!-- 주문상태 -->
 							<div id="divOrderStatus">
 								<table class="col">
-									<caption>caption</caption>
 									<thead>
 										<tr>
 											<th scope="col">일련번호</th>
@@ -272,15 +286,15 @@ click-able rows
 										</tr>
 									</thead>
 									<tbody id = "orderStatusTBody">
-
 									</tbody>
 								</table>
+								<!-- 페이징라인 -->
+								<div class="paging_area" id="orderStatusPaging" ></div>
 							</div>
 							<br>
 							
 							<div id="divOrderDetailList">
 								<table class="col">
-									<caption>caption</caption>
 									<thead>
 										<tr>
 											<th scope="col">선택</th>
@@ -297,7 +311,10 @@ click-able rows
 
 									</tbody>
 								</table>
-								<input type = "button"  id = "btnReturn" value = "반품하기" onClick = "insReturnInfo()" />
+								<!-- 페이징라인 -->
+								<div class="paging_area" id="orderDetailPaging" ></div>
+								<br/>
+								<a class="btnType gray" id="btnReturn" name="btn"><span>반품하기</span></a>
 							</div>
 						</div>
 
@@ -305,114 +322,6 @@ click-able rows
 				</ul>
 			</div>
 		</div>
-		
-		<!-- 모달팝업 -->
-		<div id="notice" class="layerPop layerType2" style="width: 600px;">
-			<input type="hidden" id="noticeNo" name="noticeNo" value="${noticeNo}">
-			<!-- 수정시 필요한 num 값을 넘김  -->
-
-			<dl>
-				<dt>
-					<strong><!-- 제목 --></strong>
-				</dt>
-				<dd class="content">
-					<!-- s : 여기에 내용입력 -->
-					<table class="row">
-						<caption>caption</caption>
-
-						<tbody>
-							<tr>
-								<th scope="row">작성자 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100" name="loginId"
-									id="loginId" v-model="loginId" v-bind:readonly="loginIdread" /></td>
-								<!-- <th scope="row">작성일<span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="write_date" id="write_date" /></td> -->
-							</tr>
-							<tr>
-								<th scope="row">제목 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="text" class="inputTxt p100"
-									name="noticeTitle" id="noticeTitle" v-model="noticeTitle"
-									v-bind:readonly="noticeTitleread" /></td>
-							</tr>
-							<tr>
-								<th scope="row">내용</th>
-								<td colspan="3"><textarea class="inputTxt p100"
-										name="noticeContent" id="noticeContent"
-										v-model="noticeContent" v-bind:readonly="noticeContentread">
-								</textarea></td>
-							</tr>
-
-						</tbody>
-					</table>
-
-					<!-- e : 여기에 내용입력 -->
-
-					<div class="btn_areaC mt30">
-						<a href="" class="btnType gray" id="btnClose" name="btn"><span>닫기</span></a>
-					</div>
-				</dd>
-
-			</dl>
-		</div>
-
-
-		<div id="layer2" class="layerPop layerType2" style="width: 600px;">
-			<input type="hidden" id="action" name="action" value="U">
-			<dl>
-				<dt>
-					<strong>그룹코드 관리</strong>
-				</dt>
-				<dd class="content">
-					<!-- s : 여기에 내용입력 -->
-					<table class="row">
-						<caption>caption</caption>
-						<colgroup>
-							<col width="120px">
-							<col width="*">
-							<col width="120px">
-							<col width="*">
-						</colgroup>
-
-						<tbody>
-							<tr>
-								<th scope="row">그룹 코드 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100" name="grp_cod"
-									id="grp_cod" v-model="grp_cod" /></td>
-								<th scope="row">그룹 코드 명 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100"
-									name="grp_cod_nm" id="grp_cod_nm" v-model="grp_cod_nm" /></td>
-							</tr>
-							<tr>
-								<th scope="row">코드 설명 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="text" class="inputTxt p100"
-									name="grp_cod_eplti" id="grp_cod_eplti" v-model="grp_cod_eplti" /></td>
-							</tr>
-
-							<tr>
-								<th scope="row">사용 유무 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="radio" id="radio1-1"
-									name="grp_use_poa" id="grp_use_poa_1" value='Y'
-									v-model="use_poa" /> <label for="radio1-1">사용</label>
-									&nbsp;&nbsp;&nbsp;&nbsp; <input type="radio" id="radio1-2"
-									name="grp_use_poa" id="grp_use_poa_2" value="N"
-									v-model="use_poa" /> <label for="radio1-2">미사용</label></td>
-							</tr>
-						</tbody>
-					</table>
-
-					<!-- e : 여기에 내용입력 -->
-
-					<div class="btn_areaC mt30">
-						<a href="" class="btnType blue" id="btnSaveGrpCod" name="btn"><span>저장</span></a>
-						<a href="" class="btnType blue" id="btnDeleteGrpCod" name="btn"
-							v-show="delshow"><span>삭제</span></a> <a href=""
-							class="btnType gray" id="btnCloseGrpCod" name="btn"><span>취소</span></a>
-					</div>
-				</dd>
-			</dl>
-			<a href="" class="closePop"><span class="hidden">닫기</span></a>
-		</div>
-
 	</form>
 </body>
 </html>

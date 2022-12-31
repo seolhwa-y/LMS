@@ -4,74 +4,41 @@
 
 <!-- 일별수주내역 조회 -->
 <select id="getOrderHistoryList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
-	SELECT  JI.JORD_CODE AS 'JORDCODE',
-			JI.JORD_DATE AS 'JORDDATE',
-			JI.loginID AS 'LOGINID',
-			UI.company AS 'COMPANYNAME',
-			JI.MODEL_CODE AS 'MODELCODE',
-			PD.PD_NAME AS 'PDNAME',
-			WS.WH_STOCK AS 'WHSTOCK',
-			PD.PD_PRICE AS 'PDPRICE',
-			JI.JORD_AMT AS 'JORDAMT',
-			(PD.PD_PRICE * JI.JORD_AMT) AS 'TOTALAMT',
-			RI.RE_DATE AS 'REDATE',
-			JI.JORD_IN AS 'JORDIN',
-			DI.BORD_CODE AS 'BORDCODE',
-			DI.SH_CODE AS 'SHCODE'
-	FROM 	JORDER_INFO JI INNER JOIN tb_userinfo UI ON JI.loginID = UI.loginID
-						   INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE
-						   INNER JOIN WHOUSE_STOCK WS ON JI.JORD_CODE = WS.WH_CODE AND JI.MODEL_CODE = WS.MODEL_CODE
-						   LEFT OUTER JOIN RETURN_INFO RI ON JI.JORD_CODE = RI.JORD_CODE
-						   LEFT OUTER JOIN (SELECT JI.JORD_CODE, 
-												   BI.BORD_CODE, 
-												   SI.SH_CODE, 
-												   RI.RE_CODE 
-											FROM JORDER_INFO JI LEFT OUTER JOIN (SELECT DI.DIR_CODE, 
-																						BI.JORD_CODE,
-																						BI.BORD_CODE
-																				 FROM DIRECTION DI INNER JOIN BORDER_INFO BI ON DI.DIR_CODE = BI.DIR_CODE
-																				 WHERE DI.DIR_TYPE = '0') BI ON JI.JORD_CODE = BI.JORD_CODE
-						   LEFT OUTER JOIN (SELECT DI.DIR_CODE, 
-												   SI.JORD_CODE, 
-												   SI.SH_CODE
-											FROM DIRECTION DI INNER JOIN SHIP_INFO SI ON DI.DIR_CODE = SI.DIR_CODE
-											WHERE DI.DIR_TYPE = '1') SI ON JI.JORD_CODE = SI.JORD_CODE
-						   LEFT OUTER JOIN (SELECT DI.DIR_CODE, 
-												   RI.JORD_CODE, 
-												   RI.RE_CODE
-											FROM DIRECTION DI INNER JOIN RETURN_INFO RI ON DI.DIR_CODE = RI.DIR_CODE
-											WHERE DI.DIR_TYPE = '2') RI ON JI.JORD_CODE = RI.JORD_CODE) DI ON JI.JORD_CODE = DI.JORD_CODE
+	SELECT 		*
+	FROM 		ORDERHISTORY
 	<where>
 		<choose>
 			<when test="type != null">
 				<if test="type.equals('jorder')">
-					AND JI.JORD_DATE BETWEEN #{startDate} AND #{endDate}
+					AND JORDDATE BETWEEN #{startDate} AND #{endDate}
 				</if>
 				<if test="type.equals('return')">
-					AND RI.RE_DATE BETWEEN #{startDate} AND #{endDate}
+					AND REDATE BETWEEN #{startDate} AND #{endDate}
 				</if>
 			</when>
 		</choose>
 		<choose>
 			<when test="reType != null">
 				<if test="reType.equals('true')">
-					AND RI.RE_DATE IS NOT NULL
+					AND REDATE IS NOT NULL
 				</if>
 				<if test="reType.equals('false')">
-					AND RI.RE_DATE IS NULL
+					AND REDATE IS NULL
 				</if>
 			</when>
 		</choose>
-	</where>					
+	</where>	
+	GROUP BY 	JORDCODE
+	ORDER BY 	JORD_DATE DESC, SHCODE DESC				
 </select>
 
 <!-- 창고 정보 -->
 <select id="getWHInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
-	SELECT	WI.WH_CODE AS 'whCode', 
-			WI.WH_NAME AS 'whName', 
-			WS.MODEL_CODE AS 'modelCode', 
-			PD.PD_NAME AS 'pdName', 
-			WS.WH_STOCK AS 'whStock'
+	SELECT	WI.WH_CODE AS 'WHCODE', 
+			WI.WH_NAME AS 'WHNAME', 
+			WS.MODEL_CODE AS 'MODELCODE', 
+			PD.PD_NAME AS 'PDNAME', 
+			WS.WH_STOCK AS 'WHSTOCK'
 	FROM	WHOUSE_STOCK WS INNER JOIN WHOUSE_INFO WI ON WS.WH_CODE = WI.WH_CODE
 						   	INNER JOIN PD_INFO PD ON WS.MODEL_CODE = PD.MODEL_CODE
 	WHERE	WS.MODEL_CODE = #{modelCode}
@@ -79,26 +46,26 @@
 
 <!-- 발주지시서 정보 -->
 <select id="getBorderInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
-	SELECT 	PD.MODEL_CODE AS 'modelCode',
-			PD.PD_NAME AS 'pdName',
-			PD.PD_CODE AS 'pdCode',
-			PD.PD_CORP AS 'pdCorp',
-			PD.loginID AS 'loginId',
-			UI.company AS 'companyName'
+	SELECT 	PD.MODEL_CODE AS 'MODELCODE',
+			PD.PD_NAME AS 'PDNAME',
+			PD.PD_CODE AS 'PDCODE',
+			PD.PD_CORP AS 'PDCORP',
+			PD.loginID AS 'LOGINID',
+			UI.company AS 'COMPANYNAME'
 	FROM 	PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
 	WHERE 	PD.MODEL_CODE = #{modelCode}
 </select>
 
 <!-- 배송지시서 정보 --> 
 <select id="getShipInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
-	SELECT 	JI.JORD_CODE AS 'jordCode',
-			JI.JORD_DATE AS 'jordDate',
-			UI.company AS 'companyName', 
-			JI.MODEL_CODE AS 'modelCode',
-			PD.PD_NAME AS 'pdName',
-			PD.PD_CODE AS 'pdCode',
-			JI.JORD_AMT AS 'jordAmt',
-			JI.JORD_IN AS 'jordIn'
+	SELECT 	JI.JORD_CODE AS 'JORDCODE',
+			JI.JORD_DATE AS 'JORDDATE',
+			UI.company AS 'COMPANYNAME', 
+			JI.MODEL_CODE AS 'MODELCODE',
+			PD.PD_NAME AS 'PDNAME',
+			PD.PD_CODE AS 'PDCODE',
+			JI.JORD_AMT AS 'JORDAMT',
+			JI.JORD_IN AS 'JORDIN'
 	FROM 	JORDER_INFO JI INNER JOIN tb_userinfo UI ON JI.loginID = UI.loginID  
 						   INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE 
 	WHERE 	JI.JORD_CODE = #{jordCode} AND JI.MODEL_CODE = #{modelCode}

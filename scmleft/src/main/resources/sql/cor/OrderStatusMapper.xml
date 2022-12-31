@@ -4,52 +4,41 @@
 
 <!-- 기업회원별 주문이력 조회 -->
 <select id="getOrderStatusList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
-	SELECT    JI.JORD_CODE AS 'JORDCODE',
-			  JI.JORD_NO AS 'JORDNO',  
-			  PD.PD_NAME AS 'PDNAME',
-			  COUNT(JI.JORD_NO) AS 'COUNT',
-	          SUM(JI.JORD_AMT) AS 'cnt', 
-	          SUM(JI.JORD_AMT * PD.PD_PRICE) AS 'TOTAL', 
-	          JI.JORD_DATE AS 'JORDDATE', 
-	          JI.JORD_WISHDATE AS 'JORDWISHDATE', 
-	          JI.JORD_IN AS 'JORDIN',
-	          SI.SH_DATE AS 'SHDATE',
-	          SI.SH_TYPE AS 'SHTYPE'
-	FROM      JORDER_INFO JI INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE
-	                         LEFT OUTER JOIN SHIP_INFO SI ON JI.JORD_CODE = SI.JORD_CODE 
-	WHERE JI.loginID = #{loginId}
-		<if test="startDate != null and endDate != null">
-			AND JI.JORD_DATE BETWEEN #{startDate} AND #{endDate}
-		</if>
-	GROUP BY  JI.JORD_NO, JI.JORD_DATE, JI.JORD_WISHDATE, JI.JORD_IN
+	SELECT 	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
+			OS.*
+	FROM 	ORDERSTATUS OS 
+	WHERE LOGINID = #{loginId} AND (@ROWNUM:=0) = 0
+	<if test="startDate != '' and endDate != null">
+		AND JORDDATE BETWEEN #{startDate} AND #{endDate}
+	</if>
+	LIMIT #{startPage}, #{endPage}
+</select>
+
+<select id = "getOrderCount" resultType="int" parameterType="string">
+	SELECT 	COUNT(*)
+	FROM 	ORDERSTATUS
+	WHERE	LOGINID = #{loginId}
 </select>
 
 <!-- 주문별 항목 조회 -->
 <select id="getOrderDetails" parameterType="kr.happyjob.study.cor.model.OrderStatusModel" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
-	SELECT  JI.JORD_CODE AS 'JORDCODE',
-			SI.SH_TYPE AS 'SHTYPE',
-			SI.RE_CODE AS 'RECODE',
-			SI.BORD_CODE AS 'BORDCODE',
-			JI.JORD_NO AS 'JORDNO',
-			WS.WH_CODE AS 'WHCODE',
-			PD.MODEL_CODE AS 'MODELCODE',
-	        PD.MODEL_NAME AS 'MODELNAME',
-	        PD.PD_NAME AS 'PDNAME',
-	        PD.PD_CODE AS 'PDCODE',
-	        PD.PD_CORP AS 'PDCORP',
-	        PD.PD_PRICE AS 'PDPRICE',
-	        JI.JORD_AMT AS 'JORDAMT',
-	        (JI.JORD_AMT * PD.PD_PRICE) AS 'TOTAL'	
-	FROM    JORDER_INFO JI INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE
-						   INNER JOIN WHOUSE_STOCK WS ON JI.MODEL_CODE = WS.MODEL_CODE
-						   INNER JOIN SHIP_INFO SI ON JI.JORD_CODE = SI.JORD_CODE AND JI.MODEL_CODE = SI.MODEL_CODE AND WS.WH_CODE = SI.WH_CODE  
-	WHERE   JI.JORD_NO = #{jordNo}
+	SELECT	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
+			OD.*
+	FROM	ORDERSTATUSDETAIL OD
+	WHERE   JORDNO = #{jordNo} AND (@ROWNUM:=0) = 0
+	LIMIT 	#{startPage}, #{endPage}
+</select>
+
+<select id = "getDetailCount" resultType="int" parameterType="string">
+	SELECT 	COUNT(*)
+	FROM 	ORDERSTATUSDETAIL
+	WHERE	JORDNO = #{jordNo}
 </select>
 
 <!-- 입금하기 -->
 <update id="updateJorderInStatus" parameterType="java.util.HashMap">
-	UPDATE JORDER_INFO SET JORD_IN = #{jordIn}
-	WHERE JORD_NO = #{jordNo}
+	UPDATE 	JORDER_INFO SET JORD_IN = #{jordIn}
+	WHERE 	JORD_NO = #{jordNo}
 </update>
 
 <!-- 반품신청 -->

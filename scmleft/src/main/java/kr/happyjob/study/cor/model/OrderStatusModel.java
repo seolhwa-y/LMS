@@ -2,49 +2,44 @@ package kr.happyjob.study.cor.model;
 
 import org.springframework.stereotype.Repository;
 
-//lombok 사용 X
 @Repository
 public class OrderStatusModel {
 	private String startDate;
 	private String endDate;
-	
-	private int jordNo; // 전체 주문코드
+	private int startPage;
+	private int endPage;
+	private int jordNo;
 	private int count;
-	private int cnt; // 주문 수량
-	private long total; // 총주문금액
-	private String jordDate; // 주문일자
-	private String jordWishdate; // 주문희망일자
-	private String jordIn; // 입금여부 (0 - 미입금, 1 - 입금)
+	private int cnt;
+	private long total;
+	private String jordDate;
+	private String jordWishdate;
+	private String jordIn;
 	private String shDate;
-	private String shType; // 배송여부 (0 - 미배송, 1 - 배송완료, 2 - 배송중)
-	
-	private String modelName; // 모델분류
-	private String pdName; // 제품이름
-	private String pdCode; // 제품코드
-	private String pdCorp; // 제품 제조사
-	private int pdPrice; // 제품 가격
-	private String jordAmt; // 주문한 수량
-	
-	private String loginId; // 기업회원코드
-	private int bankCode; // 은행코드
-	private String bankName; // 은행명
-	private String account; // 계좌번호
-	
+	private String shType;
+	private String modelName;
+	private String pdName;
+	private String pdCode;
+	private String pdCorp;
+	private int pdPrice;
+	private String jordAmt;
+	private String loginId;
+	private int bankCode;
+	private String bankName;
+	private String account;
 	private int shCode;
-	private int reCode; // 반품코드
-	private int dirCode; // 지시서코드
-	private int jordCode; // 제품별 주문코드
-	private int whCode; // 창고코드
-	private int modelCode; // 제품별코드
-	private int bordCode; // 발주코드
-	private int reAmt; // 반품수량
-	private String reDate; // 반품완료일자
-	private String reType; // 반품 승인여부 (0 - 미승인, 1 - 승인, 2 - 반려)
-	private String reOut; // 송금여부
+	private int reCode;
+	private int dirCode;
+	private int jordCode; 
+	private int whCode; 
+	private int modelCode;
+	private int bordCode;
+	private int reAmt; 
+	private String reDate;
+	private String reType;
+	private String reOut;
 	
 	
-		
-	// 파라미터 값 나중에 추가하기
 	public String getStartDate() {
 		return startDate;
 	}
@@ -56,6 +51,18 @@ public class OrderStatusModel {
 	}
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
+	}
+	public int getStartPage() {
+		return startPage;
+	}
+	public void setStartPage(int startPage) {
+		this.startPage = startPage;
+	}
+	public int getEndPage() {
+		return endPage;
+	}
+	public void setEndPage(int endPage) {
+		this.endPage = endPage;
 	}
 	public int getJordNo() {
 		return jordNo;
@@ -236,5 +243,7 @@ public class OrderStatusModel {
 	}
 	public void setReOut(String reOut) {
 		this.reOut = reOut;
-	}
+	} 
+	
+	
 }
