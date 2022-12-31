@@ -4,32 +4,58 @@
 
 <!-- 일별수주내역 조회 -->
 <select id="getOrderHistoryList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
-	SELECT 		*
-	FROM 		ORDERHISTORY
+	SELECT 	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
+			OH.*
+	FROM 	ORDERHISTORY OH
+	WHERE	(@ROWNUM:=0) = 0
+	<choose>
+		<when test="type != null">
+			<if test="type.equals('jorder')">
+				AND OH.JORDDATE BETWEEN #{startDate} AND #{endDate}
+			</if>
+			<if test="type.equals('return')">
+				AND OH.REDATE BETWEEN #{startDate} AND #{endDate}
+			</if>
+		</when>
+	</choose>
+	<choose>
+		<when test="reType != null">
+			<if test="reType.equals('true')">
+				AND OH.REDATE IS NOT NULL
+			</if>
+			<if test="reType.equals('false')">
+				AND OH.REDATE IS NULL
+			</if>
+		</when>
+	</choose>
+	LIMIT 	#{startPage}, #{endPage}
+</select>
+
+<select id = "getHistoryCount" resultType="int" parameterType="java.util.HashMap">
+	SELECT 	COUNT(*)
+	FROM 	ORDERHISTORY OH
 	<where>
 		<choose>
 			<when test="type != null">
 				<if test="type.equals('jorder')">
-					AND JORDDATE BETWEEN #{startDate} AND #{endDate}
+					AND OH.JORDDATE BETWEEN #{startDate} AND #{endDate}
 				</if>
 				<if test="type.equals('return')">
-					AND REDATE BETWEEN #{startDate} AND #{endDate}
+					AND OH.REDATE BETWEEN #{startDate} AND #{endDate}
 				</if>
 			</when>
 		</choose>
 		<choose>
 			<when test="reType != null">
 				<if test="reType.equals('true')">
-					AND REDATE IS NOT NULL
+					AND OH.REDATE IS NOT NULL
 				</if>
 				<if test="reType.equals('false')">
-					AND REDATE IS NULL
+					AND OH.REDATE IS NULL
 				</if>
 			</when>
 		</choose>
-	</where>	
-	GROUP BY 	JORDCODE
-	ORDER BY 	JORD_DATE DESC, SHCODE DESC				
+	</where>
 </select>
 
 <!-- 창고 정보 -->

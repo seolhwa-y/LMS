@@ -50,9 +50,12 @@ public class OrderHistoryService implements OrderHistoryInter {
 
 	// 주문내역 Select
 	private void showOrderHistoryCtl(Model model) {
+		HashMap<String, Object> map = new HashMap<String, Object>();
 		Gson gson = new Gson();
-	
-		model.addAttribute("orderHistoryList", gson.toJson(this.sql.selectList("getOrderHistoryList")));
+		map.put("startPage", 0);
+		map.put("endPage", 10);
+		model.addAttribute("historyCount", this.sql.selectOne("getHistoryCount", map));
+		model.addAttribute("orderHistoryList", gson.toJson(this.sql.selectList("getOrderHistoryList", map)));
 	} 
 	
 	// 발주 창고정보 Select
@@ -91,6 +94,15 @@ public class OrderHistoryService implements OrderHistoryInter {
 	
 	// 검색 Select
 	private void getSearchHistoryCtl(HashMap<String, Object> map) {
+		System.err.println(map);
+		
+		int pageNum = Integer.parseInt((String) map.get("pageNum")),
+			end = Integer.parseInt((String) map.get("listCount")), 
+			start = (pageNum - 1) * end; // 1 = 0, 2 = 5, 3 = 10
+			
+		map.put("startPage", start);
+		map.put("endPage", end);
+		map.put("historyCount", this.sql.selectOne("getHistoryCount", map));
 		map.put("newOrderSearchList", this.sql.selectList("getOrderHistoryList", map));
 	}
 

@@ -52,7 +52,6 @@ click-able rows
 		let callafterback = (ajax) => { 
 			makeOrderList(ajax.newOrder); 
 			
-			pageLine.innerHTML = "";
 			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.orderCount, listCount, pageCount, 'getOrderStatusList');
 	        pageLine.appendChild(createInput("orderCount", ajax.orderCount));
 		}

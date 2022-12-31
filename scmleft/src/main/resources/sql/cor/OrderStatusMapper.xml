@@ -7,17 +7,20 @@
 	SELECT 	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
 			OS.*
 	FROM 	ORDERSTATUS OS 
-	WHERE LOGINID = #{loginId} AND (@ROWNUM:=0) = 0
+	WHERE 	OS.LOGINID = #{loginId} AND (@ROWNUM:=0) = 0
 	<if test="startDate != '' and endDate != null">
-		AND JORDDATE BETWEEN #{startDate} AND #{endDate}
+		AND OS.JORDDATE BETWEEN #{startDate} AND #{endDate}
 	</if>
 	LIMIT #{startPage}, #{endPage}
 </select>
 
-<select id = "getOrderCount" resultType="int" parameterType="string">
+<select id = "getOrderCount" resultType="int" parameterType="java.util.HashMap">
 	SELECT 	COUNT(*)
-	FROM 	ORDERSTATUS
-	WHERE	LOGINID = #{loginId}
+	FROM 	ORDERSTATUS OS
+	WHERE	OS.LOGINID = #{loginId}
+	<if test="startDate != '' and endDate != null">
+		AND OS.JORDDATE BETWEEN #{startDate} AND #{endDate}
+	</if>
 </select>
 
 <!-- 주문별 항목 조회 -->
@@ -25,14 +28,14 @@
 	SELECT	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
 			OD.*
 	FROM	ORDERSTATUSDETAIL OD
-	WHERE   JORDNO = #{jordNo} AND (@ROWNUM:=0) = 0
+	WHERE   OD.JORDNO = #{jordNo} AND (@ROWNUM:=0) = 0
 	LIMIT 	#{startPage}, #{endPage}
 </select>
 
 <select id = "getDetailCount" resultType="int" parameterType="string">
 	SELECT 	COUNT(*)
-	FROM 	ORDERSTATUSDETAIL
-	WHERE	JORDNO = #{jordNo}
+	FROM 	ORDERSTATUSDETAIL OD
+	WHERE	OD.JORDNO = #{jordNo}
 </select>
 
 <!-- 입금하기 -->

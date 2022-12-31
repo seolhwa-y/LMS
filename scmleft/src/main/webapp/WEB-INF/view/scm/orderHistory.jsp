@@ -26,7 +26,7 @@ click-able rows
 }
 </style>
 <script type="text/javascript">
-	let listCount = 5;
+	let listCount = 10;
 	let pageCount = 10;
 
 	/** 버튼 이벤트 등록 */
@@ -40,32 +40,43 @@ click-able rows
 			case 'btnSModalClose' : gfCloseModal(); break;
 			case 'btnBorderDirec' : insBordDirec(); break;
 			case 'btnShipDirec' : insShipDirec(); break;
-
+			
+			default : getOrderList();
 			}
 		});
 	}
 
 	function init() {
+		let pageLine = document.querySelector("#orderHistoryPaging");
+
 		fRegisterButtonClickEvent();
 		makeOHTable(${orderHistoryList});
+		pageLine.innerHTML = getPaginationHtml(1, ${historyCount}, listCount, pageCount, 'getOrderList');
+       	pageLine.appendChild( createInput("historyCount", ${historyCount}));
 	}
 
-	// 날짜인풋 :: 수주리스트 조회기간 설정
-	function getOrderList() {
+	// 수주리스트 조회
+	function getOrderList(pageNum) {
+		let currentPage = pageNum || 1;
+		let pageLine = document.querySelector("#orderHistoryPaging");
 		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", "");
 		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
-		const dateType = document.getElementById("selClass").value; 
-		let reInput = document.getElementsByName("returnType"), reType = "";
-
+		let reInput = document.getElementsByName("returnType"), reType = null, dateType = null;
+		
+		if((edDate - stDate) < 0) return alert("날짜를 다시 선택하세요.");
+		if(stDate != "") dateType = document.getElementById("selClass").value;
 		reInput.forEach((reInput) => { if (reInput.checked) reType = reInput.value; });
 
-		if (dateType != "" && stDate != "" && edDate != "") {
-			let param = { type : dateType, startDate : stDate, endDate : edDate, reType : reType }
-
-			let callafterback = (ajax) => { makeOHTable(ajax.newOrderSearchList); }
-			callAjax("/scm/searchOrderHistoryList", "post", "json", true,
-					param, callafterback);
-		} else return;
+		let param = {  pageNum : currentPage, listCount : listCount, type : dateType, startDate : stDate, endDate : edDate, reType : reType }
+		console.log(param);
+		let callafterback = (ajax) => { 
+			console.log(ajax);
+			makeOHTable(ajax.newOrderSearchList); 
+				
+			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.historyCount, listCount, pageCount, 'getOrderList');
+		    pageLine.appendChild( createInput("historyCount", ajax.historyCount));
+		}
+		callAjax("/scm/searchOrderHistoryList", "post", "json", true, param, callafterback);
 	}
 	
 	// 지시서 작성하기
@@ -276,6 +287,17 @@ click-able rows
 	function cngNumberType(num) {
 		return num.toLocaleString('ko-KR');
 	}
+	
+	// <input type = 'hidden' /> 
+	function createInput(id, value) {
+		let input = document.createElement("input");
+		
+		input.setAttribute("type", "hidden");
+		input.setAttribute("id", id);
+		input.setAttribute("value", value);	
+		
+		return input;
+	}
 </script>
 
 </head>
@@ -316,19 +338,19 @@ click-able rows
 											<option value = 'jorder'>주문일자</option>
 											<option value = 'return'>반품처리일</option>
 										</select>
-										<input type = "date" id = "inpStartDate" onchange = "getOrderList(this)"/>
+										<input type = "date" id = "inpStartDate" onchange = "getOrderList()"/>
 										<span> ~ </span>
-										<input type = "date" id = "inpEndDate" onchange = "getOrderList(this)"/>
+										<input type = "date" id = "inpEndDate" onchange = "getOrderList()"/>
 									</div>
 									<div style="width: 16rem; display: flex; justify-content: space-evenly; align-items: baseline;">
-										<input type = "radio" name = "returnType" value = "all" onchange = "getOrderList(this)" /> <span>전체</span>
-										<input type = "radio" name = "returnType" value = "true" onchange = "getOrderList(this)" /> <span>반품요청</span>
-										<input type = "radio" name = "returnType" value = "false" onchange = "getOrderList(this)" /> <span>반품미요청</span>
+										<input type = "radio" name = "returnType" value = "all" onchange = "getOrderList()" /> <span>전체</span>
+										<input type = "radio" name = "returnType" value = "true" onchange = "getOrderList()" /> <span>반품요청</span>
+										<input type = "radio" name = "returnType" value = "false" onchange = "getOrderList()" /> <span>반품미요청</span>
 									</div>
 								</div>
 
 							<!-- 일별 수주 내역 -->
-							<div id="divDailyOrderList">
+							<div id="divDailyOrderList" style="height: 36.9rem;">
 								<table class="col">
 									<caption>caption</caption>
 									<thead>
@@ -389,6 +411,7 @@ click-able rows
 							</tbody>
 						</table>
 					</div>
+					
 					<!-- 창고정보 -->
 					<div id = "whInfo" style="display: flex; justify-content: space-around;">
 						<span>창고선택</span>
@@ -456,6 +479,7 @@ click-able rows
 							</tbody>
 						</table>
 					</div>
+					
 					<!-- 창고정보 -->
 					<div id = "whInfo" style="display: flex; justify-content: space-around;">
 						<span>창고선택</span>
