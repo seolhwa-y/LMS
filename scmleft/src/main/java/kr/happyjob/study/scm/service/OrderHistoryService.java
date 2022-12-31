@@ -1,5 +1,6 @@
 package kr.happyjob.study.scm.service;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpSession;
@@ -77,19 +78,18 @@ public class OrderHistoryService implements OrderHistoryInter {
 	}
 
 	// 발주정보 + 발주지시서 Insert
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	private void insertBorderDirectionCtl(HashMap<String, Object> map) {
 		
 	}
 
 	// 배송정보 + 배송지시서 Insert
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	private void insertShipDirectionCtl(HashMap<String, Object> map) {
 		
 	}
 	
 	// 검색 Select
-
 	private void getSearchHistoryCtl(HashMap<String, Object> map) {
 		map.put("newOrderSearchList", this.sql.selectList("getOrderHistoryList", map));
 	}

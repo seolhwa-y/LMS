@@ -1,5 +1,6 @@
 package kr.happyjob.study.cor.service;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpSession;
@@ -51,7 +52,7 @@ public class ShoppingCartService implements ShoppingCartInter {
 	}
 	
 	// 장바구니 목록 일부 삭제하기
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	private void deleteShoppingCartCtl(HashMap<String, Object> map) {
 		String[] mCode = ((String)map.get("modelCode")).split("&");
 		String message = "장바구니 삭제를 실패하셨습니다.";
@@ -71,7 +72,7 @@ public class ShoppingCartService implements ShoppingCartInter {
 	}
 
 	// 주문정보 Insert
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	private void insertJorderInfoCtl(HashMap<String, Object> map) {
 		String[] mCode = ((String)map.get("modelCode")).split("&"),
 				 wish = ((String)map.get("jordWishdate")).split("&"),

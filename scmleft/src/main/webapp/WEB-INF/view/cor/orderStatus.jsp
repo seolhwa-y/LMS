@@ -49,10 +49,7 @@ click-able rows
 		if((edDate - stDate) < 0) return alert("날짜를 다시 선택하세요.");
 
 		let param = { pageNum : currentPage, listCount : listCount, startDate : stDate, endDate : edDate }
-		console.log(param);
 		let callafterback = (ajax) => { 
-			console.log(ajax);
-			
 			makeOrderList(ajax.newOrder); 
 			
 			pageLine.innerHTML = "";
@@ -62,32 +59,39 @@ click-able rows
 		
 		callAjax("/cor/searchOrderList", "post", "json", true, param, callafterback);	
 	}
-	
-	// 주문내역에서 상세 제품정보 불러오기
-	function getDetailList(no, sh, jIn, pageNum) {
-		let currentPage = pageNum || 1;
-		let pageLine = document.querySelector("#detailStatusPaging");
-		
-		if(jIn == "0") return ;
-		if(sh == null) return alert("아직 배송이 진행되지 않았습니다.");
 
-		let param = { pageNum : currentPage, listCount : listCount, jordNo : no }
+	// 주문내역에서 상세 제품정보 불러오기
+	function getDetailList(pageNum, no, sh, jIn) {
+		let currentPage = pageNum || 1;
+		let pageLine = document.querySelector("#orderDetailPaging");
+		let jNo = (no != null ? no : document.querySelector("#jordNo").value);
+		
+ 		if(jIn == "0") return alert("아직 입금을 하지 않아서 조회가 불가능합니다.");
+/*		if(sh == null) return alert("아직 배송이 진행되지 않았습니다."); */
+
+		let param = { pageNum : currentPage, listCount : listCount, jordNo : jNo } 			
 		let callafterback = (ajax) => { 
 			makeOrderDetailList(ajax.osdList);
 
-			pageLine.innerHTML = "";
-			pageLine.innerHTML = getPaginationHtml(1, ${orderCount}, listCount, pageCount, 'getOrderStatusList');
-	       	pageLine.appendChild( createInput("orderCount", ${orderCount}));
+			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.detailCount, listCount, pageCount, 'getDetailList');
+	       	pageLine.appendChild( createInput("detailCount", ajax.detailCount));
+	       	pageLine.appendChild( createInput("jordNo", ajax.jordNo));
 		}
 		
 		callAjax("/cor/refundHistory", "post", "json", true, param, callafterback);
 	}
 	
-	// 입금하기 상세 목록 가져오기
-	function updJordIn(no) {
-		let param = { jordNo : no, jordIn : "1" }
+	// 입금하기 목록 가져오기
+	function updJordIn(no, pageNum) {
+		let currentPage = pageNum || 1;
+		let pageLine = document.querySelector("#orderStatusPaging");
+		let param = { pageNum : currentPage, listCount : listCount, jordNo : no, jordIn : "1" }
 		let callafterback = (ajax) => { 
 			makeOrderList(ajax.newOsList);
+			
+			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.orderCount, listCount, pageCount, 'getOrderStatusList');
+	        pageLine.appendChild(createInput("orderCount", ajax.orderCount));
+	        
 			alert(ajax.message);
 		}
 			
@@ -95,7 +99,11 @@ click-able rows
 	}
 	
 	// 반품하기
-	function insReturnInfo() {		
+	function insReturnInfo(pageNum) {		
+		console.log("반품하기");
+		let currentPage = pageNum || 1;
+		let pageLine = document.querySelector("#orderDetailPaging");
+		let jNo = document.querySelector("#jordNo").value;
 		let checkBox = document.querySelectorAll("input[name='cheReturn']:checked");
 		let b = [], jCode = "", mCode = "", wCode = "", bCode = "", rAmt = "";
 		
@@ -112,9 +120,16 @@ click-able rows
 		})
 		
 		if(jCode != null && mCode != null) {			
-			let param = { jordCode : jCode, modelCode : mCode, whCode : wCode, bordCode : bCode, reAmt : rAmt}
+			let param = { pageNum : currentPage, listCount : listCount, jordCode : jCode, jordNo : jNo, modelCode : mCode, whCode : wCode, bordCode : bCode, reAmt : rAmt}
+			console.log(param);
 			let callafterback = (ajax) => { 
+				console.log(ajax);
 				makeOrderDetailList(ajax.osdList);
+				
+				pageLine.innerHTML = getPaginationHtml(currentPage, ajax.detailCount, listCount, pageCount, 'getDetailList');
+		       	pageLine.appendChild( createInput("detailCount", ajax.detailCount));
+		       	pageLine.appendChild( createInput("jordNo", ajax.jordNo));
+				
 				alert(ajax.message);
 			}
 			
@@ -130,9 +145,9 @@ click-able rows
 		
 		tbody.innerHTML = "";
 		list.forEach((list, index) => {
-			content += "<tr onClick ='getDetailList(" + list.jordNo + "," + list.shDate + "," + list.jordIn + ")'><td>" + (index + 1) + "</td>"
-					+ "<td>" + list.jordNo + "</td>"
-					+ "<td>" + list.pdName + (list.count != "1" ? (" 외 " + (list.count - 1) + "개") : "") + "</td>"
+			content += "<tr><td>"+ list.jordNo + "</td>"
+					+ "<td><a id='detail' onClick = 'getDetailList(1, " + list.jordNo + ", " + list.shDate + ", " + list.jordIn + ")' >" 
+					+ "<span>" + (list.pdName + (list.count != "1" ? (" 외 " + (list.count - 1) + "개") : "")) + "</span></a></td>"
 					+ "<td>" + cngNumberType(list.total) + "</td>"
 					+ "<td>" + cngDateType(list.jordDate) + "</td>"
 					+ "<td>" + (list.shDate != null ? cngDateType(list.shDate) : "") + "</td>";
@@ -143,37 +158,9 @@ click-able rows
 		tbody.innerHTML = content;
 	}
 	
-	/**
-	 *	paging(maxNum, pageNum, pageName)
-	 */
-	 function paging(maxNum, pageNum, pageName) {
-        // 전체 글의 숫자, 현재 페이지 번호, 페이지당 나타낼 글의 갯수, 페이지 그룹당 페이지 갯수, 페이지 종류
-        let totalPage = (maxNum % listCount > 0) ? maxNum / listCount + 1 : maxNum / listCount;
-        let totalGroup = (totalPage % pageCount > 0) ? totalPage / pageCount + 1 : totalPage / pageCount;
-        let currentGroup = (pageNum % pageCount > 0) ? pageNum / pageCount + 1 : pageNum / pageCount;
-
-       	let html =  makeHtml(currentGroup, totalPage, pageName, pageNum);
-		
-       	return html;
-    }  
-	
-	function makeHtml(currentGroup, totalPage, pageName, pageNum) {
-		let sb = "";
-        let start = (currentGroup * pageCount) - (pageCount) > 0 ? (currentGroup * pageCount) - (pageCount) : ((currentGroup * pageCount) - (pageCount)) - 1;
-        let end = (currentGroup > 1) ? ((1 * pageCount >= totalPage) ? totalPage : currentGroup * pageCount) : ((currentGroup * pageCount >= totalPage) ? totalPage : currentGroup * pageCount) ;
-
-        for (i = start; i <= end; i++) {
-            if (pageNum != i) sb += "<a href= " + pageName + " ?pageNum= " + i + ">[" + i + "]</a>";
-            else sb += "<font style='color:red;' >[" + i + "]</font>";
-	    }
-    
-        if (end != totalPage) sb += "<a href=" + pageName + "?pageNum=" + (end + 1) + ">[다음]</a>";
-        
-        return sb;
-	}
-	
 	// 주문 상세 내역 테이블 그리기
 	function makeOrderDetailList(list) {
+		console.log(list);
 		let tbody = document.getElementById("detailOrderStatusTBody");
 		let content = "";
 		
@@ -214,6 +201,7 @@ click-able rows
 			switch (btnId) {
 				case 'btnClose' : gfCloseModal(); break;
 				case 'btnReturn' : insReturnInfo(); break;
+				case 'detail' : getgetDetailList(); break;
 			}
 		});
 	}
@@ -272,11 +260,10 @@ click-able rows
 							</div>
 							
 							<!-- 주문상태 -->
-							<div id="divOrderStatus">
+							<div id="divOrderStatus" style="height: 15rem; margin-bottom: 3rem;">
 								<table class="col">
 									<thead>
 										<tr>
-											<th scope="col">일련번호</th>
 											<th scope="col">주문번호</th>
 											<th scope="col">제품명</th>
 											<th scope="col">금액</th>
@@ -291,9 +278,8 @@ click-able rows
 								<!-- 페이징라인 -->
 								<div class="paging_area" id="orderStatusPaging" ></div>
 							</div>
-							<br>
 							
-							<div id="divOrderDetailList">
+							<div id="divOrderDetailList" style="height: 15rem; margin-bottom: 3rem;">
 								<table class="col">
 									<thead>
 										<tr>
@@ -314,7 +300,9 @@ click-able rows
 								<!-- 페이징라인 -->
 								<div class="paging_area" id="orderDetailPaging" ></div>
 								<br/>
-								<a class="btnType gray" id="btnReturn" name="btn"><span>반품하기</span></a>
+							</div>
+							<div>
+							<a class="btnType gray" id="btnReturn" name="btn"><span>반품하기</span></a>
 							</div>
 						</div>
 

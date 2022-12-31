@@ -160,7 +160,7 @@ click-able rows
 							</div>
 							
 							<!-- 장바구니 목록 -->
-							<div id="divCartList" style="height: 23.81rem; overflow: auto;">
+							<div id="divCartList" style="height: 34.81rem; overflow: auto;">
 								<table class="col">
 									<thead>
 										<tr>
