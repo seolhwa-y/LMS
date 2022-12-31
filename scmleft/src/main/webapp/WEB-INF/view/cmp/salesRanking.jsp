@@ -149,31 +149,25 @@ click-able rows
 								<input type = "date" id = "inpEndDate" onchange = "getRankList()" />
 							</div>
 							
-							<div style="display: flex; justify-content: space-between;">
-							<!-- 매출 TOP 10 -->
-							<div id="divSalesRanking">
-								<table class="col">
-									<caption>caption</caption>
-									<colgroup>
-											<col width="10%">
-											<col width="30%">
-											<col width="30%">
-									</colgroup>
-									<thead>
-										<tr>
-											<th scope="col">순위</th>
-											<th scope="col">기업명</th>
-											<th scope="col">매출금액</th>
-										</tr>
-									</thead>
-									<tbody id = "salesRankingTBody">
-
-									</tbody>
-								</table>
-								<br>
-							</div>
-							
-							<div id = "chart"></div>
+							<div style="height: 38rem; display: flex; justify-content: space-between;">
+								<!-- 매출 TOP 10 -->
+								<div id="divSalesRanking"  style="width: 30rem;">
+									<table class="col">
+										<thead>
+											<tr>
+												<th scope="col">순위</th>
+												<th scope="col">기업명</th>
+												<th scope="col">매출금액</th>
+											</tr>
+										</thead>
+										<tbody id = "salesRankingTBody">
+	
+										</tbody>
+									</table>
+									<br>
+								</div>
+								
+								<div id = "chart" style="width: 30rem;"></div>
 							</div>
 						</div>
 
