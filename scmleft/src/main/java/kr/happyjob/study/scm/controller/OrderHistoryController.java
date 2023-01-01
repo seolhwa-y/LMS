@@ -24,7 +24,7 @@ public class OrderHistoryController {
 	
 	// 일별 수주 내역 페이지
 	@RequestMapping("orderHistory.do")
-	public String moveOrderHistoryPage(Model model, HttpSession session)  throws Exception {
+	public String moveOrderHistoryPage(HttpSession session, Model model) throws Exception {
 		String page = "scm/orderHistory";
 		
 		if(session.getAttribute("loginId") == null) page = "/login/login";
@@ -36,7 +36,7 @@ public class OrderHistoryController {
 	// 검색
 	@ResponseBody
 	@PostMapping("/searchOrderHistoryList")
-	public HashMap<String, Object> searchOrderHistoryCtl (Model model, @RequestParam HashMap<String, Object> map, HttpSession session, @ModelAttribute OrderHistoryModel ohm) {
+	public HashMap<String, Object> searchOrderHistoryCtl (HttpSession session, @RequestParam HashMap<String, Object> map) {
 		this.ohs.backController(session, map, 1);
 		
 		return map;
@@ -44,7 +44,7 @@ public class OrderHistoryController {
 	
 	// 지시서 보기
 	@ResponseBody
-	@PostMapping("showDirection")
+	@PostMapping("/showDirection")
 	public HashMap<String, Object> showDirectionInfo (HttpSession session, @RequestParam HashMap<String, Object> map) {
 		map.put("loginId", session.getAttribute("loginId"));
 		this.ohs.backController(session, map, 2);
@@ -52,9 +52,21 @@ public class OrderHistoryController {
 		return map;
 	}
 	
+	// 발주지시서 작성완료
+	@ResponseBody
+	@PostMapping("/insertBorderDirection")
+	public HashMap<String, Object> insertBorderDirectionCtl (HttpSession session, @RequestParam HashMap<String, Object> map) {
+		map.put("loginId", session.getAttribute("loginId"));
+		this.ohs.backController(session, map, 3);
+		
+		return map;
+	}
+	
 	// 배송지시서 작성완료
 	@ResponseBody
-	public HashMap<String, Object> insertShipDirectionCtl (Model model, HashMap<String, Object> map, HttpSession session, @ModelAttribute OrderHistoryModel ohm) {
+	@PostMapping("/insertShipDirection")
+	public HashMap<String, Object> insertShipDirectionCtl (HttpSession session, @RequestParam HashMap<String, Object> map) {
+		map.put("loginId", session.getAttribute("loginId"));
 		this.ohs.backController(session, map, 4);
 		
 		return map;

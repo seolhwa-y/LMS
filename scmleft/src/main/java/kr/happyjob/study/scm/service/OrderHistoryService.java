@@ -70,26 +70,58 @@ public class OrderHistoryService implements OrderHistoryInter {
 			break;
 			
 		case "s": 
-			map.put("shipInfo", this.sql.selectOne("getShipInfo", map));
+			map.put("shipInfo", this.sql.selectOne("getDirecInfo", map));
 			map.put("deliInfo", this.sql.selectList("getDeliInfo", map));
 			break;
 			
-		default:
-			break;
+		default: break;
 		}
-		
 	}
 
 	// 발주정보 + 발주지시서 Insert
 	@Transactional(rollbackFor = SQLException.class)
 	private void insertBorderDirectionCtl(HashMap<String, Object> map) {
+		String message = "발주지시서 등록이 실패하셨습니다.";
+		
+		map.put("dirType", "1");
+		if(this.convertToBoolean(this.sql.insert("insertDirection", map))) {
+			if(this.convertToBoolean(this.sql.insert("insertBorderInfo", map))) {
+				message = "발주지시서 등록이 완료되었습니다.";
+				map.put("message", message);
+				System.out.println("지시서 및 발주정보 모두 등록 완료");
+			}
+		}
+		
+		map.put("startPage", 0);
+		map.put("endPage", 10);
+		map.put("historyCount", this.sql.selectOne("getHistoryCount", map));
+		map.put("orderHistoryList", this.sql.selectList("getOrderHistoryList", map));
 		
 	}
 
 	// 배송정보 + 배송지시서 Insert
 	@Transactional(rollbackFor = SQLException.class)
 	private void insertShipDirectionCtl(HashMap<String, Object> map) {
+		System.err.println("배송지시서 data check :: " + map);
+		/*	1. 지시서 테이블 등록
+		 * 	2. 지시서 코드 조회
+		 *  3. 배송정보 테이블 등록
+		 * */
+		String message = "배송지시서 등록이 실패하셨습니다.";
 		
+		map.put("dirType", "2");
+		if(this.convertToBoolean(this.sql.insert("insertDirection", map))) {
+			if(this.convertToBoolean(this.sql.insert("insertShipInfo", map))) {
+				message = "배송지시서 등록이 완료되었습니다.";
+				map.put("message", message);
+				System.out.println("지시서 및 배송정보 모두 등록 완료");
+			}
+		}
+		
+		map.put("startPage", 0);
+		map.put("endPage", 10);
+		map.put("historyCount", this.sql.selectOne("getHistoryCount", map));
+		map.put("orderHistoryList", this.sql.selectList("getOrderHistoryList", map));
 	}
 	
 	// 검색 Select
