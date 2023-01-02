@@ -78,7 +78,6 @@
 							<!-- 일별 수주 내역 -->
 							<div id="divDailyOrderList" style="height: 36.9rem;">
 								<table class="col">
-									<caption>caption</caption>
 									<thead>
 										<tr>
 											<th scope="col">주문번호</th>
@@ -162,9 +161,7 @@
 									<th scope='col'>삭제</th>
 								</tr>
 							</thead>
-							<tbody id = "detailBorder">
-
-							</tbody>
+							<tbody id = "detailBorder"></tbody>
 						</table>
 					</div>
 					<!-- e : 여기에 내용입력 -->
@@ -218,7 +215,7 @@
 						<span>수량</span><input type="number" class = "countAmt" id = "sAmt" style="width: 180px; height: 30px;" />
 						<a class="btnType blue" id="btnSDirec" name="btn" onClick = "appendDetail('s')"><span>추가</span></a>
 					</div>
-					
+					<div id="deli" style="display: none;"></div>
 					<div style="height: 6rem;">
 						<table class='col'>
 							<thead>
@@ -231,12 +228,11 @@
 									<th scope='col'>창고번호</th>
 									<th scope='col'>창고명</th>
 									<th scope='col'>배송수량</th>
+									<th scope='col'>배송담당자</th>
 									<th scope='col'>삭제</th>
 								</tr>
 							</thead>
-							<tbody id = "detailReturn">
-
-							</tbody>
+							<tbody id = "detailShip"></tbody>
 						</table>
 					</div>
 					<!-- e : 여기에 내용입력 -->

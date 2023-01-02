@@ -38,7 +38,6 @@ public class SalesRankingService implements SalesRankingInter {
 		default : break;
 		}
 	}
-
 	
 
 	// 매출 순위 Select

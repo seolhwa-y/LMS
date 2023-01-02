@@ -5,18 +5,16 @@
 	function getOrderList(pageNum) {
 		let currentPage = pageNum || 1;
 		let pageLine = document.querySelector("#orderHistoryPaging");
-		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", "");
-		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
+		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", ""), edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
 		let reInput = document.getElementsByName("returnType"), reType = null, dateType = null;
 		
-		if((edDate - stDate) < 0) return alert("날짜를 다시 선택하세요.");
+		if((edDate - stDate) < 0) return swal("날짜를 다시 선택하세요.");
 		if(stDate != "") dateType = document.getElementById("selClass").value;
+		
 		reInput.forEach((reInput) => { if (reInput.checked) reType = reInput.value; });
 
 		let param = {  pageNum : currentPage, listCount : listCount, type : dateType, startDate : stDate, endDate : edDate, reType : reType }
-		console.log(param);
 		let callafterback = (ajax) => { 
-			console.log(ajax);
 			makeOHTable(ajax.newOrderSearchList); 
 				
 			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.historyCount, listCount, pageCount, 'getOrderList');
@@ -27,13 +25,11 @@
 	
 	// 지시서 작성하기
 	function showDirection(ty, jCode, mCode, jIn) {
-		if(ty == "s" && jIn != 1) return alert("미입금 상태라 배송지시서 작성이 불가능 합니다."); 
+		if(ty == "s" && jIn != 1) return swal("미입금 상태라 배송지시서 작성이 불가능 합니다."); 
 		
 		if (ty != null && jCode != null && mCode != null) {
 			let param = { type : ty, jordCode : jCode, modelCode : mCode }
-			let callafterback = (ajax) => {
-				callDirectionList(ajax);
-			}
+			let callafterback = (ajax) => { callDirectionList(ajax); }
 			callAjax("/scm/showDirection", "post", "json", true, param, callafterback);
 		} else return;
 		
@@ -42,20 +38,19 @@
 	// 지시서 내용 리스트 정리
 	function callDirectionList(ajax) {
 		const type = ajax.type;
-		let whInfo = makeWhSelect(ajax.whInfo), bordInfo = "", shipInfo = "", deliInfo = "";
-		let bdTBody = document.getElementById("borderDrectionTBody"), sdTBody = document.getElementById("shipDrectionTBody");
-		console.log(ajax);
+		
 		switch(type) {
 		case "b" :
+			removeDetail('b');
 			makeBorderInfo(ajax.bordInfo);
-			fillDirectionModal(whInfo);
+			fillDirectionModal(makeWhSelect(ajax.whInfo));
 			gfModalPop("#bDirection");
 			break;
 			
-		case "s" :
-			deliInfo = makeDeliSelect(ajax.deliInfo);
+		case "s" :	
+			removeDetail('s');
 			makeShipInfo(ajax.shipInfo);
-			fillDirectionModal(whInfo, deliInfo);
+			fillDirectionModal(makeWhSelect(ajax.whInfo), makeDeliSelect(ajax.deliInfo));
 			gfModalPop("#sDirection");
 			break;
 		}
@@ -79,9 +74,10 @@
 		
 		switch (type) {
 		case 'b' : 
-			if(borderWhCode == "창고선택") return alert("창고를 선택하세요.");
-			if(bAmt == "") return alert("수량을 입력하세요.");
-			
+			if(borderWhCode == "창고선택") return swal("창고를 선택하세요.");
+			if(bAmt == "") return swal("수량을 입력하세요.");
+			if(document.querySelector("#detailBorder").childNodes.length > 0) return swal("하나의 지시서만 등록이 가능합니다. \n올바른 내용을 작성하여 추가해주세요.");
+	
 		 	bName.forEach((bName, index) => {
 				data.push(document.getElementById(bName).innerText);
 			})
@@ -94,8 +90,9 @@
 			break;
 			
 		case 's' :
-			if(shipWhCode == "창고선택") return alert("창고를 선택하세요.");
-			if(sAmt == "") return alert("수량을 입력하세요.");
+			if(shipWhCode == "창고선택") return swal("창고를 선택하세요.");
+			if(sAmt == "") return swal("수량을 입력하세요.");
+			if(document.querySelector("#detailShip").childNodes.length > 0) return swal("하나의 지시서만 등록이 가능합니다. \n올바른 내용을 작성하여 추가해주세요.");
 			
 			sName.forEach((sName, index) => {
 				data.push(document.getElementById(sName).innerText);
@@ -115,12 +112,9 @@
 	
 	// 디테일 테이블  :: 배열데이터, 창고정보, 수량
 	function makeDetailDirect(type, data, amt) {
-		console.log("ty : " + type);
-		console.log("da : " + data);
-		console.log("am : " + amt);
-		
-		let dB = document.querySelector("#detailBorder"), dR = document.querySelector("#detailReturn");
+		let dB = document.querySelector("#detailBorder"), dS = document.querySelector("#detailShip");
 		let tr = document.createElement("tr");
+		const deli = document.querySelector("#deli").innerText;
 		
 		switch (type) {
 		case "b":
@@ -137,9 +131,9 @@
 				tr.appendChild(makeTable(data));
 	        })
 	        
+	        tr.appendChild(makeTable(deli));
 	        tr.appendChild(makeTable("<a class='btnType gray' id='btnRemove' name='btn' onClick = 'removeDetail(\"s\")'><span>삭제</span></a>"))
-	        dR.appendChild(tr);
-			
+	        dS.appendChild(tr);
 			break;
 		default: break;
 		}
@@ -148,17 +142,15 @@
 
 	// 항목 삭제 
 	function removeDetail(type) {
-		console.log(type);
-		
 		switch(type) {
-			case 'b' : document.querySelector("#detailBorder").removeChild(document.querySelector("#detailBorder").childNodes[0]); break; 
-			case 's' : document.querySelector("#detailReturn").removeChild(document.querySelector("#detailReturn").childNodes[0]); break;
+			case 'b' : document.querySelector("#detailBorder").innerHTML = ""; break; 
+			case 's' : document.querySelector("#detailShip").innerHTML = ""; break;
 		}
 	}
 	
 	// 발주지시서 작성완료
 	function insBordDirec() {
-		let text = document.querySelector("#detailBorder").childNodes[1].childNodes; 
+		let text = document.querySelector("#detailBorder").childNodes[0].childNodes; 
 		let value = [];
 		
 		text.forEach((text, index) => { if(index < 8) value.push(text.innerText); })
@@ -171,31 +163,36 @@
 			makeOHTable(ajax.orderHistoryList);
 			pageLine.innerHTML = getPaginationHtml(1, ajax.historyCount, listCount, pageCount, 'getOrderList');
 	       	pageLine.appendChild( createInput("historyCount", ajax.historyCount));
+	       	
+	       	swal(ajax.message);
 		}
 		callAjax("/scm/insertBorderDirection", "post", "json", true, param, callafterback);
 	}
 	
 	// 배송지시서 작성완료
 	function insShipDirec() {
-		console.log("sd");
-		let text = document.querySelector("#detailReturn").childNodes[1].childNodes; 
+		let text = document.querySelector("#detailShip").childNodes[0].childNodes; 
 		let value = [];
-		// 9개
-		console.log(text);
 		
-		text.forEach((text, index) => { if(index < 8) value.push(text.innerText); })
+		if(text[8].childNodes[0].value == "배송담당자 선택") return swal("배송담당자를 선택하세요.");
 		
-		let param = { jordCode : value[0], companyName : value[1], modelCode : value[2], whCode : value[5], jordAmt : value[7] }
-		console.log(param);
+		text.forEach((text, index) => { 
+			if(index < 8) value.push(text.innerText); 
+			if(index == 8) value.push(text.childNodes[0].value.substring(0, text.childNodes[0].value.indexOf("&")));
+		})
+		
+		if(value[7] != document.querySelector("#jordAmt_S").innerText) return swal("주문수량과 같지 않습니다. \n모든 창고에 재고가 부족하다면 발주지시서부터 작성하세요.");
+		
+		let param = { jordCode : value[0], companyName : value[1], modelCode : value[2], whCode : value[5], jordAmt : value[7], deliID : value[8] }
 		let callafterback = (ajax) => {
-			console.log(ajax);
-			
 			let pageLine = document.querySelector("#orderHistoryPaging");
 			
 			gfCloseModal();
 			makeOHTable(ajax.orderHistoryList);
 			pageLine.innerHTML = getPaginationHtml(1, ajax.historyCount, listCount, pageCount, 'getOrderList');
 	       	pageLine.appendChild( createInput("historyCount", ajax.historyCount));
+	       	
+	       	swal(ajax.message);
 		}
 		callAjax("/scm/insertShipDirection", "post", "json", true, param, callafterback);
 	}
@@ -208,7 +205,11 @@
 		stock.forEach((stock, index) => {
 			stock.value = "", amt[index].value = "";
 		})
-		deli != null ? selSW.innerHTML = wh : selBW.innerHTML = wh;
+	
+		if(deli != null) {
+			selSW.innerHTML = wh;
+			document.querySelector("#deli").innerText = deli;
+		} else selBW.innerHTML = wh;
 	}
 	
 	// 발주지시서 정보 넣기
@@ -223,7 +224,6 @@
 	
 	// 배송지시서 정보 넣기
 	function makeShipInfo (list) {
-		console.log(list.pdName);
 		let name = ['#jordCode_S', '#jordDate_S', '#companyName_S',  '#modelCode_S', '#pdName_S', '#pdCode_S', '#jordAmt_S'];
 		let value = [list.jordCode, cngDateType(list.jordDate), list.modelCode, list.companyName, list.pdName, list.pdCode, list.jordAmt];
 		
@@ -245,11 +245,11 @@
 	
 	// 배송담당자 정보 셀렉트
 	function makeDeliSelect (list) {
-		let selectBox = "<select id = 'selDeliInfo'><option disabled>배송담당자 선택<option>";
+		let selectBox = "<select id = 'selDeliInfo'><option disabled selected>배송담당자 선택</option>";
 
 		if(list.length != 0){
-			list.forEach((list, index) => { selectBox += "<option value = '" + list.loginId + "&" + list.deliName + "'>" + list.deliName + "<option>"; })
-		} else selectBox += "<option disabled>선택할 수 있는 배송담당자가 없습니다.<option>";
+			list.forEach((list, index) => { selectBox += "<option value = '" + list.loginId + "&" + list.deliName + "'>" + list.deliName + "</option>"; })
+		} else selectBox += "<option disabled>선택할 수 있는 배송담당자가 없습니다.</option>";
 		
 		selectBox += "</select>";
 		
@@ -260,8 +260,6 @@
 	function makeOHTable(list) {
 		let tbody = document.getElementById("orderHistoryTBody");
 		let content = "";
-
-		console.log(list);
 
 		list.forEach((list, index) => {
 			content += "<tr>" + "<td>" + list.jordCode + "</td>" 
@@ -313,7 +311,7 @@
         let td = document.createElement("td");
 
         td.innerHTML = value;
-
+        
         return td;
     }
 	

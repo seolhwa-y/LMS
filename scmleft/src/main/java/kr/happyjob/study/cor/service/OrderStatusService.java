@@ -45,9 +45,8 @@ public class OrderStatusService implements OrderStatusInter {
 		}
 	}
 	
-	
 
-	// 주문내역 불러오기
+	// 주문내역 Select
 	private void showOrderStatusCtl(HttpSession session, Model model) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		Gson gson = new Gson();
@@ -55,12 +54,11 @@ public class OrderStatusService implements OrderStatusInter {
 		map.put("startPage", 0);
 		map.put("endPage", 5);
 		map.put("loginId", session.getAttribute("loginId"));
-		System.out.println(map);
 		model.addAttribute("orderCount", this.sql.selectOne("getOrderCount", map));
 		model.addAttribute("orderStatusList", gson.toJson(this.sql.selectList("getOrderStatusList", map)));
 	}
 
-	// 상세주문내역 불러오기
+	// 상세주문내역 Select
 	private void getDetailOrderCtl(HashMap<String, Object> map) {
 		int pageNum = Integer.parseInt((String) map.get("pageNum")),
 				end = Integer.parseInt((String) map.get("listCount")), // 1 = 5, 2 = 10, 3 = 15 
@@ -68,35 +66,32 @@ public class OrderStatusService implements OrderStatusInter {
 			
 		map.put("startPage", start);
 		map.put("endPage", end);
-		
-		System.out.println(map);
 		map.put("detailCount", this.sql.selectOne("getDetailCount", map));
 		map.put("osdList", this.sql.selectList("getOrderDetails", map));
 	}
 	
-	// 입금하기
+	// 입금하기 Update
 	@Transactional(rollbackFor = SQLException.class)
 	private void updateJorderStatusCtl(HashMap<String, Object> map) {
-		String massage = "입금을 실패하셨습니다.";
+		String message = "입금을 실패하셨습니다.";
 		int pageNum = Integer.parseInt((String) map.get("pageNum")),
 				end = Integer.parseInt((String) map.get("listCount")), // 1 = 5, 2 = 10, 3 = 15 
 				start = (pageNum - 1) * end; // 1 = 0, 2 = 5, 3 = 10
 			
 		map.put("startPage", start);
 		map.put("endPage", end);
-		
-		System.err.println(map);
-		
+
 		if(this.convertToBoolean(this.sql.update("updateJorderInStatus", map))) {
-			massage = "입금이 성공적으로 완료되었습니다."; 
-		} else System.err.println("업데이트 실패");		
+			System.err.println("입금 상태 업데이트 성공");
+			message = "입금이 성공적으로 완료되었습니다."; 
+		} else System.err.println("입금 상태 업데이트 실패");		
 	 
+		map.put("message", message);
 		map.put("orderCount", this.sql.selectOne("getOrderCount", map));
 		map.put("newOsList", this.sql.selectList("getOrderStatusList", map));
-		map.put("message", massage);
 	}
 
-	// 반품신청
+	// 반품신청 Insert + Update
 	@Transactional(rollbackFor = SQLException.class)
 	private void insertReturnInfoCtl(HashMap<String, Object> map) {
 		int pageNum = Integer.parseInt((String) map.get("pageNum")),
@@ -120,18 +115,18 @@ public class OrderStatusService implements OrderStatusInter {
 
 			if(this.convertToBoolean(this.sql.insert("insertReturnInfo", osm))) {
 				if(this.convertToBoolean(this.sql.update("updateShipInfo", osm))) {
-					System.out.println("ship update & return insert 완료");
+					System.err.println("반품정보 및 배송정보 완료");
 					message = "반품신청이 완료 되었습니다.";
-				}
-			} else  System.out.println("ship update & return insert 실패");
+				} else System.err.println("반품정보 완료");
+			} else  System.err.println("반품정보 및 배송정보 실패");
 		}
 		
+		map.put("message", message);
 		map.put("detailCount", this.sql.selectOne("getDetailCount", map));
 		map.put("osdList", this.sql.selectList("getOrderDetails", osm));
-		map.put("message", message);
 	}
 	
-	// 기간 + 제품명 검색
+	// 기간 + 제품명 Select
 	private void getNewOrderListCtl(HashMap<String, Object> map) {
 		int pageNum = Integer.parseInt((String) map.get("pageNum")),
 			end = Integer.parseInt((String) map.get("listCount")), 

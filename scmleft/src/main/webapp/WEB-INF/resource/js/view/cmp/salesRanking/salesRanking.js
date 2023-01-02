@@ -4,7 +4,7 @@
 		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
 	
 		if(stDate != "" & edDate != "") {
-			if((edDate - stDate) < 0) return alert("날짜를 다시 선택하세요.");
+			if((edDate - stDate) < 0) return swal("날짜를 다시 선택하세요.");
 
 			let param = { startDate : stDate, endDate : edDate }
 			
@@ -22,7 +22,7 @@
 		let tbody = document.getElementById("salesRankingTBody"), content = "", num = 0;
 		
 		tbody.innerHTML = "";
-		if(list[0] == null) return alert("조회하신 기간의 매출내역이 없습니다.");
+		if(list[0] == null) return swal("조회하신 기간의 매출내역이 없습니다.");
 		
 		list.forEach((list, index) => {
 			content += "<tr><td>" + (index + 1) + "</td>"

@@ -43,7 +43,7 @@ public class ShoppingCartService implements ShoppingCartInter {
 	}
 
 	
-	// 장바구니 목록 불러오기
+	// 장바구니 목록 Select
 	private void showSoppingCartCtl(HttpSession session, Model model) {
 		Gson gson = new Gson();
 
@@ -51,7 +51,7 @@ public class ShoppingCartService implements ShoppingCartInter {
 		model.addAttribute("shoppingCartList", gson.toJson(this.sql.selectList("getBasketList", session.getAttribute("loginId"))));	
 	}
 	
-	// 장바구니 목록 일부 삭제하기
+	// 장바구니 목록 일부 Delete
 	@Transactional(rollbackFor = SQLException.class)
 	private void deleteShoppingCartCtl(HashMap<String, Object> map) {
 		String[] mCode = ((String)map.get("modelCode")).split("&");
@@ -62,16 +62,17 @@ public class ShoppingCartService implements ShoppingCartInter {
 			scm.setModelCode(Integer.parseInt(mCode[i]));
 			
 			if(this.convertToBoolean(this.sql.delete("deleteBasketList", scm))) {
-				System.out.println(scm.getModelCode() + " basket delete 성공");
+				System.err.println("장바구니 삭제 성공");
 				message = "장바구니 삭제가 성공적으로 완료되었습니다.";	
-			}
+			} else System.err.println("장바구니 삭제 실패");
 		}
+		
+		map.put("message", message);
 		map.put("basketTotal", this.sql.selectOne("getBasketTotal", (String)map.get("loginId")));
 		map.put("delBaList", this.sql.selectList("getBasketList", scm.getLoginId()));
-		map.put("message", message);
 	}
 
-	// 주문정보 Insert
+	// 주문정보 Insert + Delete
 	@Transactional(rollbackFor = SQLException.class)
 	private void insertJorderInfoCtl(HashMap<String, Object> map) {
 		String[] mCode = ((String)map.get("modelCode")).split("&"),
@@ -90,14 +91,15 @@ public class ShoppingCartService implements ShoppingCartInter {
 	
 			if(this.convertToBoolean(this.sql.insert("insertJorderInfo", scm))) {
 				if(this.convertToBoolean(this.sql.delete("deleteBasketList", scm))) {
+					System.err.println("주문정보 등록 및 장바구니 삭제 완료");
 					message = "주문이 성공적으로 완료되었습니다.";
-					System.out.println("basket delete & jorder insert 완료");
-				} else System.out.println("basket delete 실패");
-			} else System.out.println("jorder insert 실패");
+				} else System.err.println("장바구니 삭제 실패");
+			} else System.err.println("주문정보 등록 및 장바구니 삭제 실패");
 		}
+		
+		map.put("message", message);
 		map.put("basketTotal", this.sql.selectOne("getBasketTotal", (String)map.get("loginId")));
 		map.put("insBaList", this.sql.selectList("getBasketList", scm.getLoginId()));
-		map.put("message", message);
 	}
 	
 	// Insert / Update / Delete

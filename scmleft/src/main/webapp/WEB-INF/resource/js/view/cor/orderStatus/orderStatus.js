@@ -8,7 +8,7 @@
 		let stDate = document.getElementById("inpStartDate").value.replaceAll("-", "");
 		let edDate = document.getElementById("inpEndDate").value.replaceAll("-", "");
 	
-		if((edDate - stDate) < 0) return alert("날짜를 다시 선택하세요.");
+		if((edDate - stDate) < 0) return swal("날짜를 다시 선택하세요.");
 
 		let param = { pageNum : currentPage, listCount : listCount, startDate : stDate, endDate : edDate }
 		let callafterback = (ajax) => { 
@@ -27,8 +27,8 @@
 		let pageLine = document.querySelector("#orderDetailPaging");
 		let jNo = (no != null ? no : document.querySelector("#jordNo").value);
 		
- 		if(jIn == "0") return alert("아직 입금을 하지 않아서 조회가 불가능합니다.");
-/*		if(sh == null) return alert("아직 배송이 진행되지 않았습니다."); */
+ 		if(jIn == "0") return swal("아직 입금을 하지 않아서 조회가 불가능합니다.");
+/*		if(sh == null) return swal("아직 배송이 진행되지 않았습니다."); */
 
 		let param = { pageNum : currentPage, listCount : listCount, jordNo : jNo } 			
 		let callafterback = (ajax) => { 
@@ -53,7 +53,7 @@
 			pageLine.innerHTML = getPaginationHtml(currentPage, ajax.orderCount, listCount, pageCount, 'getOrderStatusList');
 	        pageLine.appendChild(createInput("orderCount", ajax.orderCount));
 	        
-			alert(ajax.message);
+			swal(ajax.message);
 		}
 			
 		callAjax("/cor/updJorderStatus", "post", "json", true, param, callafterback);	
@@ -91,7 +91,7 @@
 		       	pageLine.appendChild( createInput("detailCount", ajax.detailCount));
 		       	pageLine.appendChild( createInput("jordNo", ajax.jordNo));
 				
-				alert(ajax.message);
+				swal(ajax.message);
 			}
 			
 			callAjax("/cor/insReturnProduct", "post", "json", true, param, callafterback);	

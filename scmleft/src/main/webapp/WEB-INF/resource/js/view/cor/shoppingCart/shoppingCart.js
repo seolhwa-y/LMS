@@ -1,6 +1,15 @@
 	// 버튼 :: 주문하기
 	function confOrder() {
-		confirm("입금도 같이 진행하시겠습니까?") == true ? insOrderInfo('1') : insOrderInfo('0');
+		swal({
+			  title: "입금도 같이 진행하시겠습니까?",
+			  icon: "info",
+			  buttons: true,
+			  dangerMode: true,
+			})
+			.then((willDelete) => {
+			  if (willDelete) insOrderInfo('1');
+			  else insOrderInfo('0');
+			});
 	}
 	
 	function insOrderInfo(isCheck) {
@@ -21,7 +30,7 @@
 			let callafterback = (ajax) => { 
 				makeBasketList(ajax.insBaList);
 				document.querySelector("#basketTotal").innerText = ajax.basketTotal;
-				alert(ajax.message);
+				swal(ajax.message);
 			}
 			
  			callAjax("/cor/insJorder", "post", "json", true, param, callafterback);	  
@@ -42,7 +51,7 @@
 			let callafterback = (ajax) => { 
 				makeBasketList(ajax.delBaList);
 				document.querySelector("#basketTotal").innerText = ajax.basketTotal;
-				alert(ajax.message);
+				swal(ajax.message);
 			}
 			
 			callAjax("/cor/delBasketProduct", "post", "json", true, param, callafterback);	

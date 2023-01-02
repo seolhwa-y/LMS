@@ -46,7 +46,6 @@ public class OrderHistoryService implements OrderHistoryInter {
 		}
 	}
 	
-	
 
 	// 주문내역 Select
 	private void showOrderHistoryCtl(Model model) {
@@ -78,7 +77,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 		}
 	}
 
-	// 발주정보 + 발주지시서 Insert
+	// 발주정보 + 발주지시서 Insert + Insert
 	@Transactional(rollbackFor = SQLException.class)
 	private void insertBorderDirectionCtl(HashMap<String, Object> map) {
 		String message = "발주지시서 등록이 실패하셨습니다.";
@@ -86,12 +85,12 @@ public class OrderHistoryService implements OrderHistoryInter {
 		map.put("dirType", "1");
 		if(this.convertToBoolean(this.sql.insert("insertDirection", map))) {
 			if(this.convertToBoolean(this.sql.insert("insertBorderInfo", map))) {
+				System.err.println("지시서 및 발주정보 모두 등록 완료");
 				message = "발주지시서 등록이 완료되었습니다.";
-				map.put("message", message);
-				System.out.println("지시서 및 발주정보 모두 등록 완료");
-			}
-		}
+			} else System.err.println("지시서만 등록 완료");
+		} else System.err.println("지시서 및 발주정보 모두 등록 실패");
 		
+		map.put("message", message);
 		map.put("startPage", 0);
 		map.put("endPage", 10);
 		map.put("historyCount", this.sql.selectOne("getHistoryCount", map));
@@ -99,25 +98,20 @@ public class OrderHistoryService implements OrderHistoryInter {
 		
 	}
 
-	// 배송정보 + 배송지시서 Insert
+	// 배송정보 + 배송지시서 Insert + Insert
 	@Transactional(rollbackFor = SQLException.class)
 	private void insertShipDirectionCtl(HashMap<String, Object> map) {
-		System.err.println("배송지시서 data check :: " + map);
-		/*	1. 지시서 테이블 등록
-		 * 	2. 지시서 코드 조회
-		 *  3. 배송정보 테이블 등록
-		 * */
 		String message = "배송지시서 등록이 실패하셨습니다.";
 		
 		map.put("dirType", "2");
 		if(this.convertToBoolean(this.sql.insert("insertDirection", map))) {
 			if(this.convertToBoolean(this.sql.insert("insertShipInfo", map))) {
-				message = "배송지시서 등록이 완료되었습니다.";
-				map.put("message", message);
 				System.out.println("지시서 및 배송정보 모두 등록 완료");
-			}
-		}
+				message = "배송지시서 등록이 완료되었습니다.";
+			} else System.err.println("지시서만 등록 완료");
+		} else System.err.println("지시서 및 발주정보 모두 등록 실패");
 		
+		map.put("message", message);
 		map.put("startPage", 0);
 		map.put("endPage", 10);
 		map.put("historyCount", this.sql.selectOne("getHistoryCount", map));
@@ -126,8 +120,6 @@ public class OrderHistoryService implements OrderHistoryInter {
 	
 	// 검색 Select
 	private void getSearchHistoryCtl(HashMap<String, Object> map) {
-		System.err.println(map);
-		
 		int pageNum = Integer.parseInt((String) map.get("pageNum")),
 			end = Integer.parseInt((String) map.get("listCount")), 
 			start = (pageNum - 1) * end; // 1 = 0, 2 = 5, 3 = 10
