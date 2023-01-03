@@ -261,27 +261,30 @@
 		let tbody = document.getElementById("orderHistoryTBody");
 		let content = "";
 
-		list.forEach((list, index) => {
-			content += "<tr>" + "<td>" + list.jordCode + "</td>" 
-			+ "<td>" + cngDateType(list.jordDate) + "</td>" 
-			+ "<td>" + list.companyName + "</td>" 
-			+ "<td>" + list.pdName + "</td>" 
-			+ "<td>" + cngNumberType(list.whStock) + "</td>"
-			+ "<td>" + cngNumberType(list.pdPrice) + "</td>" 
-			+ "<td>" + cngNumberType(list.jordAmt) + "</td>"
-			+ "<td>" + cngNumberType(list.totalAmt) + "</td>";
-
-		list.reDate != null? content += "<td>Y</td><td>" + cngDateType(list.reDate) + "</td>" : content += "<td>N</td><td></td>";
-		list.jordIn == "0" ? content += "<td>미입금</td>" : content += "<td>입금</td>";
-		list.bordCode != "0" ? content += "<td>작성완료</td>"
-							 : content += "<td><a id = 'btnBordDirec' class = 'btnType blue' onClick = 'showDirection(\"b\", " 
-									   + list.jordCode + "," + list.modelCode + ")'><span>작성</span></a></td>";
-		list.shCode != "0" ? content += "<td>작성완료</td>"
-						   : content += "<td><a id = 'btnShipDirec' class = 'btnType blue' onClick = 'showDirection(\"s\", " 
-								     + list.jordCode + "," + list.modelCode + "," + list.jordIn + ")'><span>작성</span></a></td>";
-		})
-
 		tbody.innerHTML = "";
+		
+		if(list.length > 0) {
+			list.forEach((list, index) => {
+				content += "<tr><td>" + list.jordCode + "</td>" 
+				+ "<td>" + cngDateType(list.jordDate) + "</td>" 
+				+ "<td>" + list.companyName + "</td>" 
+				+ "<td>" + list.pdName + "</td>" 
+				+ "<td>" + cngNumberType(list.whStock) + "</td>"
+				+ "<td>" + cngNumberType(list.pdPrice) + "</td>" 
+				+ "<td>" + cngNumberType(list.jordAmt) + "</td>"
+				+ "<td>" + cngNumberType(list.totalAmt) + "</td>";
+	
+			list.reDate != null? content += "<td>Y</td><td>" + cngDateType(list.reDate) + "</td>" : content += "<td>N</td><td></td>";
+			list.jordIn == "0" ? content += "<td>미입금</td>" : content += "<td>입금</td>";
+			list.bordCode != "0" ? content += "<td>작성완료</td>"
+								 : content += "<td><a id = 'btnBordDirec' class = 'btnType blue' onClick = 'showDirection(\"b\", " 
+										   + list.jordCode + "," + list.modelCode + ")'><span>작성</span></a></td>";
+			list.shCode != "0" ? content += "<td>작성완료</td>"
+							   : content += "<td><a id = 'btnShipDirec' class = 'btnType blue' onClick = 'showDirection(\"s\", " 
+									     + list.jordCode + "," + list.modelCode + "," + list.jordIn + ")'><span>작성</span></a></td>";
+			})
+		} else content += "<tr><td colspan = '12'>조회된 수주내역이 없습니다.</td></tr>";
+
 		tbody.innerHTML = content;
 	}
 

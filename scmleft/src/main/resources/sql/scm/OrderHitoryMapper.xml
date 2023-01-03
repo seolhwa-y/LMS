@@ -113,7 +113,7 @@
 <insert id="insertDirection" parameterType="java.util.HashMap">
 	INSERT INTO DIRECTION(DIR_CODE, DIR_TYPE, DIR_DATE, DIR_AMT, loginID)
 	VALUES ((SELECT	DI.DIRCODE
-		 	 FROM	(SELECT MAX(DIR_CODE) + 1 AS 'DIRCODE'
+		 	 FROM	(SELECT IFNULL(MAX(DIR_CODE) + 1, 1) AS 'DIRCODE'
 				 	 FROM	DIRECTION) DI), #{dirType}, DATE_FORMAT(now(), '%Y%m%d'), #{jordAmt}, #{loginId})
 	<selectKey order="AFTER" keyProperty="dirCode" resultType="int">
 		SELECT 	DI.DIRCODE
@@ -133,7 +133,7 @@
 	</selectKey>
 	INSERT INTO BORDER_INFO (BORD_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, NAP_CODE, BORD_AMT,  BORD_TYPE)
 	VALUES ((SELECT 	BI.BORDCODE
-			FROM 	(SELECT MAX(BORD_CODE) + 1 AS 'BORDCODE'
+			FROM 	(SELECT IFNULL(MAX(BORD_CODE) + 1, 1) AS 'BORDCODE'
 			 		 FROM 	BORDER_INFO) BI), #{dirCode}, #{jordCode}, #{whCode}, #{modelCode}, #{napCode}, #{jordAmt}, '0')
 </insert>
 
@@ -146,7 +146,7 @@
 	</selectKey>
 	INSERT INTO SHIP_INFO (SH_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, loginID, BORD_CODE, SH_AMT, SH_TYPE)
 	VALUES ((SELECT SI.SHCODE
-			 FROM (SELECT 	MAX(SH_CODE) + 1 AS 'SHCODE'
+			 FROM (SELECT 	IFNULL(MAX(SH_CODE) + 1, 1) AS 'SHCODE'
 				   FROM 	SHIP_INFO) SI), #{dirCode}, #{jordCode}, #{whCode}, #{modelCode}, #{deliID}, #{bordCode}, #{jordAmt}, '0')
 
 </insert>

@@ -612,6 +612,7 @@ function fRegisterButtonClickEvent() {
 				fModelNameSearch();
 				break;
 			case 'btnClosePurDir' :
+			case 'btnX' :
 			case 'btnClose' :
 				gfCloseModal();
 				break;

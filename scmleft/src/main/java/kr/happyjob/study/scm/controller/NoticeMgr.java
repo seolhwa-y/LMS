@@ -39,5 +39,4 @@ public class NoticeMgr {
 	      return "scm/noticeMgr";
 	   }
 
-
 }

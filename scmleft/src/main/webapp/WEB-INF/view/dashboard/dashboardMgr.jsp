@@ -60,7 +60,7 @@ click-able rows
 			init();
 			
 			// 공지사항 조회
-			// fListInf();
+			fListInf();
 			
 			fListComnGrpCod();
 			

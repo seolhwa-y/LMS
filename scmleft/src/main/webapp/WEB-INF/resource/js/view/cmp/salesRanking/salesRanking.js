@@ -22,14 +22,18 @@
 		let tbody = document.getElementById("salesRankingTBody"), content = "", num = 0;
 		
 		tbody.innerHTML = "";
-		if(list[0] == null) return swal("조회하신 기간의 매출내역이 없습니다.");
 		
-		list.forEach((list, index) => {
-			content += "<tr><td>" + (index + 1) + "</td>"
-			+ "<td>" + list.companyName + "</td>"
-			+ "<td>" + list.total.toLocaleString('ko-KR') + "</td>";
-		}) 
-
+		if(list.length > 0) {
+			list.forEach((list, index) => {
+				content += "<tr><td>" + (index + 1) + "</td>"
+				+ "<td>" + list.companyName + "</td>"
+				+ "<td>" + list.total.toLocaleString('ko-KR') + "</td></tr>";
+			}) 
+		} else {
+			content += "<tr><td colspan = '3'>조회된 매출내역이 없습니다.</td></tr>";
+			swal("조회하신 기간의 매출내역이 없습니다.");
+		}
+		
 		tbody.innerHTML = content;
 	}
 	

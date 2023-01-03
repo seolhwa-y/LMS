@@ -26,7 +26,7 @@
 
 <!-- 주문하기 -->
 <select id="getJordNoMax" resultType="int">
-	SELECT  MAX(JORD_NO) + 1 AS 'JORDNO'
+	SELECT  IFNULL(MAX(JORD_NO) + 1, 1) AS 'JORDNO'
 	FROM	JORDER_INFO
 </select>
 
@@ -34,8 +34,8 @@
 <!-- selectKey 여러개로 받아서 foreach를 돌리면 값이 null로 들어옴 해결이 안됨 -->
 	INSERT INTO JORDER_INFO (JORD_CODE, MODEL_CODE, loginID, JORD_NO, JORD_DATE, JORD_IN, JORD_WISHDATE, JORD_AMT)
 	VALUES ((SELECT  J.JORDCODE
-			 FROM	 (SELECT  MAX(JORD_CODE) + 1 AS 'JORDCODE'
-					  FROM	JORDER_INFO)J), #{modelCode}, #{loginId}, #{jordNo}, DATE_FORMAT(now(), '%Y%m%d'), #{jordIn}, #{jordWishdate}, #{jordAmt})
+			 FROM	 (SELECT  IFNULL(MAX(JORD_CODE) + 1, 1) AS 'JORDCODE'
+					  FROM	  JORDER_INFO)J), #{modelCode}, #{loginId}, #{jordNo}, DATE_FORMAT(now(), '%Y%m%d'), #{jordIn}, #{jordWishdate}, #{jordAmt})
 </insert>
 
 <!-- 장바구니 삭제 -->

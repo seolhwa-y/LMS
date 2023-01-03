@@ -13,6 +13,11 @@
 <script src="https://unpkg.com/axios@0.12.0/dist/axios.min.js"></script>
 <script src="https://unpkg.com/lodash@4.13.1/lodash.min.js"></script>
 <script src="${CTX_PATH}/js/view/cor/shoppingCart/shoppingCart.js"></script>
+<style>
+img {
+width: 50px; height: 50px; margin : 10px;
+}
+</style>
 
 <script type="text/javascript">
 	// 페이지 로드시

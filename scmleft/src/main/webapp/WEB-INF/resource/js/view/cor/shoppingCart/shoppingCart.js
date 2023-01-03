@@ -60,18 +60,21 @@
 	
 	// 테이블 그리기
 	function makeBasketList(list) {
+		console.log(list);
 		let tbody = document.getElementById("shoppingCartTBody");
 		let content = "";
+		
 		tbody.innerHTML = "";
 		
-		for(i = 0; i < list.length; i++) {
-			content += "<tr><td><input type = 'checkBox' name = 'delProduct' value = '" + list[i].modelCode + "&" + list[i].baAmt + "&" + list[i].baWishdate + "' /></td>"
-					+ "<td>"+ list[i].pdName +"</td>"
-					+ "<td>"+ cngNumberType(list[i].pdPrice) +"</td>"
-					+ "<td>"+ list[i].baAmt +"</td>"
-					+ "<td>"+ cngNumberType(list[i].total) +"</td>"
-					+ "<td>"+ cngDateType(list[i].baWishdate) +"</td>";
-		}
+		list.forEach((list, index) => {
+			content += "<tr><td><input type = 'checkBox' name = 'delProduct' value = '" + list.modelCode + "&" + list.baAmt + "&" + list.baWishdate + "' /></td>"
+					+ "<td>"+ (list.pdNadd != undefined ? "<img src = '" + list.pdNadd + "'>" : "<img src = '/serverfile\\product\\product_none.gif'>") + list.pdName +"</td>"
+					+ "<td>"+ cngNumberType(list.pdPrice) +"</td>"
+					+ "<td>"+ list.baAmt +"</td>"
+					+ "<td>"+ cngNumberType(list.total) +"</td>"
+					+ "<td>"+ cngDateType(list.baWishdate) +"</td>";
+		})	
+
 		tbody.innerHTML = content;
 	}
 	

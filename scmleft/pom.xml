@@ -10,7 +10,7 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<project.jdk.version>11</project.jdk.version>
+		<project.jdk.version>1.8</project.jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<org.springframework-version>4.3.0.RELEASE</org.springframework-version>
 		<org.aspectj-version>1.6.10</org.aspectj-version>
@@ -238,12 +238,11 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/net.sf.json-lib/json-lib -->
-<!--		<dependency>
+		<!--<dependency>
 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
 			<version>2.4</version>
-			<classifier>jdk15</classifier>
-		</dependency>	-->
+		</dependency>-->
 		
 		<dependency>
             <groupId>com.googlecode.json-simple</groupId>

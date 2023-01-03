@@ -28,7 +28,7 @@
 		let jNo = (no != null ? no : document.querySelector("#jordNo").value);
 		
  		if(jIn == "0") return swal("아직 입금을 하지 않아서 조회가 불가능합니다.");
-/*		if(sh == null) return swal("아직 배송이 진행되지 않았습니다."); */
+		if(sh == undefined) return swal("아직 배송이 진행되지 않았습니다."); 
 
 		let param = { pageNum : currentPage, listCount : listCount, jordNo : jNo } 			
 		let callafterback = (ajax) => { 
@@ -61,7 +61,6 @@
 	
 	// 반품하기
 	function insReturnInfo(pageNum) {		
-		console.log("반품하기");
 		let currentPage = pageNum || 1;
 		let pageLine = document.querySelector("#orderDetailPaging");
 		let jNo = document.querySelector("#jordNo").value;
@@ -82,9 +81,7 @@
 		
 		if(jCode != null && mCode != null) {			
 			let param = { pageNum : currentPage, listCount : listCount, jordCode : jCode, jordNo : jNo, modelCode : mCode, whCode : wCode, bordCode : bCode, reAmt : rAmt}
-			console.log(param);
 			let callafterback = (ajax) => { 
-				console.log(ajax);
 				makeOrderDetailList(ajax.osdList);
 				
 				pageLine.innerHTML = getPaginationHtml(currentPage, ajax.detailCount, listCount, pageCount, 'getDetailList');
@@ -105,28 +102,31 @@
 		let content = "";
 		
 		tbody.innerHTML = "";
-		list.forEach((list, index) => {
-			content += "<tr><td>"+ list.jordNo + "</td>"
-					+ "<td><a id='detail' onClick = 'getDetailList(1, " + list.jordNo + ", " + list.shDate + ", " + list.jordIn + ")' >" 
-					+ "<span>" + (list.pdName + (list.count != "1" ? (" 외 " + (list.count - 1) + "개") : "")) + "</span></a></td>"
-					+ "<td>" + cngNumberType(list.total) + "</td>"
-					+ "<td>" + cngDateType(list.jordDate) + "</td>"
-					+ "<td>" + (list.shDate != null ? cngDateType(list.shDate) : "") + "</td>";
-			if(list.jordIn == "0") {
-				content += "<td>" + "<a class='btnType blue' id='btnIn' name='btn' onClick = 'updJordIn(" + list.jordNo + ")'><span>입금하기</span></a>"  + "</td>";
-			} else content += "<td></td></tr>";
-		})
+		if(list.length > 0){
+			list.forEach((list, index) => {
+				content += "<tr><td>"+ list.jordNo + "</td>"
+						+ "<td><a id='detail' onClick = 'getDetailList(1, " + list.jordNo + ", " + list.shDate + ", " + list.jordIn + ")' >" 
+						+ "<span>" + (list.pdName + (list.count != "1" ? (" 외 " + (list.count - 1) + "개") : "")) + "</span></a></td>"
+						+ "<td>" + cngNumberType(list.total) + "</td>"
+						+ "<td>" + cngDateType(list.jordDate) + "</td>"
+						+ "<td>" + (list.shDate != null ? cngDateType(list.shDate) : "") + "</td>";
+				if(list.jordIn == "0") {
+					content += "<td>" + "<a class='btnType blue' id='btnIn' name='btn' onClick = 'updJordIn(" + list.jordNo + ")'><span>입금하기</span></a>"  + "</td>";
+				} else content += "<td></td></tr>";
+			})
+
+		} else content += "<tr><td colspan = '6'>조회된 주문현황 내역이 없습니다.</td></tr>";
+	
 		tbody.innerHTML = content;
 	}
 	
 	// 주문 상세 내역 테이블 그리기
 	function makeOrderDetailList(list) {
-		console.log(list);
 		let tbody = document.getElementById("detailOrderStatusTBody");
 		let content = "";
 		
 		tbody.innerHTML = "";
-		if(list != null) {
+		if(list.length > 0) {
 			list.forEach((list, index) => {
 				content += "<tr><td><input type = 'checkBox' name = 'cheReturn' value = '" + list.jordCode + "&" + list.modelCode + "&" 
 						+ list.whCode + "&" + list.bordCode + "&" + list.jordAmt + "' " 
@@ -140,7 +140,7 @@
 						+ "<td>" + cngNumberType(list.total) + "</td></tr>";
 			})
 			tbody.innerHTML = content;
-		}
+		} 
 	}
 	
 	// 타입 변환 :: 스트링 -> 날짜

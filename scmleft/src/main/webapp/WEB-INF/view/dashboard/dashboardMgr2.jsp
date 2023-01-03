@@ -47,7 +47,7 @@ click-able rows
 			init();
 			
 			// 공지사항 조회
-			//fListInf();
+			fListInf();
 			
 			// 버튼 이벤트 등록
 			fRegisterButtonClickEvent();
