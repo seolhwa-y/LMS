@@ -51,6 +51,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 	private void showOrderHistoryCtl(Model model) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		Gson gson = new Gson();
+		
 		map.put("startPage", 0);
 		map.put("endPage", 10);
 		model.addAttribute("historyCount", this.sql.selectOne("getHistoryCount", map));

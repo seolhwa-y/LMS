@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.ship.dao.RefundBuyerDao">
+
+	<!--반품지시서 조회 -->
+	<select id = "refundList" resultType = "kr.happyjob.study.ship.model.RefundBuyerModel">
+	SELECT 		d.DIR_CODE 
+				,us.company 
+				,(re.RE_AMT * pd.PD_PRICE) as sum 
+				,re.RE_DATE 
+				,re.RE_CODE
+				,si.loginID 
+				
+	FROM	 	DIRECTION d 
+				 join RETURN_INFO re on d.DIR_CODE = re.DIR_CODE 
+				 join JORDER_INFO jo on jo.JORD_CODE = re.JORD_CODE 
+				 join tb_userinfo us on us.loginID = jo.loginID 
+				 join PD_INFO pd on pd.MODEL_CODE = re.MODEL_CODE 
+			 	 join SHIP_INFO si on si.RE_CODE = re.RE_CODE 
+			 	 
+	where 		d.DIR_TYPE  = 1
+				and us.company Like CONCAT('%', #{sname}, '%')
+				and (
+				(#{stDate} ='' and #{edDate} = '')
+				 or 
+				(date(re.RE_DATE) BETWEEN #{stDate} and #{edDate})
+				)
+				and si.loginID = #{loginID}
+	order by 	d.DIR_CODE DESC 
+	limit #{pageIndex}, #{pageSize} 
+	</select>
+	
+	<!-- 반품지시서 목록 총 갯수 조회 -->
+	<select id="refundListCnt" resultType="int">
+		
+		select 	count(*)
+		
+		FROM	 DIRECTION d 
+				 join RETURN_INFO re on d.DIR_CODE = re.DIR_CODE 
+				 join JORDER_INFO jo on jo.JORD_CODE = re.JORD_CODE 
+				 join tb_userinfo us on us.loginID = jo.loginID 
+				 join PD_INFO pd on pd.MODEL_CODE = re.MODEL_CODE 
+			 
+		where 	d.DIR_TYPE  = 1
+				and us.company  Like CONCAT('%', #{sname}, '%')
+				and (
+				(#{stDate} ='' and #{edDate} = '')
+				 or 
+				(date(re.RE_DATE) BETWEEN #{stDate} and #{edDate})
+				)
+	
+	</select>	
+	
+	<!-- 상세내역 조회 -->
+	<select id="refundDtlList" resultType="kr.happyjob.study.ship.model.RefundBuyerModel">
+	SELECT	 	re.RE_CODE 
+				,pd.MODEL_CODE 
+				,pd.MODEL_NAME 
+				,pd.PD_CODE 
+				,pd.PD_NAME 
+				,pd.PD_CORP as pdcorp
+				,re.RE_AMT 
+				,pd.PD_PRICE 
+				,wh.WH_CODE 
+				,re.RE_DATE
+				,jo.loginID 
+		
+	from 		DIRECTION d 
+				join RETURN_INFO re on d.DIR_CODE = re.DIR_CODE 
+				join PD_INFO pd on re.MODEL_CODE = pd.MODEL_CODE 
+				inner join WHOUSE_HOUSING wh on wh.WH_CODE = re.WH_CODE 
+				join JORDER_INFO jo on jo.JORD_CODE = re.JORD_CODE 
+				
+	where		1=1
+				and re.RE_CODE = #{re_code}
+				
+	GROUP  by d.DIR_CODE 
+	limit #{pageIndex}, #{pageSize} 
+
+	
+	</select>
+	
+	<!-- 상세내역 총목록 개수 -->
+	<select id="refundDtlListCnt" resultType="int">
+		
+	SELECT		count(*)
+				
+
+	from 		DIRECTION d 
+				join RETURN_INFO re on d.DIR_CODE = re.DIR_CODE 
+				join PD_INFO pd on re.MODEL_CODE = pd.MODEL_CODE 
+		
+	where		1=1
+				and re.RE_CODE = #{re_code}
+				
+	</select>	
+	
+	<update id="refundUpdateR" parameterType="Map" >
+      	UPDATE	RETURN_INFO re
+		set		re.RE_DATE = DATE_FORMAT(now(), '%Y%m%d')
+		WHERE 	re.RE_CODE = #{dtl_re_code}      
+    </update>
+    
+    <update id="refundUpdateW" parameterType="Map" >
+      	update	WHOUSE_STOCK ws 
+		set		ws.WH_STOCK = ws.WH_STOCK  + #{re_amt}
+		where 	ws.WH_CODE = #{wh_code}
+				and ws.MODEL_CODE = #{model_code}
+    
+    </update>
+    
+    <insert id="refundInsertW" parameterType="Map" >
+      insert into WHOUSE_HOUSING(
+								WH_NO
+								,WH_CODE
+								,MODEL_CODE
+								,loginID
+								,WH_TYPE
+								,WH_AMT
+								,WH_DATE
+								)
+						values(
+								(select max(WH_NO)+1 from WHOUSE_HOUSING w)
+								,#{wh_code}
+								,#{model_code}
+								,#{loginID}
+								,0
+								,#{re_amt}
+								,DATE_FORMAT(now(), '%Y%m%d')
+								)     
+    </insert>
+
+
+</mapper>
+

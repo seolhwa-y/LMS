@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.scm.dao.ShippingDirectionDao">
+
+	<!-- 배송지시서 목록 조회 -->
+	<select id = "shippingDirectionList" resultType = "kr.happyjob.study.scm.model.ShippingDirectionModel">
+	select ji.JORD_CODE
+      ,pif.PD_NAME
+      ,ji.JORD_DATE
+      ,pif.PD_CORP
+      ,ji.JORD_AMT
+      ,ji.JORD_WISHDATE
+      ,dc.detail_name as SH_TYPE
+      ,dr.DIR_CODE
+  from DIRECTION dr
+       inner join SHIP_INFO si on dr.DIR_CODE = si.DIR_CODE
+       inner join PD_INFO pif on si.MODEL_CODE = pif.MODEL_CODE 
+       inner join JORDER_INFO ji on ji.JORD_CODE = si.JORD_CODE AND ji.MODEL_CODE = si.MODEL_CODE
+       inner join tb_detail_code dc on dc.group_code = 'shipCD' and dc.detail_code = si.SH_TYPE 
+	
+ 	<where>
+			<if test ="(shippingDoneCheck != null) and (!shippingDoneCheck.equals(''))">
+			    and si.SH_TYPE = '0'
+			</if>	
+	</where> 
+	
+	order by JORD_DATE 
+	limit #{pageIndex}, #{pageSize} 
+	</select>
+	
+	<!-- 배송지시서 목록 총 갯수 조회 -->
+	<select id="shippingDirectionListCnt" resultType="int">
+		
+		select count(*)
+		  from DIRECTION dr
+               inner join SHIP_INFO si on dr.DIR_CODE = si.DIR_CODE
+               inner join PD_INFO pif on si.MODEL_CODE = pif.MODEL_CODE 
+               inner join JORDER_INFO ji on ji.JORD_CODE = si.JORD_CODE AND ji.MODEL_CODE = si.MODEL_CODE
+               inner join tb_detail_code dc on dc.group_code = 'shipCD' and dc.detail_code = si.SH_TYPE 
+	
+ 	<where>
+			<if test ="(shippingDoneCheck != null) and (!shippingDoneCheck.equals(''))">
+			    and si.SH_TYPE = '0'
+			</if>	
+	</where> 		
+	</select>
+	
+	<!--배송지시서 한건 상세정보  -->
+	<select id = "shippingDirectionListOne" resultType = "kr.happyjob.study.scm.model.ShippingDirectionModel">
+		select ji.JORD_DATE 
+	          ,ji.JORD_CODE
+	          ,pif.PD_CORP
+	          ,pif.PD_NAME
+	          ,ji.JORD_AMT
+	          ,wi.WH_NAME
+	          ,ui.name
+	          ,dc2.detail_name as JORD_IN
+	      from DIRECTION dr
+	           inner join SHIP_INFO si on dr.DIR_CODE = si.DIR_CODE
+	           inner join PD_INFO pif on si.MODEL_CODE = pif.MODEL_CODE 
+	           inner join JORDER_INFO ji on ji.JORD_CODE = si.JORD_CODE 
+	           inner join tb_detail_code dc on dc.group_code = 'shipCD' and dc.detail_code = si.SH_TYPE
+	           inner join WHOUSE_INFO wi on wi.WH_CODE = si.WH_CODE
+	           inner join tb_userinfo ui on ui.loginID = si.loginID
+	           inner join tb_detail_code dc2 on dc2.group_code = 'depositCD' and dc2.detail_code = ji.JORD_IN 
+	     where dr.DIR_CODE = #{dir_code}
+		
+	</select>
+	
+</mapper>
+
