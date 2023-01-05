@@ -11,7 +11,7 @@
 		      ,ifnull(ws.wh_stock,0) as wh_stock
 		      ,concat(wi.WH_ADDR, ' ', wi.WH_ADDR_DTL) as wh_addr
 		 from WHOUSE_INFO wi
-	     inner join WHOUSE_STOCK ws on wi.WH_CODE = ws.WH_CODE
+	     left outer join WHOUSE_STOCK ws on wi.WH_CODE = ws.WH_CODE
 	     inner join PD_INFO pdi ON pdi.MODEL_CODE = ws.MODEL_CODE
 			<where>
 			<if test="(sname != null) and (!sname.equals(''))">
@@ -36,9 +36,10 @@
 	</select>	
 	
 	<select id="countList" resultType="int">
-		SELECT COUNT(*)
-		FROM WHOUSE_INFO wi INNER JOIN WHOUSE_STOCK ws ON wi.WH_CODE = ws.WH_CODE 
-							INNER JOIN PD_INFO pdi ON ws.MODEL_CODE = pdi.MODEL_CODE 
+		select count(*)
+		 from WHOUSE_INFO wi
+	     left outer join WHOUSE_STOCK ws on wi.WH_CODE = ws.WH_CODE
+	     inner join PD_INFO pdi ON pdi.MODEL_CODE = ws.MODEL_CODE
 			<where>
 			<if test="(sname != null) and (!sname.equals(''))">
 				<choose>

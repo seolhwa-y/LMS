@@ -17,6 +17,4 @@ public interface SupplierInfoService {
 	// 상세내역 검색 카운트
 	int dtlLisCnt(Map<String, Object> paramMap) throws Exception;
 
-
-
 }

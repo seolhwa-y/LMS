@@ -23,9 +23,15 @@ public class RefundInfoVO {
 	private int BORD_CODE;
 	private int RE_TYPE;
 	private int RE_OUT;
+	private String loginID;
 	
 	
-	
+	public String getLoginID() {
+		return loginID;
+	}
+	public void setLoginID(String loginID) {
+		this.loginID = loginID;
+	}
 	public int getDir_code() {
 		return dir_code;
 	}
@@ -129,7 +135,7 @@ public class RefundInfoVO {
 				+ ", RE_AMT=" + RE_AMT + ", RE_PRICE=" + RE_PRICE + ", sdate=" + sdate + ", edate=" + edate
 				+ ", JORD_CODE=" + JORD_CODE + ", MODEL_CODE=" + MODEL_CODE + ", WH_NAME=" + WH_NAME + ", WH_CODE="
 				+ WH_CODE + ", re_code=" + re_code + ", dir_code=" + dir_code + ", BORD_CODE=" + BORD_CODE
-				+ ", RE_TYPE=" + RE_TYPE + ", RE_OUT=" + RE_OUT + "]";
+				+ ", RE_TYPE=" + RE_TYPE + ", RE_OUT=" + RE_OUT + ", loginID=" + loginID + "]";
 	}
 	
 }

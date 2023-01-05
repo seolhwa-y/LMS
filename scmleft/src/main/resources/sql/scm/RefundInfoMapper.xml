@@ -89,8 +89,7 @@
 	
 	<update id="updateRefund" parameterType="java.util.Map" >
         UPDATE RETURN_INFO 
-        set re_type = #{status}, 
-        	dir_code = (SELECT DI.DIR_CODE
+        set dir_code = (SELECT DI.DIR_CODE
         				FROM ( SELECT MAX(DIR_CODE) as DIR_CODE 
 							     FROM DIRECTION 
 							     WHERE DIR_DATE = DATE_FORMAT(now(), '%Y%m%d') AND DIR_AMT = #{RE_AMT})DI)
