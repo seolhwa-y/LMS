@@ -27,6 +27,7 @@
 				and <![CDATA[jn.JORD_DATE <= #{edate}]]>
 				</if>
 			</where>
+			 LIMIT #{pageIndex},#{pageSize}
 	</select>
 
 	<select id="returnDirTotalCnt" resultType="int">

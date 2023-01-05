@@ -1,5 +1,8 @@
 	// 버튼 :: 주문하기
 	function confOrder() {
+		if(document.querySelector("#shoppingCartTBody").childNodes.length == 0) return swal("장바구니에 현재 제품이 없습니다. \n제품을 장바구니에 담아주세요.");
+		if(document.querySelectorAll("input[name='delProduct']:checked").length == 0) return swal("주문하실 제품을 선택해주세요.");
+		
 		swal({
 			  title: "입금도 같이 진행하시겠습니까?",
 			  icon: "info",
@@ -42,6 +45,8 @@
 		let checkBox = document.querySelectorAll("input[name='delProduct']:checked");
 		let val = "";
 		
+		if(document.querySelector("#shoppingCartTBody").childNodes.length == 0) return swal("장바구니에 현재 제품이 없습니다. \n제품을 장바구니에 담아주세요.");
+		if(checkBox.length == 0) return swal("삭제하실 제품을 선택해주세요.");
 		checkBox.forEach((checkBox, index) => {
 			val += (index != 0 ? "&" : "") + checkBox.value.substring(0, checkBox.value.indexOf("&"));
 		})
