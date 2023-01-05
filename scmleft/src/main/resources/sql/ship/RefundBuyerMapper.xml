@@ -27,7 +27,6 @@
 				(date(re.RE_DATE) BETWEEN #{stDate} and #{edDate})
 				)
 				and si.loginID = #{loginID}
-				and re.RE_TYPE = '1'
 	order by 	d.DIR_CODE DESC 
 	limit #{pageIndex}, #{pageSize} 
 	</select>
