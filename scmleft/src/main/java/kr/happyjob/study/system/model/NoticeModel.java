@@ -4,45 +4,40 @@ public class NoticeModel {
 	
 	// 게시판 글 번호
 	private int row_num;
-	private int noticeNo;
-	private String loginId;
-	private String noticeTitle;
+	private int notcode;
+	private String loginid;
+	private String nottitle;
 	private String noticeContent;
 	private String noticeRegdate;
-	private String from_date;
-	private String to_date;
-	private String loginName;
+	private String notdate;
+	private String name;
 	
 	
-	public String getLoginName() {
-		return loginName;
-	}
-	public void setLoginName(String loginName) {
-		this.loginName = loginName;
-	}
+	
+
 	public int getRow_num() {
 		return row_num;
 	}
 	public void setRow_num(int row_num) {
 		this.row_num = row_num;
 	}
-	public int getNoticeNo() {
-		return noticeNo;
+	public int getNotcode() {
+		return notcode;
 	}
-	public void setNoticeNo(int noticeNo) {
-		this.noticeNo = noticeNo;
+	public void setNotcode(int notcode) {
+		this.notcode = notcode;
 	}
-	public String getLoginId() {
-		return loginId;
+	public String getLoginid() {
+		return loginid;
 	}
-	public void setLoginId(String loginId) {
-		this.loginId = loginId;
+	public void setLoginid(String loginid) {
+		this.loginid = loginid;
 	}
-	public String getNoticeTitle() {
-		return noticeTitle;
+	public String getNottitle() {
+		return nottitle;
 	}
-	public void setNoticeTitle(String noticeTitle) {
-		this.noticeTitle = noticeTitle;
+	public void setNottitle(String nottitle) {
+		this.nottitle = nottitle;
 	}
 	public String getNoticeContent() {
 		return noticeContent;
@@ -56,18 +51,23 @@ public class NoticeModel {
 	public void setNoticeRegdate(String noticeRegdate) {
 		this.noticeRegdate = noticeRegdate;
 	}
-	
-	public String getFrom_date() {
-		return from_date;
+	public String getNotdate() {
+		return notdate;
 	}
-	public void setFrom_date(String from_date) {
-		this.from_date = from_date;
+	public void setNotdate(String notdate) {
+		this.notdate = notdate;
 	}
-	public String getTo_date() {
-		return to_date;
+	public String getName() {
+		return name;
 	}
-	public void setTo_date(String to_date) {
-		this.to_date = to_date;
-	}	
-	
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "NoticeModel [row_num=" + row_num + ", notcode=" + notcode + ", loginid=" + loginid + ", nottitle="
+				+ nottitle + ", noticeContent=" + noticeContent + ", noticeRegdate=" + noticeRegdate + ", notdate="
+				+ notdate + ", name=" + name + "]";
+	}
 }

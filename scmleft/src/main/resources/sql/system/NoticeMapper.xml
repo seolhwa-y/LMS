@@ -5,27 +5,25 @@
 
 	<!-- 공지사항 목록 조회 -->
 	<select id = "noticeList" resultType = "kr.happyjob.study.system.model.NoticeModel">
-		SELECT
-				n.ntc_no as noticeNo
-			,	n.ntc_title as noticeTitle
-			,	DATE_FORMAT(n.ntc_regdate, '%Y-%m-%d') as noticeRegdate
-			,	u.loginID as loginId
-			,   u.name as loginName
-		FROM tb_notice n
-			LEFT JOIN	tb_userinfo u
-			ON			n.loginID = u.loginID
+			select nt.NOT_CODE as notcode
+			      ,nt.NOT_TITLE as nottitle
+			      ,DATE_FORMAT(nt.NOT_DATE, '%Y-%m-%d') as notdate
+			      ,nt.loginID as loginid
+			      ,ui.name 
+			  from NOTICE nt
+			       inner join tb_userinfo ui on ui.loginID = nt.loginID
 		<where>
 			<if test ="(title != null) and (!title.equals(''))">
-			    and n.ntc_title  Like CONCAT('%', #{title}, '%')
+			    and nt.NOT_TITLE  Like CONCAT('%', #{title}, '%')
 			</if>
 			<if test ="(from_date != null) and (!from_date.equals(''))">
-			    and n.ntc_regdate  <![CDATA[>=]]> STR_TO_DATE(#{from_date}, '%Y-%m-%d')   
+			    and nt.NOT_DATE  <![CDATA[>=]]> #{from_date}
 			</if>			
 			<if test ="(to_date != null) and (!to_date.equals(''))">
-			    and n.ntc_regdate  <![CDATA[<=]]> STR_TO_DATE(#{to_date}, '%Y-%m-%d')   
+			    and nt.NOT_DATE  <![CDATA[<=]]> #{to_date} 
 			</if>		
 		</where>
-		 ORDER BY n.ntc_no DESC
+		 ORDER BY nt.NOT_CODE DESC
 		 LIMIT #{pageIndex}, #{pageSize}
 	</select>
 	
@@ -34,74 +32,73 @@
 	<select id="noticeCnt" resultType="int">
 		/*kr.happy.study.system.dao.NoticeDao.noticeCnt*/
 		SELECT COUNT(*)
-		FROM 	tb_notice
+			from NOTICE nt
+			       inner join tb_userinfo ui on ui.loginID = nt.loginID
 		<where>
 			<if test ="(title != null) and (!title.equals(''))">
-			    and ntc_title  Like CONCAT('%', #{title}, '%')
+			    and nt.NOT_TITLE  Like CONCAT('%', #{title}, '%')
 			</if>
 			<if test ="(from_date != null) and (!from_date.equals(''))">
-			    and ntc_regdate  <![CDATA[>=]]> STR_TO_DATE(#{from_date}, '%Y-%m-%d')   
+			    and nt.NOT_DATE  <![CDATA[>=]]> #{from_date}
 			</if>			
 			<if test ="(to_date != null) and (!to_date.equals(''))">
-			    and ntc_regdate  <![CDATA[<=]]> STR_TO_DATE(#{to_date}, '%Y-%m-%d')   
+			    and nt.NOT_DATE  <![CDATA[<=]]> #{to_date} 
 			</if>		
 		</where>
-		ORDER BY ntc_no DESC
 	</select>	
 		
-	
 	
 	
 	<!-- 공지사항 단건 조회 : 공지제목 클릭시 -->
 	<select id = "noticeDetail" resultType = "kr.happyjob.study.system.model.NoticeModel">
 		SELECT
 					u.loginID as loginId
-				,	n.ntc_title as noticeTitle
-				,	n.ntc_content as noticeContent
-				,   n.ntc_no as noticeNo
-				,   u.name as loginName
-		FROM	tb_notice n
-			LEFT JOIN	tb_userinfo u
+				,	n.NOT_TITLE as nottitle
+				,	n.NOT_CON as noticeContent
+				,   n.NOT_CODE as notcode
+				,   u.name as name
+		FROM	NOTICE n
+			JOIN	tb_userinfo u
 			ON			n.loginID = u.loginID
-		WHERE n.ntc_no = #{noticeNo}
+		WHERE n.NOT_CODE = #{noticeNo}
 	</select>
 	
 		
 		
 	<!-- 공지사항 신규등록(저장) :  -->
 	<insert id = "insertNotice" parameterType="java.util.Map">
-	    <selectKey resultType="string" keyProperty="noticeNo" order="BEFORE">
-            SELECT IFNULL(MAX(ntc_no),0) + 1 FROM tb_notice 
+	    <selectKey resultType="string" keyProperty="notcode" order="BEFORE">
+            SELECT IFNULL(MAX(NOT_CODE),0) + 1 FROM NOTICE 
         </selectKey> 
 		INSERT
-		INTO		tb_notice
+		INTO		NOTICE
 				(
-					ntc_no, loginID, ntc_title, ntc_content, ntc_regdate
+					NOT_CODE, loginID, NOT_TITLE, NOT_CON, NOT_DATE
 				)
 		VALUES
 				(
-						#{noticeNo}
+						#{notcode}
 					,	#{loginId}
-					,	#{noticeTitle}
+					,	#{nottitle}
 					,	#{noticeContent}
-					,	NOW()
+					,	DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
 				)
 	</insert>
 	
 	<!-- 공지사항 수정-->
 	<update id = "updateNotice">
-		UPDATE tb_notice
-		SET		ntc_title = #{noticeTitle}
-				,	ntc_content = #{noticeContent}
-				,	ntc_regdate = NOW()
-		WHERE	ntc_no = #{noticeNo}
+		UPDATE NOTICE
+		SET		NOT_TITLE = #{nottitle}
+				,	NOT_CON = #{noticeContent}
+				,	NOT_DATE = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		WHERE	NOT_CODE = #{notcode}
 	</update>
 	
 	<!-- 공지사항 삭제-->
 	<delete id="deleteNotice">
 		DELETE
-		FROM 	tb_notice
-		WHERE 	ntc_no = #{noticeNo}
+		FROM 	NOTICE
+		WHERE 	NOT_CODE = #{notcode}
 	</delete>
 
 </mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.scm.dao.NoticeMgrDAO">
+
+<select id="getNoticeList" parameterType="java.util.Map" resultType="kr.happyjob.study.system.model.NoticeModel">
+	SELECT  NO.NOT_CODE AS 'NOTCODE',
+	        NO.NOT_TITLE AS 'NOTTITLE',
+	        NO.NOT_CON AS 'NOTCON',
+	        DATE_FORMAT(NO.NOT_DATE, '%Y-%m-%d') AS 'NOTDATE',
+	        NO.NOT_VIEW AS 'NOTVIEW',
+	        NO.loginID AS 'LOGINID',
+	        UI.name AS 'NAME'
+	FROM    NOTICE NO INNER JOIN tb_userinfo UI ON NO.loginID = UI.loginID
+	<where>
+		<if test="type != null">
+			<choose>
+				<when test="type.equals('TC')">
+					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
+				</when>
+				<when test="type.equals('W')">
+					AND UI.NAME = #{name}
+				</when>
+				<otherwise>
+					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="startDate != null and endDate != ''">
+			AND NO.NOT_DATE BETWEEN #{startDate} AND #{endDate}
+		</if>
+	</where>
+	LIMIT	#{startPage}, #{endPage}
+	
+	
+</select>
+
+<select id = "getNoticeCnt" resultType="int">
+	SELECT 	COUNT(*)
+	FROM 	NOTICE
+	<where>
+		<if test="type != null">
+			<choose>
+				<when test="type.equals('TC')">
+					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
+				</when>
+				<when test="type.equals('W')">
+					AND UI.NAME = #{name}
+				</when>
+				<otherwise>
+					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="startDate != null and endDate != ''">
+			AND NO.NOT_DATE BETWEEN #{startDate} AND #{endDate}
+		</if>
+	</where>
+</select>
+
+</mapper>
