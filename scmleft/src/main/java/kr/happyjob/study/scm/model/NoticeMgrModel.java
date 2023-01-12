@@ -10,6 +10,7 @@ public class NoticeMgrModel {
 	private String loginId;
 	private String name;
 	
+	private String view;
 	private String type;
 	private String startDate;
 	private String endDate;
@@ -17,6 +18,7 @@ public class NoticeMgrModel {
 	private int endPage;
 	
 	
+
 	public int getNotCode() {
 		return notCode;
 	}
@@ -59,6 +61,12 @@ public class NoticeMgrModel {
 	public void setName(String name) {
 		this.name = name;
 	}
+	public String getView() {
+		return view;
+	}
+	public void setView(String view) {
+		this.view = view;
+	}
 	public String getType() {
 		return type;
 	}
@@ -89,7 +97,11 @@ public class NoticeMgrModel {
 	public void setEndPage(int endPage) {
 		this.endPage = endPage;
 	}
-	
+
+
+
+
+
 	@Override
 	public String toString() {
 		return "NoticeModel [notCode=" + notCode + ", notTitle=" + notTitle + ", notCon=" + notCon + ", notDate="

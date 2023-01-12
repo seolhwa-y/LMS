@@ -21,120 +21,207 @@
 	var vueNoticeDetail; // 상세 공지사함
 	
 	function init(){
-		/** 공지사항 검색
-			1. 셀렉트 박스 :: 제목+내용, 제목, 내용
-			2. 내용
-			3. 작성일 :: 시작과 종료
-			4. 글쓰기
-		*/
-
+		/* 서치바 */
 		search = new Vue({
 			el: "#divSarchBar",
 			data: {
-				search : "",	// 나중에 value 가져오기 위하여
+				search : "",
 				options : [{value : "", text : "검색요건", disabled : "disabled", selected : "selected"},
 				           {value : "TC", text : "제목 + 내용"},
 				           {value : "T", text : "제목"},
-				           {value : "W", text : "작성자"}],		// 동적으로 셀렉트 만들기 위하여
+				           {value : "W", text : "작성자"}],		
 				keyword : "",
 				startDate : "",
 				endDate : "",
 			},
-			methods: { // 검색, 글작성
-				 searchNotice : function(){
-					 console.log(search.search);
-					 console.log("search.searchNotice");
+			methods: {
+				/* 공지사항 검색 및 페이징 */
+				searchNotice : function(pageNum){
+					if(search.endDate.replaceAll("-", "") - search.startDate.replaceAll("-", "") < 0) return alert("날짜를 다시 선택하세요.");
+					if(search.search == "" && search.keyword != "") return alert("검색구분을 선택하세요.");
+					
+					var currentPage = (pageNum != undefined ? pageNum : vueNotice.pageNum) || 1;
+					var param = {
+							pageNum : currentPage, 
+							listCount : listCount,
+							type : search.search, // 검색 타입
+							keyword : search.keyword, // 검색어
+							startDate : search.startDate.replaceAll("-", ""),
+							endDate : search.endDate.replaceAll("-", ""),
+					}
+					
+					var listCallBack = function(data) {
+						vueNotice.noticelist = data.noticeList;
+						vueNotice.pagenavi = getPaginationHtml(currentPage, data.noticeCount, listCount, pageCount, 'paging');
+						vueNotice.pageNum = currentPage;
+						search.keyword = "";
+					}
+					
+					callAjax("/scm/searchNoticeList", "post", "json", true, param, listCallBack);
 				 },
-				 regNotice : function(){
-					 console.log("search.regNotice");
-				 }
+				 
+				 /* 글작성 버튼 클릭 후 모달 활성화 */
+				 regNotice : function(){ 
+					noticeModalFeel(true);
+					gfModalPop("#noticeModal");
+				 },
 			}
 		})
 		
-		/** 공지사항 메인
-			1. 리스트
-			2. 페이징라인
-		*/
+		/* 공지사항 */
 		vueNotice = new Vue({
 			el: "#divNoticeList",
 			data: {
-				noticelist : [],
-				pagenavi : "",
+				loginId : "${loginId}", 
+				loginName : "${name}",
+				pageNum : 1,
+				noticelist : ${result}.noticeList,
+				pagenavi : getPaginationHtml(1, ${result}.noticeCount, listCount, pageCount, 'paging'),
 			},
 			methods: {
-				showNoticeDetail : function(){
-					console.log("vueNotice.showNoticeDetail");
+				/* 공지사항 상세보기 */
+				showNoticeDetail : function(notCode){ 
+					var param = { view : "Y", notCode : notCode }
+					
+					var detailCallBack = function(data) {
+						noticeModalFeel(false, data.result);
+						gfModalPop("#noticeModal");
+					}
+					
+					callAjax("/scm/checkNoticeList", "post", "json", true, param, detailCallBack);
 				},
-				paging : function(){
-					console.log("vueNotice.paging");
-				}
 			}
 		});
 		
-		/** 공지사항 메인
-			1. 리스트
-			2. 페이징라인
-		*/
+		/* 공지사항 보기 모달 */
 		vueNoticeDetail = new Vue({
 			el: "#noticeModal",
 			data: {
+				notCode : "",
+				writeId : "",
 				notTitle : "",
 				name : "",
 				notDate : "",
 				notCon : "",
 				notTitleRead : "",
-				loginIdRead : "",
+				nameRead : "",
 				notDateRead : "",
 				notConRead : "",
-				noticeSave : true, // TRUE는 안보인다.
-				noticeUpdate : true, 
-				noticeDelete : true,
+				noticeSave : false,
+				noticeUpdate : false, 
+				noticeDelete : false,
 			},
-			methods: { // 저장, 수정, 삭제
+			methods: { 
+				/* 모달 닫기 */
 				modalClose : function(){
-					console.log("vueNoticeDetail.modalClose");
 					gfCloseModal();
+					search.searchNotice();
 				},
-				regNotice : function(){
-					console.log("vueNoticeDetail.regNotice");
+				
+				/* 공지사항 등록 및 수정 */
+				regNotice : function(num, pageNum){ 
+					var currentPage = pageNum || 1;
+				
+					var param = {
+							pageNum : currentPage, 
+							listCount : listCount,
+							notCode : vueNoticeDetail.notCode,
+							notTitle : vueNoticeDetail.notTitle,
+							notCon : vueNoticeDetail.notCon,
+					}
+
+					var detailCallBack = function(data) {
+						vueNotice.noticelist = data.result.noticeList;
+						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
+					
+						gfCloseModal();
+						alert(data.result.message);
+					}
+					
+					num == 1 ? callAjax("/scm/insertNotice", "post", "json", true, param, detailCallBack) 
+						 	 : callAjax("/scm/updateNotice", "post", "json", true, param, detailCallBack);
 				},
-				updNotice : function(){
-					console.log("vueNoticeDetail.updNotice");
-				},
-				delNotice : function(){
-					console.log("vueNoticeDetail.delNotice");
+				
+				/* 공지사항 삭제 */
+				delNotice : function(pageNum){ 
+					var currentPage = pageNum || 1;
+					
+					var param = {
+							pageNum : currentPage, 
+							listCount : listCount,
+							notCode : vueNoticeDetail.notCode,
+					}
+
+					var detailCallBack = function(data) {
+						vueNotice.noticelist = data.result.noticeList;
+						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
+					
+						gfCloseModal();
+						alert(data.result.message);
+					}
+					
+					callAjax("/scm/deleteNotice", "post", "json", true, param, detailCallBack);
 				}
 			}
 		});
+	}
+	
+	// 페이징 처리를 위해 해당 function 연결
+	function paging(pageNum){
+		search.searchNotice(pageNum);
+	}
+	
+	// 모달 내용 경우의 수
+	function noticeModalFeel(action, data){
+		switch(action){
+		case true : 
+			vueNoticeDetail.notCode = "";
+			vueNoticeDetail.notTitle = "";
+			vueNoticeDetail.name = vueNotice.loginName;
+			vueNoticeDetail.notDate = "";
+			vueNoticeDetail.notCon = "";
+			vueNoticeDetail.nameRead = "";
+			vueNoticeDetail.notDateRead = "";
+			vueNoticeDetail.noticeSave = true;
+			vueNoticeDetail.noticeUpdate = false;
+			vueNoticeDetail.noticeDelete = false;
+			break;
+			
+		case false : 
+			vueNoticeDetail.notTitle = data.noticeList[0].notTitle;
+			vueNoticeDetail.name = data.noticeList[0].name;
+			vueNoticeDetail.notDate = data.noticeList[0].notDate;
+			vueNoticeDetail.notCon = data.noticeList[0].notCon;
+			vueNoticeDetail.notCode = data.noticeList[0].notCode;
+			vueNoticeDetail.writeId = data.noticeList[0].loginId;
+			vueNoticeDetail.noticeSave = false;
+			
+			/* 글작성자가 아니라면 수정 삭제버튼 no show */
+			if(vueNotice.loginId == vueNoticeDetail.writeId) {
+				vueNoticeDetail.noticeUpdate = true;
+				vueNoticeDetail.noticeDelete = true;
+			} 
+			
+			break;
+			
+		default : break;
 		
-		vueNotice.noticelist = ${noticeList};
+		}
 	}
 </script>
 
 </head>
 <body onload="init()">
 <form id="myForm" action=""  method="">
-
-<input type="hidden" id="currentPage" value="1">
-<input type="hidden" id="selectedInfNo" value="">
-		<!-- 모달 배경 -->
 		<div id="mask"></div>
-
 		<div id="wrap_area">
-
-			<h2 class="hidden">컨텐츠 영역</h2>
 			<div id="container">
 				<ul>
 					<li class="lnb">
-						<!-- lnb 영역 --> <jsp:include
-							page="/WEB-INF/view/common/lnbMenu.jsp"></jsp:include> <!--// lnb 영역 -->
+						<jsp:include page="/WEB-INF/view/common/lnbMenu.jsp"></jsp:include> 
 					</li>
 					<li class="contents">
-						<!-- contents -->
-						<h3 class="hidden">contents 영역</h3> <!-- content -->
-
 						<div class="content" style="margin-bottom: 20px;">
-
 							<p class="Location">
 								<a href="../dashboard/dashboard.do" class="btn_set home">메인으로</a>
 								<span class="btn_nav bold">메인</span> <a
@@ -157,10 +244,10 @@
 								<input type = "text" v-model = "keyword" />
 								
 								<span>작성일자</span>
-								<input type = "date" v-model = "startDate" v-on:click = "searchNotice()" />
-								<input type = "date" v-model = "endDate" v-on:click = "searchNotice()" />
+								<input type = "date" v-model = "startDate" />
+								<input type = "date" v-model = "endDate" />
 								<a class="btnType gray"  id="btnSave" name="btn" v-on:click = "searchNotice()" ><span>조회</span></a>	
-								<a class="btnType blue"  id="btnSave" name="btn" v-on:click = "regNotice()" ><span>검색</span></a>
+								<a class="btnType blue"  id="btnSave" name="btn" v-on:click = "regNotice()" ><span>글작성</span></a>
 							</div>
 							
 							<!-- 게시글 목록 영역 -->
@@ -174,7 +261,6 @@
 		                                 <col width="15%">
 		                                 <col width="15%">
 		                              </colgroup>
-		         
 		                              <thead>
 		                                 <tr>
 		                                    <th scope="col">글번호</th>
@@ -184,18 +270,23 @@
 		                                    <th scope="col">조회수</th>
 		                                 </tr>
 		                              </thead>
-		                              <tbody v-for = " (item,index) in noticelist" v-if = "noticelist.length">
-		                                    <tr v-on:click = "showNoticeDetail(item.notCode)">
-			                                      <td> {{ item.notcode }} </td>
-			                                      <td> {{ item.nottitle }} </td>
+		                              <tbody>
+		                                    <tr v-for = " (item, index) in noticelist" v-on:click = "showNoticeDetail(item.notCode)" v-if = "noticelist.length > 0">
+			                                      <td> {{ item.notCode }} </td>
+			                                      <td> {{ item.notTitle }} </td>
 			                                      <td> {{ item.name }} </td>
-			                                      <td> {{ item.notdate }} </td>         
+			                                      <td> {{ item.notDate }} </td>         
 			                                      <td> {{ item.notView }} </td>
-		                                    </tr>                             
+		                                    </tr>  
+		                                    <tr v-if = "noticelist.length == 0">
+		                                    	<td colspan="5">검색된 데이터가 없습니다.</td>
+		                                    </tr>                           
 		                              </tbody>
 		                           </table>
-                           		<br>
-                           		<div class = "paging_area"  id = "comnGrpCodPagination" v-html = "pagenavi"> </div>
+                           		<div class = "paging_area"  id = "divNoticePaging" v-html = "pagenavi"></div>
+                           		<input type="hidden" v-model="loginId" />
+								<input type="hidden" v-model="loginName" />
+								<input type="hidden" v-model="pageNum" />
 							</div>
 						</div>
 					</li>
@@ -206,47 +297,42 @@
 		
 	<!-- 모달팝업 -->
 	<div id="noticeModal" class="layerPop layerType2" style="width: 600px;">
-		<input type="hidden" id="notCode" name="notCode" value="${notCode}"> <!-- 수정시 필요한 num 값을 넘김  -->
-
 		<dl>
 			<dt>
 				<strong>공지사항</strong>
 			</dt>
 			<dd class="content">
-				<!-- s : 여기에 내용입력 -->
 				<table class="row">
-					<caption>caption</caption>
-
 					<tbody>
 						<tr>
 							<th scope="row">제목 <span class="font_red">*</span></th>
 							<td colspan="3">
-							        <input type="text" class="inputTxt p100"	name="notTitle" id="notTitle" v-model="notTitle" v-bind:readonly="notTitleRead" />
+							        <input type="text" class="inputTxt p100" v-model="notTitle" />
 							 </td>
 						</tr>
 						<tr>
 							<th scope="row">작성자 <span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="loginId" id="loginId" v-model="loginId" v-bind:readonly="loginIdRead" /></td>
+							<td><input type="text" class="inputTxt p100" v-model="name" v-bind:readonly="nameRead" /></td>
 						</tr>
 						<tr>
 							<th scope="row">작성일<span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="notDate" id="notDate" v-model="notDate" v-bind:readonly="notDateRead"/></td>
+							<td><input type="text" class="inputTxt p100"  v-model="notDate" v-bind:readonly="notDateRead"/></td>
 						</tr>
 						<tr>
 							<th scope="row">내용</th>
 							<td colspan="3">
-								<textarea class="inputTxt p100" name="notCon" id="notCon" v-model="notCon" v-bind:readonly="notConRead">
+								<textarea class="inputTxt p100" v-model="notCon" >
 								</textarea>
 							</td>
 						</tr>
 					</tbody>
 				</table>
 
-				<!-- e : 여기에 내용입력 -->
-
 				<div class="btn_areaC mt30">
-					<a class="btnType gray"  id="btnSave" name="btn" v-on:click = "regNotice()" v-show = "noticeSave"><span>저장</span></a>	<!-- 등록, 수정 -->
-					<a class="btnType gray"  id="btnUpdate" name="btn" v-on:click = "updNotice()" v-show = "noticeUpdate"><span>수정</span></a>	<!-- 수정 버튼을 누르면 입력 활성화 -->
+					<input type="hidden" v-model="notCode" />
+					<input type="hidden" v-model="writeId" />
+					<a class="btnType blue"  id="btnSave" name="btn" v-on:click = "regNotice('1')" v-show = "noticeSave"><span>등록</span></a>	<!-- 등록, 수정 -->
+					<a class="btnType blue"  id="btnUpdate" name="btn" v-on:click = "regNotice('2')" v-show = "noticeUpdate"><span>수정</span></a>	<!-- 수정 버튼을 누르면 입력 활성화 -->
 					<a class="btnType gray"  id="btnDelete" name="btn" v-on:click = "delNotice()" v-show = "noticeDelete"><span>삭제</span></a>
 					<a class="btnType gray"  id="btnClose" name="btn" v-on:click = "modalClose()"><span>닫기</span></a>
 				</div>
@@ -254,8 +340,6 @@
 
 		</dl>
 	</div>
-
-      
 </form>
 </body>
 </html>

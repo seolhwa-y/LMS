@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.happyjob.study.scm.dao.NoticeMgrDAO">
 
-<select id="getNoticeList" parameterType="java.util.Map" resultType="kr.happyjob.study.system.model.NoticeModel">
+<select id="getNoticeList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.NoticeMgrModel">
 	SELECT  NO.NOT_CODE AS 'NOTCODE',
 	        NO.NOT_TITLE AS 'NOTTITLE',
 	        NO.NOT_CON AS 'NOTCON',
@@ -12,49 +12,88 @@
 	        UI.name AS 'NAME'
 	FROM    NOTICE NO INNER JOIN tb_userinfo UI ON NO.loginID = UI.loginID
 	<where>
-		<if test="type != null">
-			<choose>
-				<when test="type.equals('TC')">
-					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
-				</when>
-				<when test="type.equals('W')">
-					AND UI.NAME = #{name}
-				</when>
-				<otherwise>
-					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
-				</otherwise>
-			</choose>
-		</if>
-		<if test="startDate != null and endDate != ''">
-			AND NO.NOT_DATE BETWEEN #{startDate} AND #{endDate}
-		</if>
+		<choose>
+			<when test="type != null and !type.equals('')">
+				<if test="type.equals('T'.toString())">
+					AND NO.NOT_TITLE LIKE CONCAT("%", #{keyword}, "%")
+				</if>
+				<if test="type.equals('W'.toString())">
+					AND UI.name LIKE CONCAT("%", #{keyword}, "%")
+				</if>
+				<if test="type.equals('TC')">
+					AND NO.NOT_TITLE LIKE CONCAT("%", #{keyword}, "%") AND NO.NOT_CON LIKE CONCAT("%", #{keyword}, "%")
+				</if>
+			</when>
+	
+			<when test="(startDate != null) and (!endDate.equals(''))">
+				AND DATE_FORMAT(NO.NOT_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
+			</when>
+			<when test="view != null">
+				AND NO.NOT_CODE = #{notCode}
+			</when>
+		</choose>
 	</where>
-	LIMIT	#{startPage}, #{endPage}
-	
-	
+	ORDER BY NO.NOT_DATE DESC
+	<if test = "view == null">
+		LIMIT	#{startPage}, #{endPage}
+	</if>
 </select>
 
-<select id = "getNoticeCnt" resultType="int">
+<select id = "getNoticeCnt" resultType="int" parameterType="java.util.HashMap">
 	SELECT 	COUNT(*)
-	FROM 	NOTICE
+	FROM 	NOTICE NO INNER JOIN tb_userinfo UI ON NO.loginID = UI.loginID
 	<where>
-		<if test="type != null">
-			<choose>
-				<when test="type.equals('TC')">
-					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
-				</when>
-				<when test="type.equals('W')">
-					AND UI.NAME = #{name}
-				</when>
-				<otherwise>
-					AND NO.NOT_TITLE = #{notTitle} AND NO.NOT_CON = #{notCon}
-				</otherwise>
-			</choose>
-		</if>
-		<if test="startDate != null and endDate != ''">
-			AND NO.NOT_DATE BETWEEN #{startDate} AND #{endDate}
-		</if>
+		<choose>
+			<when test="type != null and !type.equals('')">
+				<if test="type.equals('T'.toString())">
+					AND NO.NOT_TITLE LIKE CONCAT("%", #{keyword}, "%")
+				</if>
+				<if test="type.equals('W'.toString())">
+					AND UI.name LIKE CONCAT("%", #{keyword}, "%")
+				</if>
+				<if test="type.equals('TC')">
+					AND NO.NOT_TITLE LIKE CONCAT("%", #{keyword}, "%") AND NO.NOT_CON LIKE CONCAT("%", #{keyword}, "%")
+				</if>
+			</when>
+	
+			<when test="(startDate != null) and (!endDate.equals(''))">
+				AND DATE_FORMAT(NO.NOT_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
+			</when>
+			<when test="view != null">
+				AND NO.NOT_CODE = #{notCode}
+			</when>
+		</choose>
 	</where>
 </select>
+
+<insert id="insertNotice" parameterType="java.util.HashMap">
+	<selectKey keyProperty="notCode" resultType="int" order="BEFORE">
+		SELECT IFNULL(MAX(NOT_CODE) + 1, 1)
+		FROM NOTICE
+	</selectKey>
+	INSERT INTO NOTICE(NOT_CODE, loginID, NOT_TITLE, NOT_CON, NOT_DATE, NOT_VIEW)
+	VALUES (#{notCode}, #{loginId}, #{notTitle}, #{notCon}, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'), DEFAULT)
+</insert>
+
+<update id="updateNotice" parameterType="java.util.HashMap">
+	UPDATE NOTICE
+	<if test="view != null">
+		SET NOT_VIEW = (SELECT 	NT.VIEW
+						FROM	(SELECT	MAX(NOT_VIEW) + 1 AS 'VIEW'
+								 FROM	NOTICE
+								 WHERE	NOT_CODE = #{notCode}) NT)
+	</if>
+	<if test="notCon != null">
+		SET NOT_TITLE = #{notTitle},
+			NOT_CON = #{notCon},
+			NOT_DATE = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+	</if>
+	WHERE NOT_CODE = CAST(#{notCode} AS SIGNED INT)
+</update>
+
+<delete id="deleteNotice" parameterType="java.util.HashMap">
+	DELETE FROM NOTICE
+	WHERE NOT_CODE = #{notCode}
+</delete>
 
 </mapper>
