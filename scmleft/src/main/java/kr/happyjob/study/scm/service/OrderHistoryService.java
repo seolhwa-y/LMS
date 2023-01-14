@@ -83,7 +83,7 @@ public class OrderHistoryService implements OrderHistoryInter {
 	private void insertBorderDirectionCtl(HashMap<String, Object> map) {
 		String message = "발주지시서 등록이 실패하셨습니다.";
 		
-		map.put("dirType", "1");
+		map.put("dirType", "0");
 		if(this.convertToBoolean(this.sql.insert("insertDirection", map))) {
 			if(this.convertToBoolean(this.sql.insert("insertBorderInfo", map))) {
 				System.err.println("지시서 및 발주정보 모두 등록 완료");

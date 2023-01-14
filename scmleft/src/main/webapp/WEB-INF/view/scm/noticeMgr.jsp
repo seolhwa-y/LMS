@@ -37,8 +37,8 @@
 			methods: {
 				/* 공지사항 검색 및 페이징 */
 				searchNotice : function(pageNum){
-					if(search.endDate.replaceAll("-", "") - search.startDate.replaceAll("-", "") < 0) return alert("날짜를 다시 선택하세요.");
-					if(search.search == "" && search.keyword != "") return alert("검색구분을 선택하세요.");
+					if(search.endDate.replaceAll("-", "") - search.startDate.replaceAll("-", "") < 0) return swal("날짜를 다시 선택하세요.");
+					if(search.search == "" && search.keyword != "") return swal("검색구분을 선택하세요.");
 					
 					var currentPage = (pageNum != undefined ? pageNum : vueNotice.pageNum) || 1;
 					var param = {
@@ -86,6 +86,7 @@
 					var detailCallBack = function(data) {
 						noticeModalFeel(false, data.result);
 						gfModalPop("#noticeModal");
+						swal(data.result.message);
 					}
 					
 					callAjax("/scm/checkNoticeList", "post", "json", true, param, detailCallBack);
@@ -129,13 +130,12 @@
 							notTitle : vueNoticeDetail.notTitle,
 							notCon : vueNoticeDetail.notCon,
 					}
-
 					var detailCallBack = function(data) {
 						vueNotice.noticelist = data.result.noticeList;
 						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
 					
 						gfCloseModal();
-						alert(data.result.message);
+						swal(data.result.message);
 					}
 					
 					num == 1 ? callAjax("/scm/insertNotice", "post", "json", true, param, detailCallBack) 
@@ -151,13 +151,12 @@
 							listCount : listCount,
 							notCode : vueNoticeDetail.notCode,
 					}
-
 					var detailCallBack = function(data) {
 						vueNotice.noticelist = data.result.noticeList;
 						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
 					
 						gfCloseModal();
-						alert(data.result.message);
+						swal(data.result.message);
 					}
 					
 					callAjax("/scm/deleteNotice", "post", "json", true, param, detailCallBack);
@@ -173,12 +172,14 @@
 	
 	// 모달 내용 경우의 수
 	function noticeModalFeel(action, data){
+		var date = new Date();
+
 		switch(action){
 		case true : 
 			vueNoticeDetail.notCode = "";
 			vueNoticeDetail.notTitle = "";
 			vueNoticeDetail.name = vueNotice.loginName;
-			vueNoticeDetail.notDate = "";
+			vueNoticeDetail.notDate = date.toLocaleDateString();
 			vueNoticeDetail.notCon = "";
 			vueNoticeDetail.nameRead = "";
 			vueNoticeDetail.notDateRead = "";
