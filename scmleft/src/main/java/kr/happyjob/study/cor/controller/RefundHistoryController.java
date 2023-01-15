@@ -34,7 +34,7 @@ public class RefundHistoryController {
 			map.put("pageNum", "1");
 		    map.put("listCount", "10");
 			model.addAttribute("result", gson.toJson(rhi.getReturnList(map)));
-			System.out.println(rhi.getReturnList(map));
+
 			return page;
 		}
 		

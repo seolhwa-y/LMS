@@ -23,7 +23,7 @@
 	function init(){
 		/* 서치바 */
 		search = new Vue({
-			el: "#divSarchBar",
+			el: "#divSearchBar",
 			data: {
 				search : "",
 				options : [{value : "", text : "검색요건", disabled : "disabled", selected : "selected"},
@@ -236,7 +236,7 @@
 							<br>
 							
 							<!-- 검색 영역 -->
-							<div id = "divSarchBar">
+							<div id = "divSearchBar">
 									<select v-model = "search">
 										<template v-for = "sear in options">
 											<option :value = "sear.value" :disabled = "sear.disabled" :selected = "sear.selected" >{{sear.text}}</option>
@@ -254,7 +254,6 @@
 							<!-- 게시글 목록 영역 -->
 							<div id = "divNoticeList">
 								 <table class="col">
-		                              <caption>caption</caption>
 		                              <colgroup>
 		                                 <col width="5%">
 		                                 <col width="30%">
