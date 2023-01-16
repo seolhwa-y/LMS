@@ -42,6 +42,7 @@
 			</if>
 		</if>
 	</where>
+	ORDER BY	DI.DIR_DATE DESC
 	LIMIT	#{startPage}, #{endPage}
 </select>
 

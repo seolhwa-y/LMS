@@ -63,7 +63,7 @@
 		vuePurchaseDirection = new Vue({
 			  el: '#divPurchaseList',
 			  data: {
-				  purDirectionlist: ${result}.purDirectionList,
+				  purDirectionList: ${result}.purDirectionList,
 				  pagenavi: getPaginationHtml(1, ${result}.purDirectionCount, listCount, pageCount, 'paging'),
 			   	  pageNum : '',
 			  },
@@ -142,7 +142,7 @@
 									</tr>
 								</thead>
 								<tbody>
-									<tr v-for = " (item, index) in purDirectionlist" v-if = "purDirectionlist.length > 0">
+									<tr v-for = " (item, index) in purDirectionList" v-if = "purDirectionList.length > 0">
 									    <td>{{ index + 1 }}</td>
 										<td>{{ item.bordCode }}</td>
 										<td>{{ item.companyName }}</td>
@@ -153,7 +153,7 @@
 										<td>{{ item.dirDate }}</td>
 										<td>{{ item.bordType }}</td>
 									</tr>
-									<tr v-if = "purDirectionlist.length == 0">
+									<tr v-if = "purDirectionList.length == 0">
 		                            	<td colspan="9">검색된 데이터가 없습니다.</td>
 		                            </tr>   
 								</tbody>
@@ -161,6 +161,7 @@
 							<div class = "paging_area"  id = "divPurDirectionPaging" v-html = "pagenavi"></div>
                            	<input type="hidden" v-model="pageNum" />
 						</div>
+					</div>
 				</li>
 			</ul>
 		</div>

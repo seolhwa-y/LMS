@@ -200,14 +200,14 @@
 		           </thead>
 		           <tbody>
 		           		<tr v-on:click = "showReturnDetail(reCode)" >
-		              		<td v-model = "reCode"> {{ reCode }} </td>
-		              		<td v-model = "jordCode"> {{ jordCode }} </td>
-			                <td v-model = "pdName"> {{ pdName }} </td>
-			                <td v-model = "pdCode"> {{ pdCode }} </td>
-			                <td v-model = "reAmt"> {{ reAmt }} </td>
-			                <td v-model = "reDate"> {{ reDate }} </td>   
-			                <td v-model = "reType"> {{ reType }} </td>
-			                <td v-model = "total"> {{ total }} </td>
+		              		<td> {{ reCode }} </td>
+		              		<td> {{ jordCode }} </td>
+			                <td> {{ pdName }} </td>
+			                <td> {{ pdCode }} </td>
+			                <td > {{ reAmt }} </td>
+			                <td> {{ reDate }} </td>   
+			                <td> {{ reType }} </td>
+			                <td> {{ total }} </td>
 		                </tr>                           
 		          </tbody>
 				</table>

@@ -39,7 +39,7 @@
 	
 	// 차트 그리기
     function makeChart (list) {
-		if(list[0] == null) return document.querySelector("#chart").innerHTML = "";;
+		document.querySelector("#chart").innerHTML = "";
 		let name = [], price = [];
 		
 		list.forEach((srList) => {

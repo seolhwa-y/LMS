@@ -3,33 +3,66 @@
 
 <mapper namespace="kr.happyjob.study.cmp.dao.OrderConfirmDao">
 
-	<!-- 구매 리스트 목록조회 -->
-	<select id = "orderConfirmMgt" resultType = "kr.happyjob.study.cmp.model.OrderConfirmModel">
-					select DI.DIR_CODE
-					      ,ui.company
-					      ,PN.PD_NAME
-					      ,JI.JORD_AMT
-					      ,PN.PD_PRICE
-					      ,DATE_FORMAT(JI.JORD_DATE, '%Y-%m-%d') as JORD_DATE
-					      
-						from DIRECTION DI	
-						  inner join BORDER_INFO BI on DI.DIR_CODE = BI.DIR_CODE
-						  inner join tb_userinfo ui ON ui.loginID = DI.loginID
-						  inner join JORDER_INFO JI on BI.JORD_CODE = JI.JORD_CODE and BI.MODEL_CODE = JI.MODEL_CODE
-						  inner join PD_INFO PN ON PN.MODEL_CODE = JI.MODEL_CODE
+	<select id = "orderConfirmList" parameterType="java.util.HashMap" resultType = "kr.happyjob.study.cmp.model.OrderConfirmModel">
+		SELECT	BI.BORD_CODE AS 'BORDCODE',
+				PD.COMPANYNAME,
+				BI.MODEL_CODE  AS 'MODELCODE',
+				PD.PDNAME,
+				FORMAT(BI.BORD_AMT, 0)  AS 'BORDAMT',
+				FORMAT((BI.BORD_AMT * PD.PD_PRICE), 0) AS 'TOTAL',
+				DATE_FORMAT(DI.DIR_DATE, '%Y-%m-%d')  AS 'DIRDATE',
+				BI.BORD_TYPE AS 'BORDTYPE',
+				DC.detail_name  AS 'TYPENAME'
+		FROM 	BORDER_INFO BI INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+							   INNER JOIN (SELECT	PD.MODEL_CODE,
+							   						PD.PD_NAME AS 'PDNAME',
+							   						PD.PD_PRICE,
+							   						PD.loginID AS 'LOGINID',
+							   						UI.company AS 'COMPANYNAME'
+							   			   FROM		PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID) PD ON BI.MODEL_CODE = PD.MODEL_CODE
+							   INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND BI.BORD_TYPE = DC.detail_code
+		<where>
+			AND BI.BORD_TYPE <![CDATA[<]]> 3
+			<choose>
+				<when test = "keyword != null">
+					AND PD.PDNAME LIKE CONCAT('%', #{keyword}, '%')
+				</when>
+				<when test = "startDate != null and !endDate.equles('')">
+					AND DI.DIR_DATE BETWEEN #{startDate} AND #{endDate}
+				</when>
+			</choose>
+		</where>
+		LIMIT 	#{startPage}, #{endPage}
 	</select>
-	
-	<!-- 구매승인 목록 총 갯수 조회 -->
-	<select id="orderConfirmMgtcnt" resultType="int">
-			  select count(*)
-					
-				from DIRECTION DI
-				  inner join BORDER_INFO BI on DI.DIR_CODE = BI.DIR_CODE
-				  inner join tb_userinfo ui ON ui.loginID = DI.loginID
-				  inner join JORDER_INFO JI on BI.JORD_CODE = JI.JORD_CODE and BI.MODEL_CODE = JI.MODEL_CODE
-				  inner join PD_INFO PN ON PN.MODEL_CODE = JI.MODEL_CODE
-				  
+
+	<select id="orderConfirmCount" parameterType="java.util.HashMap" resultType="int">
+		SELECT	COUNT(*)
+		FROM 	BORDER_INFO BI INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+							   INNER JOIN (SELECT	PD.MODEL_CODE,
+							   						PD.PD_NAME AS 'PDNAME',
+							   						PD.PD_PRICE,
+							   						PD.loginID AS 'LOGINID',
+							   						UI.company AS 'COMPANYNAME'
+							   			   FROM		PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID) PD ON BI.MODEL_CODE = PD.MODEL_CODE
+							   INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND BI.BORD_TYPE = DC.detail_code
+		<where>
+			AND BI.BORD_TYPE <![CDATA[<]]> 3
+			<choose>
+				<when test = "keyword != null">
+					AND PD.PDNAME LIKE CONCAT('%', #{keyword}, '%')
+				</when>
+				<when test = "startDate != null and !endDate.equles('')">
+					AND DI.DIR_DATE BETWEEN #{startDate} AND #{endDate}
+				</when>
+			</choose>
+		</where>
+		LIMIT 	#{startPage}, #{endPage}
 	</select>	
 
+	<update id="updateBorderType" parameterType="java.util.HashMap">
+		UPDATE	BORDER_INFO
+		SET		BORD_TYPE = #{bordType}
+		WHERE	BORD_CODE = #{bordCode}
+	</update>
 </mapper>
 

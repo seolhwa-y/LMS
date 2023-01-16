@@ -2,53 +2,117 @@ package kr.happyjob.study.cmp.model;
 
 
 public class OrderConfirmModel {
-	private String DIR_CODE;
-	private String company;
-	private String JORD_AMT;
-	private String JORD_DATE;
-	private String PD_NAME;
-	private String PD_PRICE;
+	private int bordCode;
+	private String companyName;
+	private int modelCode;
+	private String pdName;
+	private int bordAmt;
+	private String total;
+	private String dirDate;
+	private String bordType;
+	private String typeName;
+	
+	private String keyword;
+	private String startDate;
+	private String endDate;
+	private int startPage;
+	private int endPage;
+	
+	
+	
+	public int getBordCode() {
+		return bordCode;
+	}
+	public void setBordCode(int bordCode) {
+		this.bordCode = bordCode;
+	}
+	public String getCompanyName() {
+		return companyName;
+	}
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+	public int getModelCode() {
+		return modelCode;
+	}
+	public void setModelCode(int modelCode) {
+		this.modelCode = modelCode;
+	}
+	public String getPdName() {
+		return pdName;
+	}
+	public void setPdName(String pdName) {
+		this.pdName = pdName;
+	}
+	public int getBordAmt() {
+		return bordAmt;
+	}
+	public void setBordAmt(int bordAmt) {
+		this.bordAmt = bordAmt;
+	}
+	public String getTotal() {
+		return total;
+	}
+	public void setTotal(String total) {
+		this.total = total;
+	}
+	public String getDirDate() {
+		return dirDate;
+	}
+	public void setDirDate(String dirDate) {
+		this.dirDate = dirDate;
+	}
+	public String getBordType() {
+		return bordType;
+	}
+	public void setBordType(String bordType) {
+		this.bordType = bordType;
+	}
+	public String getTypeName() {
+		return typeName;
+	}
+	public void setTypeName(String typeName) {
+		this.typeName = typeName;
+	}
+	public String getKeyword() {
+		return keyword;
+	}
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
+	}
+	public String getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+	public String getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
+	public int getStartPage() {
+		return startPage;
+	}
+	public void setStartPage(int startPage) {
+		this.startPage = startPage;
+	}
+	public int getEndPage() {
+		return endPage;
+	}
+	public void setEndPage(int endPage) {
+		this.endPage = endPage;
+	}
+	
 	
 	@Override
 	public String toString() {
-		return "OrderConfirmModel [DIR_CODE=" + DIR_CODE + ", company=" + company + ", JORD_AMT=" + JORD_AMT
-				+ ", JORD_DATE=" + JORD_DATE + ", PD_NAME=" + PD_NAME + ", PD_PRICE=" + PD_PRICE + "]";
+		return "OrderConfirmModel [bordCode=" + bordCode + ", companyName=" + companyName + ", modelCode=" + modelCode
+				+ ", pdName=" + pdName + ", bordAmt=" + bordAmt + ", total=" + total + ", dirDate=" + dirDate
+				+ ", bordType=" + bordType + ", typeName=" + typeName + ", keyword=" + keyword + ", startDate="
+				+ startDate + ", endDate=" + endDate + ", startPage=" + startPage + ", endPage=" + endPage + "]";
 	}
-	public String getDIR_CODE() {
-		return DIR_CODE;
-	}
-	public void setDIR_CODE(String dIR_CODE) {
-		DIR_CODE = dIR_CODE;
-	}
-	public String getCompany() {
-		return company;
-	}
-	public void setCompany(String company) {
-		this.company = company;
-	}
-	public String getJORD_AMT() {
-		return JORD_AMT;
-	}
-	public void setJORD_AMT(String jORD_AMT) {
-		JORD_AMT = jORD_AMT;
-	}
-	public String getJORD_DATE() {
-		return JORD_DATE;
-	}
-	public void setJORD_DATE(String jORD_DATE) {
-		JORD_DATE = jORD_DATE;
-	}
-	public String getPD_NAME() {
-		return PD_NAME;
-	}
-	public void setPD_NAME(String pD_NAME) {
-		PD_NAME = pD_NAME;
-	}
-	public String getPD_PRICE() {
-		return PD_PRICE;
-	}
-	public void setPD_PRICE(String pD_PRICE) {
-		PD_PRICE = pD_PRICE;
-	}
-
+	
+	
 }

@@ -1,29 +1,35 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- abc -->
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<title>구매승인 </title>
-<!-- sweet alert import -->
-<script src='${CTX_PATH}/js/sweetalert/sweetalert.min.js'></script>
+<title>Job Korea :: 구매승인</title>
+
 <jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
-<!-- sweet swal import -->
+<script src="https://unpkg.com/axios@0.12.0/dist/axios.min.js"></script>
+<script src="https://unpkg.com/lodash@4.13.1/lodash.min.js"></script>
 
 <script type="text/javascript">
+	
+	/* 초기 공지 사항 뷰 선언문 */
+	var listCount = 10;
+	var pageCount = 10;
+	var vueSearch;	// 서치바
+	var vueOrderConfirm; // 발주승인 리스트
 
 
-    //페이지 관리 
+/** 기존 담당자 jQuery 방식
+	//페이지 관리 
     
     var pagesize = 5;
     var pagenumsize = 5;
 
     
-	/** OnLoad event */ 
+	// OnLoad event 
 		$(function() {
 		
 		// 게시판 조회
@@ -34,7 +40,7 @@
 		
 	});
 	
-		/** 버튼 이벤트 등록 */
+		// 버튼 이벤트 등록 
 		function fRegisterButtonClickEvent() {
 			$('a[name=btn]').click(function(e) {
 				e.preventDefault();
@@ -104,106 +110,167 @@
 			$("#orderConfirmMgtPagination").empty().append( paginationHtml );
 			
 			$("#hclickpagenum").val(clickpagenum);
-		}	
+		} */	
 		
-
+		
+		function init() {
+			
+			/* 서치바 */
+			vueSearch = new Vue({
+				 el : '#spanSearchBar',  
+		         data : {
+		        	 keyword : '',
+		        	 startDate : '',
+		        	 endDate : '',
+		         },
+		         methods : {
+		        	 searchBorder : function(pageNum) {
+		        		 var currentPage = (pageNum != undefined ? pageNum : vueOrderConfirm.pageNum) || 1;
+		        		 if(vueSearch.endDate.replaceAll("-", "") - vueSearch.startDate.replaceAll("-", "") < 0) return swal("날짜를 다시 선택하세요.");
+		        		 
+		        		 var param = {
+								 pageNum : currentPage, 
+								 listCount : listCount,
+								 keyword : vueSearch.keyword, // 검색어
+								 startDate : vueSearch.startDate.replaceAll("-", ""),
+								 endDate : vueSearch.endDate.replaceAll("-", ""),
+						} 
+						 
+						var listCallBack = function(data) {
+		        			 console.log(data);
+		        			 console.log(data.result.orderConfirmList);
+		        			 console.log(data.result.orderConfirmCount);
+		        			 
+		        			 vueOrderConfirm.orderConfirmList = data.result.orderConfirmList;
+		        			 vueOrderConfirm.pagenavi = getPaginationHtml(currentPage, data.result.orderConfirmCount, listCount, pageCount, 'paging');
+		        			 vueOrderConfirm.pageNum = currentPage;
+						}
+						
+						callAjax("/cmp/searchOrderConfirmlist", "post", "json", true, param, listCallBack);
+		        	 }
+		         }
+			});
+			
+		    /* 발주승인 리스트 */
+			vueOrderConfirm = new Vue({
+				  el : '#divOrderConfirmList',
+				  data : {
+					  orderConfirmList : ${result}.orderConfirmList,
+					  pagenavi : getPaginationHtml(1, ${result}.orderConfirmCount, listCount, pageCount, 'paging'),
+				   	  pageNum : '',
+				  },
+				  methods : {
+					 confirmBorder : function(bordType, bordCode) {
+						 var param = {
+								 bordType : bordType,
+								 bordCode : bordCode,
+						} 
+						 
+						var listCallBack = function(data) { 
+							 console.log(data.messge);
+							 vueSearch.searchBorder(vueOrderConfirm.pageNum);
+						}
+						
+						callAjax("/cmp/updateBorderType", "post", "json", true, param, listCallBack);
+					 }
+				 }
+			});	  
+		}
+		
+		
+		// 페이징 처리를 위해 해당 function 연결
+		function paging(pageNum){
+			vueSearch.searchBorder(pageNum);
+		}
+		
 </script>
 
 </head>
-<body>
-<form id="myForm" action=""  method="">
-	<input type="hidden" id="hclickpagenum" name="hclickpagenum"  value="" />
-	<input type="hidden" id="action" name="action"  value="" />
-	<input type="hidden" id="loginID" name="loginID" value =""/>
-	<input type="hidden" id="DIR_CODE" name="DIR_CODE" value =""/>
-		
-	<!-- 모달 배경 -->
-	<div id="mask"></div>
+<body onload="init()">
+	<form id="myForm" action="" method="">
+		<div id="mask"></div>
+		<div id="wrap_area">
+			<div id="container">
+				<ul>
+					<li class="lnb">
+						<jsp:include page="/WEB-INF/view/common/lnbMenu.jsp"></jsp:include>
+					</li>
+					<li class="contents">
+						<div class="content">
+							<p class="Location">
+								<a href="../dashboard/dashboard.do" class="btn_set home">메인으로</a>
+								<span class="btn_nav bold">승인</span> 
+								<span class="btn_nav bold">구매승인</span> 
+								<a href="../system/comnCodMgr.do" class="btn_set refresh">새로고침</a>
+							</p>
+							<p class="conTitle">
+								<span>구매 승인</span>
 
-	<div id="wrap_area">
+								<!-- 검색영역 -->
+								<span class="fr" id = "spanSearchBar"> 
+									<span> 제품명 </span> 
+									<input type="text"style="width: 300px; height: 25px;" id="searchvalue" name="searchvalue" v-model="keyword"> 
+									<input type="date" id="sdate" v-model="startDate"> 
+									<span> ~ </span> 
+									<input type="date" id="edate" v-model="endDate">
+									<a class="btnType blue" id="btnsearch" name="btn" v-on:click="searchBorder()"> 
+										<span>검 색</span>
+									</a>
+								</span>
+							</p>
 
-		<h2 class="hidden">header 영역</h2>
-		<jsp:include page="/WEB-INF/view/common/header.jsp"></jsp:include>
 
-		<h2 class="hidden">컨텐츠 영역</h2>
-		<div id="container">
-			<ul>
-				<li class="lnb">
-					<!-- lnb 영역 --> <jsp:include
-						page="/WEB-INF/view/common/lnbMenu.jsp"></jsp:include> <!--// lnb 영역 -->
-				</li>
-				<li class="contents">
-					<!-- contents -->
-					<h3 class="hidden">contents 영역</h3> <!-- content -->
-					<div class="content">
-
-						<p class="Location">
-							<a href="../dashboard/dashboard.do" class="btn_set home">메인으로</a> <span
-								class="btn_nav bold">승인</span> <span class="btn_nav bold">구매 승인</span> <a href="../system/comnCodMgr.do" class="btn_set refresh">새로고침</a>
-						</p>
-
-						<p class="conTitle">
-							<span>구매 승인</span> <span class="fr"> 
-							</span>
-						</p>
-						<table style="margin-top: 10px" width="100%" cellpadding="5" cellspacing="0" border="1"  align="left"   style="collapse; border: 1px #50bcdf;">
-	                        <tr style="border: 0px; border-color: blue">
-	                           <td width="50" height="25" style="font-size: 100%; text-align:left; padding-right:25px;">
-
-									
-		     	         <span> 제품명 </span>   
-		     	         
-		     	         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		     	         
-		     	         <input type="text" style="width: 300px; height: 25px;" id="searchvalue" name="searchvalue">
-	     	             <span align="left" >
-		                 
-						 <span class="fr"> 	  
-						  		<input type="date" id="sdate"> ~ <input type = "date" id ="edate">
-						  		&nbsp;&nbsp;&nbsp;&nbsp;
-							    <a  class="btnType blue" id="btnsearch" name="btn"><span>검  색</span></a></span>
-						 </span>  	                       	                            
-		                        
-	                           </td> 	                           
-	                        </tr>	
-                        </table> 
-                        
-                   	<div class="divfileuploadList">
-							<table class="col">
-								<caption>caption</caption>
-								<colgroup>
-									<col width="20%">
-									<col width="15%">
-									<col width="15%">
-									<col width="15%">
-									<col width="15%">
-									<col width="15%">
-																		
-								</colgroup>
-	
-								<thead>
-									<tr>
-										<th scope="col">발주업체명</th>
-										<th scope="col">제품명</th>
-										<th scope="col">수량</th>
-										<th scope="col">금액</th>
-										<th scope="col">구매일자</th>
-										<th scope="col">구매 승인</th>
-									</tr>
-								</thead>
-								
-								<tbody id="orderConfirmMgt"></tbody> 
-							</table>
-							<div class="paging_area"  id="orderConfirmMgtPagination"> </div>
-						</div>
-						                      
-					<h3 class="hidden">풋터 영역</h3>
-						<jsp:include page="/WEB-INF/view/common/footer.jsp"></jsp:include>
-				</li>
-			</ul>
-			
-		</div>	
-	</div>
-</form>
+							<!-- 발주승인 테이블 영역 -->
+							<div id = "divOrderConfirmList">
+								<table class="col">
+									<colgroup>
+										<col width="10%">
+										<col width="20%">
+										<col width="10%">
+										<col width="15%">
+										<col width="10%">
+										<col width="20%">
+									</colgroup>
+									<thead>
+										<tr>
+											<th scope="col">발주업체명</th>
+											<th scope="col">제품명</th>
+											<th scope="col">수량</th>
+											<th scope="col">금액</th>
+											<th scope="col">구매일자</th>
+											<th scope="col">구매 승인</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for = " (item, index) in orderConfirmList" v-if = "orderConfirmList.length > 0">
+											<td> {{ item.companyName }} </td>
+											<td> {{ item.pdName }} </td>
+											<td> {{ item.bordAmt }} </td>
+											<td> {{ item.total }} </td>
+											<td> {{ item.dirDate }} </td>
+										 	<td v-if = "item.bordType == 0"> 
+												<a class="btnType blue" v-on:click="confirmBorder('1', item.bordCode)"> 
+													<span>승인</span>
+												</a> 
+												<a class="btnType gray" v-on:click="confirmBorder('2', item.bordCode)"> 
+													<span>반려</span>
+												</a> 
+											</td>
+											<td v-if="item.bordType != 0">{{ item.typeName }}</td>
+										</tr>
+										<tr v-else-if = "orderConfirmList.length == 0">
+											<td colspan="6">검색된 데이터가 없습니다.</td>
+										</tr>
+									</tbody>
+								</table>
+								<div class="paging_area" id="orderConfirmMgtPagination" v-html="pagenavi"></div>
+								<input type="hidden" v-model="pageNum" />
+							</div>
+						</div>	
+					</li>
+				</ul>
+			</div>
+		</div>
+	</form>
 </body>
 </html>
