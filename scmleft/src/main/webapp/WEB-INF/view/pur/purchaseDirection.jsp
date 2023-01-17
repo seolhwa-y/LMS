@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Job Korea :: 발주지시서</title>
+<title>Job Korea :: 발주지시서 목록</title>
 
 
 <jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
@@ -23,8 +23,6 @@
 	var vuePurchaseDirectionModal; // 발주지시서 상세보기
 
 	function init() {
-		
-		console.log(${result});
 		
 		/* 서치바 */
 		vueSearch = new Vue({
@@ -72,8 +70,6 @@
 			  methods : {
 				  /* 발주지시서 상세보기 */
 				  showBordDirectionDetail : function(bordCode){
-					  console.log(bordCode);
-					  
 					  var param = {
 							  pageNum : vuePurchaseDirection.pageNum, 
 	 						  listCount : listCount,
@@ -81,8 +77,6 @@
 	 				  } 
 	  					 
 	 				  var listCallBack = function(data) {
-						  console.log(data);
-						  
 						  vuePurchaseDirectionModal.bordCode = data.result.purDirectionList[0].bordCode,
 						  vuePurchaseDirectionModal.companyName = data.result.purDirectionList[0].companyName,
 						  vuePurchaseDirectionModal.name = data.result.purDirectionList[0].name,
@@ -117,9 +111,6 @@
 			methods : {
 				/* 발주지시서 입금처리 */
 				updBordDirection : function(){
-					console.log("sdfsdfsdfsdf");
-					console.log(vuePurchaseDirectionModal.bordCode);
-					
 					 var param = {
 							 pageNum : vuePurchaseDirection.pageNum, 
 	 						 listCount : listCount,
@@ -162,7 +153,7 @@
 						<p class="Location">
 							<a href="#" class="btn_set home">메인으로</a> 
 							<a href="#" class="btn_nav">납품업체</a> 
-							<span class="btn_nav bold">발주지시서</span> 
+							<span class="btn_nav bold">발주지시서 목록</span> 
 							<a onClick="top.location='javascript:location.reload()'" class="btn_set refresh">새로고침</a>
 						</p>
 						
@@ -198,7 +189,7 @@
 								<thead>
 									<tr>
 									    <th scope="col">발주번호</th>
-										<th scope="col">발주업체</th>
+										<th scope="col">납품업체</th>
 										<th scope="col">제품명</th>
 										<th scope="col">날짜</th>
 										<th scope="col">여부</th>

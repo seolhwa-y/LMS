@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.pur.dao.ReturnPurchaseDAO">
+	<select id="getPurReturnDirectionList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.pur.model.ReturnPurchaseModel">
+		SELECT 		RI.RE_CODE AS 'RECODE',
+					RI.BORD_CODE AS 'BORDCODE',
+					UI.company AS 'COMPANYNAME',
+					DATE_FORMAT(DI.DIR_DATE, '%Y-%m-%d') AS 'DIRDATE',
+					UI.name AS 'NAME',
+					PD.PD_NAME AS 'PDNAME',
+					FORMAT(RI.RE_AMT, 0) AS 'REAMT',
+					FORMAT((RI.RE_AMT * PD.PD_PRICE), 0) AS 'TOTAL',
+					WI.WH_NAME AS 'WHNAME',
+					RI.RE_TYPE AS 'RETYPE',
+					DCT.detail_name AS 'TYPYNAME',
+					RI.RE_OUT AS 'REOUT',
+					DCO.detail_name AS 'OUTNAME'
+		FROM 		RETURN_INFO RI INNER JOIN BORDER_INFO BI ON RI.BORD_CODE = BI.BORD_CODE 
+								   INNER JOIN DIRECTION DI ON RI.DIR_CODE = DI.DIR_CODE 
+								   INNER JOIN PD_INFO PD ON RI.MODEL_CODE = PD.MODEL_CODE 
+								   INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID  
+								   INNER JOIN WHOUSE_INFO WI ON RI.WH_CODE = WI.WH_CODE 
+								   INNER JOIN tb_detail_code DCT ON DCT.group_code = 'approvalCD' AND RI.RE_TYPE = DCT.detail_code
+								   INNER JOIN tb_detail_code DCO ON DCO.group_code = 'depositCD' AND RI.RE_OUT = DCO.detail_code
+		<where>
+			AND RI.RE_TYPE != 0
+			<if test="type != null and !type.equals('')">
+				<choose>
+					<when test="type.equals('companyName')">
+						AND UI.company LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test="type.equals('pdName')">
+						AND PD.PD_NAME LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test = "type.equals('all')">
+						AND (UI.company LIKE CONCAT('%', #{keyword},'%') OR PD.PD_NAME LIKE CONCAT('%', #{keyword},'%')) 
+					</when>
+				</choose>
+				<if test="(startDate != null) and (!endDate.equals(''))">
+					AND DATE_FORMAT(DI.DIR_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
+				</if>
+			</if>
+			<if test="(reCode != null) and (!reCode.equals(''))">
+				AND RI.RE_CODE = #{reCode}
+			</if>
+		</where>
+		ORDER BY 	DI.DIR_DATE DESC, RI.RE_CODE 
+		LIMIT		#{startPage}, #{endPage}
+	</select>
+	
+	
+	<select id = "getPurReturnDirectionCount" resultType="int" parameterType="java.util.HashMap">
+		SELECT 		COUNT(*)
+		FROM 		RETURN_INFO RI INNER JOIN BORDER_INFO BI ON RI.BORD_CODE = BI.BORD_CODE 
+								   INNER JOIN DIRECTION DI ON RI.DIR_CODE = DI.DIR_CODE 
+								   INNER JOIN PD_INFO PD ON RI.MODEL_CODE = PD.MODEL_CODE 
+								   INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID  
+								   INNER JOIN WHOUSE_INFO WI ON RI.WH_CODE = WI.WH_CODE 
+								   INNER JOIN tb_detail_code DCT ON DCT.group_code = 'approvalCD' AND RI.RE_TYPE = DCT.detail_code
+								   INNER JOIN tb_detail_code DCO ON DCO.group_code = 'depositCD' AND RI.RE_OUT = DCO.detail_code
+		<where>
+			AND RI.RE_TYPE != 0
+			<if test="type != null and !type.equals('')">
+				<choose>
+					<when test="type.equals('companyName')">
+						AND UI.company LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test="type.equals('pdName')">
+						AND PD.PD_NAME LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test = "type.equals('all')">
+						AND (UI.company LIKE CONCAT('%', #{keyword},'%') OR PD.PD_NAME LIKE CONCAT('%', #{keyword},'%')) 
+					</when>
+				</choose>
+				<if test="(startDate != null) and (!endDate.equals(''))">
+					AND DATE_FORMAT(DI.DIR_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
+				</if>
+			</if>
+			<if test="(reCode != null) and (!reCode.equals(''))">
+				AND RI.RE_CODE = #{reCode}
+			</if>
+		</where>
+	</select>
+	
+	<update id="updatePurDirectionType" parameterType="java.util.HashMap">
+		UPDATE 	RETURN_INFO
+		SET		RE_OUT = #{reOut}
+		WHERE	RE_CODE = #{reCode}	
+	</update>
+</mapper>

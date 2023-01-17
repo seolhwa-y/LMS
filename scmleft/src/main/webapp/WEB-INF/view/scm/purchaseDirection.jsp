@@ -35,10 +35,10 @@
              },
              methods : {
             	 searchPurchasedirList : function(pageNum){
+            		 
             		 var currentPage = (pageNum != undefined ? pageNum : vuePurchaseDirection.pageNum) || 1;           		 
             		 if(vueSearch.endDate.replaceAll("-", "") - vueSearch.startDate.replaceAll("-", "") < 0) return swal("날짜를 다시 선택하세요.");
  					
-
   					 var param = {
  							 pageNum : currentPage, 
  							 listCount : listCount,
@@ -49,8 +49,9 @@
  					} 
   					 
  					var listCallBack = function(data) {
- 						vuePurchaseDirection.purDirectionlist = data.result.purDirectionList;
- 						vuePurchaseDirection.pagenavi = getPaginationHtml(currentPage, data.result.purDirectionCount, listCount, pageCount, 'paging');
+
+  						vuePurchaseDirection.purDirectionList = data.result.purDirectionList;
+  						vuePurchaseDirection.pagenavi = getPaginationHtml(currentPage, data.result.purDirectionCount, listCount, pageCount, 'paging');
  						vuePurchaseDirection.pageNum = currentPage;
  					}
  					
@@ -65,7 +66,7 @@
 			  data: {
 				  purDirectionList: ${result}.purDirectionList,
 				  pagenavi: getPaginationHtml(1, ${result}.purDirectionCount, listCount, pageCount, 'paging'),
-			   	  pageNum : '',
+			   	  pageNum : 1,
 			  },
 		});	  
 	}

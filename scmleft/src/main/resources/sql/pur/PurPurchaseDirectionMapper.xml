@@ -26,7 +26,7 @@
 								   			   FROM		PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID) PD ON BI.MODEL_CODE = PD.MODEL_CODE
 								   INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND BI.BORD_TYPE = DC.detail_code
 		<where>
-			AND BI.BORD_TYPE != 0 AND BI.BORD_TYPE <![CDATA[<]]> 4
+			AND BI.BORD_TYPE <![CDATA[<]]> 3
 			<if test="type != null and !type.equals('')">
 				<choose>
 					<when test="type.equals('companyName')">
@@ -43,8 +43,11 @@
 					AND DATE_FORMAT(DI.DIR_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
 				</if>
 			</if>
+			<if test="(bordCode != null) and (!bordCode.equals(''))">
+				AND BI.BORD_CODE = #{bordCode}
+			</if>
 		</where>
-		ORDER BY	DI.DIR_DATE DESC
+		ORDER BY	DI.DIR_DATE DESC, BI.BORD_CODE
 		LIMIT		#{startPage}, #{endPage}
 	</select>
 	
@@ -62,7 +65,7 @@
 								   			   FROM		PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID) PD ON BI.MODEL_CODE = PD.MODEL_CODE
 								   INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND BI.BORD_TYPE = DC.detail_code
 		<where>
-			AND BI.BORD_TYPE != 0 AND BI.BORD_TYPE <![CDATA[<]]> 4
+			AND BI.BORD_TYPE <![CDATA[<]]> 3
 			<if test="type != null and !type.equals('')">
 				<choose>
 					<when test="type.equals('companyName')">

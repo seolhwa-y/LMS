@@ -42,7 +42,7 @@
 			</if>
 		</if>
 	</where>
-	ORDER BY	DI.DIR_DATE DESC
+	ORDER BY	DI.DIR_DATE DESC, BI.BORD_CODE
 	LIMIT	#{startPage}, #{endPage}
 </select>
 

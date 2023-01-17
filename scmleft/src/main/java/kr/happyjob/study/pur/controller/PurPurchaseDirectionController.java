@@ -18,7 +18,7 @@ import kr.happyjob.study.pur.service.PurPurchaseDirectionInter;
 @Controller
 @RequestMapping("/pur/")
 public class PurPurchaseDirectionController {
-	@Autowired
+	@Autowired 
 	PurPurchaseDirectionInter pdi;
 	
 	// 페이지 로드시 리스트 + 카운트
@@ -32,8 +32,7 @@ public class PurPurchaseDirectionController {
 		paramMap.put("pageNum", "1");
 		paramMap.put("listCount", "10");
 		model.addAttribute("result", gson.toJson(pdi.getPurDirectionList(paramMap)));
-		System.err.println("data check :: ");
-		System.err.println(pdi.getPurDirectionList(paramMap));
+
 		return page;
 	}
 	
