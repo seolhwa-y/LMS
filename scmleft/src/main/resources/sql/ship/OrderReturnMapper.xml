@@ -4,48 +4,126 @@
 <mapper namespace="kr.happyjob.study.ship.dao.OrderReturnDAO">
 	
 	<!-- 발주지시서 -->	
-	<select id="getOrderReturnList">
-	
+	<select id="getOrderReturnList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.ship.model.OrderReturnModel">
+		SELECT		PD.loginID AS 'LOGINID',
+					UI.company AS 'COMPANYNAME',
+					FORMAT(SUM(((BI.BORD_AMT * PD.PD_PRICE) - (IFNULL(RI.RE_AMT, 0) * PD.PD_PRICE))), 0) AS 'TOTAL'
+		FROM		BORDER_INFO BI LEFT OUTER JOIN RETURN_INFO RI ON BI.BORD_CODE = RI.BORD_CODE 
+								   INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+								   INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
+								   INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
+		WHERE		BI.BORD_TYPE = 3
+		<if test="keyword != null and !keyword.equals('')">
+			AND UI.company LIKE CONCAT('%',#{keyword},'%')
+		</if>
+		<if test="startDate != null and !endDate.equals('')">
+			AND DI.DIR_DATE BETWEEN #{startDate} AND #{endDate}
+		</if>
+		GROUP BY	PD.loginID
+		LIMIT		#{startPage}, #{endPage}
 	</select>
 	
 	<!-- 발주지시서 카운트 -->	
-	<select id="getOrderReturnCount">
-	
+	<select id="getOrderReturnCount" resultType="int">
+		SELECT		COUNT(*)
+		FROM		BORDER_INFO BI LEFT OUTER JOIN RETURN_INFO RI ON BI.BORD_CODE = RI.BORD_CODE 
+								   INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+								   INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
+								   INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
+		WHERE		BI.BORD_TYPE = 3 AND RI.RE_OUT != 1
+		<if test="keyword != null and !keyword.equals('')">
+			AND UI.company LIKE CONCAT('%',#{keyword},'%')
+		</if>
+		<if test="startDate != null and !endDate.equals('')">
+			AND DI.DIR_DATE BETWEEN #{startDate} AND #{endDate}
+		</if>
 	</select>
 	
 	<!-- 발주지시서 상세내역 -->
-	<select id="getOrderReturnDetailList">
-	
+	<select id="getOrderReturnDetailList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.ship.model.OrderReturnModel">
+		SELECT  BI.BORD_CODE AS 'BORDCODE',
+				RI.RE_CODE AS 'RECODE',
+				DC.detail_name AS 'MODELNAME',
+				BI.MODEL_CODE AS 'MODELCODE',
+				PD.PD_NAME AS 'PDNAME',
+				PD.PD_CODE AS 'PDCODE',
+				PD.PD_CORP AS 'PDCORP',
+				DATE_FORMAT(DI.DIR_DATE, '%Y-%m-%d') AS 'DIRDATE',
+				FORMAT(BI.BORD_AMT, 0) AS 'BORDAMT',
+				FORMAT(PD.PD_PRICE, 0) AS 'PDPRICE',
+				BI.WH_CODE AS 'WHCODE',
+				WI.WH_NAME AS 'WHNAME',
+				RI.RE_TYPE AS 'RETYPE'
+		FROM 	BORDER_INFO BI	LEFT OUTER JOIN RETURN_INFO RI ON BI.BORD_CODE = RI.BORD_CODE 
+								INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+								INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
+								INNER JOIN WHOUSE_INFO WI ON BI.WH_CODE = WI.WH_CODE 
+								INNER JOIN tb_detail_code DC ON DC.group_code = 'proCD' AND DC.detail_code = PD.MODEL_NAME 
+		WHERE 	BI.BORD_TYPE = 3 
+				AND PD.loginID = #{loginId}
 	</select>
 	
 	<!-- 발주지시서 상세내역 카운트 -->
-	<select id="getOrderReturnDetailCount">
-	
+	<select id="getOrderReturnDetailCount" resultType="int">
+		SELECT  COUNT(*)
+		FROM 	BORDER_INFO BI	LEFT OUTER JOIN RETURN_INFO RI ON BI.BORD_CODE = RI.BORD_CODE 
+								INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+								INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
+								INNER JOIN WHOUSE_INFO WI ON BI.WH_CODE = WI.WH_CODE 
+								INNER JOIN tb_detail_code DC ON DC.group_code = 'proCD' AND DC.detail_code = PD.MODEL_NAME 
+		WHERE 	BI.BORD_TYPE = 3 AND RI.RE_OUT != 1 
+				AND PD.loginID = #{loginId}
 	</select>
 	
-	<!-- 지시서 -->
-	<insert id="insertReturnDirection">
+	<!-- 발주완료 -->
+	<update id="updateBorderInfo" parameterType="java.util.HashMap">
+		UPDATE	BORDER_INFO  
+		SET		BORD_DATE = DATE_FORMAT(NOW(), '%Y%m%d')
+				AND BORD_TYPE = '4'
+		WHERE	BORD_CODE = #{bordCode}
+	</update>
 	
+	<!-- 반품정보 -->
+	<insert id="insertReturnInfo" parameterType="java.util.HashMap">
+		<selectKey keyProperty="reCode" resultType="int" order="BEFORE">
+			SELECT	IFNULL(MAX(RE_CODE) + 1, 1)
+			FROM	RETURN_INFO
+		</selectKey>
+		INSERT INTO RETURN_INFO (RE_CODE, WH_CODE, MODEL_CODE, BORD_CODE, RE_AMT, RE_TYPE, RE_OUT)
+		VALUES (#{reCode}, #{whCode}, #{modelCode}, #{bordCode}, #{bordAmt}, #{type}, 0)
 	</insert>
 	
 	<!-- 반품정보 -->
-	<insert id="insertReturnInfo">
-	
-	</insert>
-	
-	<!-- 반품정보 -->
-	<update id="updateReturnInfo">
-	
+	<update id="updateReturnInfo" parameterType="java.util.HashMap">
+		UPDATE RETURN_INFO 
+		SET		RE_DATE = DATE_FORMAT(NOW(), '%Y%m%d')
+		WHERE 	RE_CODE = #{reCode}
 	</update>
 	
 	<!-- 창고 입출고 -->
-	<insert id="insertWhouseHousing">
-	
+	<insert id="insertWhouseHousing" parameterType="java.util.HashMap">
+		<selectKey keyProperty="whNo" resultType="int" order="BEFORE">
+			SELECT	IFNULL(MAX(WH_NO) + 1, 1)
+			FROM	WHOUSE_HOUSING
+		</selectKey>
+		INSERT INTO WHOUSE_HOUSING (WH_NO, WH_CODE, MODEL_CODE, loginID, WH_TYPE, WH_AMT, WH_DATE)
+		VALUES (#{whNo}, #{whCode}, #{modelCode}, #{loginId}, <if test="type.equals('in')">0</if>
+															  <if test="type.equals('out')">1</if>, #{whAmt}, DATE_FORMAT(NOW(), '%Y%m%d'))
 	</insert>
 	
 	<!-- 창고 재고 -->
-	<update id="updateWhouseStock">
-	
+	<update id="updateWhouseStock" parameterType="java.util.HashMap">
+		UPDATE	WHOUSE_STOCK  
+		SET		WH_STOCK = (SELECT	WH_STOCK
+							<if test="type.equals('in')">
+								+ #{bordAmt}
+							</if>
+							<if test="type.equals('out')">
+								- #{bordAmt}
+							</if>
+							FROM	WHOUSE_STOCK
+							WHERE	WH_CODE = #{whCode} AND MODEL_CODE = #{modelCode})
+		WHERE	WH_CODE = #{whCode} AND MODEL_CODE = #{modelCode}
 	</update>
 	
 </mapper>

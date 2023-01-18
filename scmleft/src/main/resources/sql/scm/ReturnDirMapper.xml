@@ -5,13 +5,20 @@
 	<select id="returnDirList" resultType="kr.happyjob.study.scm.model.ReturnDirVO">
 						     
 			select  
-			      jn.JORD_DATE
+				  jn.JORD_DATE as jordDate
+			      , jn.loginID as company
+			      , pn.PD_NAME as pdName
+			      , rn.RE_AMT as reAmt
+			      , pn.PD_PRICE*rn.RE_AMT as returnPrice
+			      , dr.loginID as loginId
+			
+<!-- 			      jn.JORD_DATE
 			      , jn.loginID as COMPANY
 			      , pn.PD_NAME
 			      , rn.RE_AMT
 			      , pn.PD_PRICE*rn.RE_AMT as RETURN_PRICE
 			      , dr.loginID
-			      , rn.RE_TYPE
+			      , rn.RE_TYPE -->
 			from RETURN_INFO rn
 			     inner join DIRECTION dr on dr.DIR_CODE = rn.DIR_CODE
 			     inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE

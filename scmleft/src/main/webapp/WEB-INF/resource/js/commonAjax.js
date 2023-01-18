@@ -23,6 +23,7 @@ function callAjax(url, method, dataType, async, param, callback) {
 		dataType : dataType,
 		async : async,
 		data : param,
+		traditional: true,
 		beforeSend: function(xhr) {
 			xhr.setRequestHeader("AJAX", "true");
 			$.blockUI({ message: '<h1><img src="/images/admin/comm/busy.gif" /> Just a moment...</h1>', T:99999 });
