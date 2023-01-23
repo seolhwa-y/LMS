@@ -25,7 +25,7 @@ public class OrderStatusController {
 	public String moveOrderStatusPage(Model model, HttpSession session)  throws Exception {
 		String page = "login/login";
 		
-		if(session.getAttribute("loginId") != null) page ="cor/orderStatus";
+		if(session.getAttribute("loginId") != null) page ="/cor/orderStatus";
 		this.oss.backController(session, model, 1);
 		
 		return page;
@@ -55,6 +55,7 @@ public class OrderStatusController {
 	@ResponseBody
 	@PostMapping("/insReturnProduct")
 	public HashMap<String, Object> insertReturnInfo(HttpSession session, @RequestParam HashMap<String, Object> map) {
+		System.out.println(map);
 		this.oss.backController(session, map, 3);
 	
 		return map;

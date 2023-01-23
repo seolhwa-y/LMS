@@ -243,7 +243,23 @@ public class OrderStatusModel {
 	}
 	public void setReOut(String reOut) {
 		this.reOut = reOut;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "OrderStatusModel [startDate=" + startDate + ", endDate=" + endDate + ", startPage=" + startPage
+				+ ", endPage=" + endPage + ", jordNo=" + jordNo + ", count=" + count + ", cnt=" + cnt + ", total="
+				+ total + ", jordDate=" + jordDate + ", jordWishdate=" + jordWishdate + ", jordIn=" + jordIn
+				+ ", shDate=" + shDate + ", shType=" + shType + ", modelName=" + modelName + ", pdName=" + pdName
+				+ ", pdCode=" + pdCode + ", pdCorp=" + pdCorp + ", pdPrice=" + pdPrice + ", jordAmt=" + jordAmt
+				+ ", loginId=" + loginId + ", bankCode=" + bankCode + ", bankName=" + bankName + ", account=" + account
+				+ ", shCode=" + shCode + ", reCode=" + reCode + ", dirCode=" + dirCode + ", jordCode=" + jordCode
+				+ ", whCode=" + whCode + ", modelCode=" + modelCode + ", bordCode=" + bordCode + ", reAmt=" + reAmt
+				+ ", reDate=" + reDate + ", reType=" + reType + ", reOut=" + reOut + "]";
 	} 
+	
+	
 	
 	
 }

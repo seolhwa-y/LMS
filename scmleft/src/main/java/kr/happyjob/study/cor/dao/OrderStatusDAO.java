@@ -16,6 +16,6 @@ public interface OrderStatusDAO {
 	public int updateJorderInStatus(HashMap<String, Object> map);
 	
 	// 반품신청
-	public int insertReturnInfo (OrderStatusModel osm);
+	public int insertReturnInfoJ (OrderStatusModel osm);
 	public int updateShipInfo(OrderStatusModel osm);
 }

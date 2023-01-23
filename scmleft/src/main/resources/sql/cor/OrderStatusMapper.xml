@@ -46,7 +46,7 @@
 </update>
 
 <!-- 반품신청 -->
-<insert id="insertReturnInfo" parameterType="kr.happyjob.study.cor.model.OrderStatusModel">
+<insert id="insertReturnInfoJ" parameterType="kr.happyjob.study.cor.model.OrderStatusModel">
 	INSERT INTO RETURN_INFO (RE_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, BORD_CODE, RE_AMT, RE_OUT)
 	VALUES ((SELECT R.CODE
         	 FROM (SELECT IFNULL(MAX(RE_CODE) + 1, 1) AS 'CODE'
@@ -54,7 +54,7 @@
 																        		   <if test="bordCode.equals(0)">
 																        		   		NULL, #{reAmt}, "0")	
 																        		   </if>
-																        		   <if test="bordCode.equals(1)">
+																        		   <if test="bordCode > 0">
 																        		    	#{bordCode}, #{reAmt}, "0")	
 																        		   </if>
 </insert>

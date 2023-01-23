@@ -81,6 +81,7 @@
 		
 		if(jCode != null && mCode != null) {			
 			let param = { pageNum : currentPage, listCount : listCount, jordCode : jCode, jordNo : jNo, modelCode : mCode, whCode : wCode, bordCode : bCode, reAmt : rAmt}
+			console.log(param);
 			let callafterback = (ajax) => { 
 				makeOrderDetailList(ajax.osdList);
 				

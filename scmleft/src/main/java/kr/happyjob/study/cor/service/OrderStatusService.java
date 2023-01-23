@@ -112,8 +112,10 @@ public class OrderStatusService implements OrderStatusInter {
 			osm.setBordCode(Integer.parseInt((String)bCode[i]));
 			osm.setReAmt(Integer.parseInt((String)rAmt[i]));
 			osm.setBordCode(Integer.parseInt((String)bCode[i]));
-
-			if(this.convertToBoolean(this.sql.insert("insertReturnInfo", osm))) {
+			
+			
+			System.err.println(osm);
+			if(this.convertToBoolean(this.sql.insert("insertReturnInfoJ", osm))) {
 				if(this.convertToBoolean(this.sql.update("updateShipInfo", osm))) {
 					System.err.println("반품정보 및 배송정보 완료");
 					message = "반품신청이 완료 되었습니다.";
