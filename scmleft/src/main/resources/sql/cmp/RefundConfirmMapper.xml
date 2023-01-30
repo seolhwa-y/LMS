@@ -5,38 +5,59 @@
 
 	<!--반품 리스트 목록조회 -->
 	<select id = "refundConfirmMgt" resultType = "kr.happyjob.study.cmp.model.RefundConfirmModel">
-							select DI.DIR_CODE
-								  ,JI.JORD_CODE
-								  ,RI.RE_CODE
-							      ,ui.name
-							      ,PN.PD_NAME
-							      ,DATE_FORMAT(JI.JORD_DATE, '%Y-%m-%d') as JORD_DATE
-							      ,DATE_FORMAT(RI.RE_DATE, '%Y-%m-%d') as RE_DATE
-							      ,RI.RE_AMT
-							      ,PN.PD_PRICE*RI.RE_AMT as RE_PRICE
-							      ,RI.RE_TYPE
-								
-							from DIRECTION DI
-							  inner join RETURN_INFO RI on DI.DIR_CODE = RI.DIR_CODE
-							  inner join JORDER_INFO JI on RI.JORD_CODE = JI.JORD_CODE 	
-							  inner join PD_INFO PN on JI.MODEL_CODE = PN.MODEL_CODE
-							  inner join tb_userinfo ui on JI.loginID = ui.loginID										  
-		where PN.PD_NAME  Like CONCAT('%', #{searchvalue}, '%') 
-         	limit #{startnum},#{pagesize}
-		</select>
+		SELECT	(CASE
+					WHEN JI.JORD_CODE IS NOT NULL
+					THEN '기업'
+					WHEN BI.BORD_CODE IS NOT NULL
+					THEN '발주'
+				END) AS 'TYPE',
+				RI.RE_CODE,
+				DI.DIR_DATE,
+				(CASE
+					WHEN JI.JORD_CODE IS NOT NULL
+					THEN JUI.company 
+					WHEN BI.BORD_CODE IS NOT NULL
+					THEN PUI.company
+				END) AS 'name',
+				RI.MODEL_CODE,
+				PD.PD_NAME,
+				(CASE
+					WHEN RI.JORD_CODE = JI.JORD_CODE 
+					THEN JI.JORD_DATE
+					WHEN RI.BORD_CODE = BI.BORD_CODE 
+					THEN DI.DIR_DATE 
+				END) AS 'JORD_DATE',
+				RI.RE_DATE,
+				RI.RE_AMT,
+				(PD.PD_PRICE * RI.RE_AMT) AS 'RE_PRICE',
+				RI.RE_TYPE ,
+				DC.detail_name 
+		FROM	RETURN_INFO RI INNER JOIN DIRECTION DI ON RI.DIR_CODE = DI.DIR_CODE 
+							   LEFT JOIN SHIP_INFO SI ON RI.RE_CODE = SI.RE_CODE 
+							   LEFT JOIN JORDER_INFO JI ON SI.JORD_CODE = JI.JORD_CODE
+							   LEFT JOIN BORDER_INFO BI ON RI.BORD_CODE = BI.BORD_CODE 
+							   INNER JOIN PD_INFO PD ON RI.MODEL_CODE = PD.MODEL_CODE 
+							   LEFT JOIN tb_userinfo PUI ON PD.loginID = PUI.loginID
+							   LEFT JOIN tb_userinfo JUI ON JI.loginID = JUI.loginID
+							   INNER JOIN tb_detail_code DC ON DC.group_code = 'approvalCD' AND RI.RE_TYPE = DC.detail_code 									  
+		WHERE 		PD.PD_NAME LIKE CONCAT('%', #{searchvalue}, '%')
+		LIMIT 		#{startnum},#{pagesize}
+	</select>
 	
-	<!-- 공지사항 목록 총 갯수 조회 -->
+	<!-- 반품 리스트 총 갯수 조회 -->
 	<select id="refundConfirmMgtcnt" resultType="int">
-			 			 select count(*)
-			  					
-							from DIRECTION DI
-							  inner join RETURN_INFO RI on DI.DIR_CODE = RI.DIR_CODE
-							  inner join JORDER_INFO JI on RI.JORD_CODE = JI.JORD_CODE
-							  inner join PD_INFO PN on JI.MODEL_CODE = PN.MODEL_CODE
-							  inner join tb_userinfo ui on JI.loginID = ui.loginID
-		where PN.PD_NAME  Like CONCAT('%', #{searchvalue}, '%') 
-         
+		SELECT 	COUNT(*)
+		FROM	RETURN_INFO RI INNER JOIN DIRECTION DI ON RI.DIR_CODE = DI.DIR_CODE 
+							   LEFT JOIN SHIP_INFO SI ON RI.RE_CODE = SI.RE_CODE 
+							   LEFT JOIN JORDER_INFO JI ON SI.JORD_CODE = JI.JORD_CODE
+							   LEFT JOIN BORDER_INFO BI ON RI.BORD_CODE = BI.BORD_CODE 
+							   INNER JOIN PD_INFO PD ON RI.MODEL_CODE = PD.MODEL_CODE 
+							   LEFT JOIN tb_userinfo PUI ON PD.loginID = PUI.loginID
+							   LEFT JOIN tb_userinfo JUI ON JI.loginID = JUI.loginID
+							   INNER JOIN tb_detail_code DC ON DC.group_code = 'approvalCD' AND RI.RE_TYPE = DC.detail_code 
+		WHERE  PD.PD_NAME LIKE CONCAT('%', #{searchvalue}, '%')
 	</select>	
+	
 	<update id="SclickRefundConfirm" parameterType="Map" >
         UPDATE RETURN_INFO 
            set RE_TYPE=#{re_TYPE} 
