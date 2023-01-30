@@ -21,7 +21,7 @@
 					AND UI.name LIKE CONCAT("%", #{keyword}, "%")
 				</if>
 				<if test="type.equals('TC')">
-					AND NO.NOT_TITLE LIKE CONCAT("%", #{keyword}, "%") AND NO.NOT_CON LIKE CONCAT("%", #{keyword}, "%")
+					AND NO.NOT_TITLE LIKE CONCAT("%", #{keyword}, "%") OR NO.NOT_CON LIKE CONCAT("%", #{keyword}, "%")
 				</if>
 			</when>
 	

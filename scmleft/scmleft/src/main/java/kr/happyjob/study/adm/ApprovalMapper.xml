@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.adm.dao.ApprovalDao">
+
+	<!-- 의료 신고서 목록 -->
+	<select id="listApproval" resultType="kr.happyjob.study.adm.model.ApprovalModel">
+		SELECT 
+				dec_name
+				, modelnm
+				, copnm
+				, date_format(regDate, '%Y-%m-%d') as regDate
+				, CASE WHEN accyn = '1' THEN '승인'
+					   WHEN accyn = '2' THEN '반려'
+					   ELSE '승인요청'
+				  END as accyn
+				, accno
+				, divcd
+		FROM tb_medicalinfo
+			<where>
+			    <if test="searchstatus != 'appr_or'.toString()">
+				    and accyn = #{searchstatus}  
+				</if>
+				
+				<if test="(searchword != null) or (searchword != '')">
+				    <if test="searchkey != 'all_cod'.toString()">
+						<choose>
+							<when test="searchkey eq '0'.toString()">
+								and modelnm Like CONCAT('%', #{searchword}, '%')
+							</when>
+							<when test="searchkey eq '1'.toString()">
+								and copnm Like CONCAT('%', #{searchword}, '%')
+							</when>
+							<when test="searchkey eq '2'.toString()">
+								and dec_name Like CONCAT('%', #{searchword}, '%')
+							</when>
+							<otherwise>
+								and modelnm Like CONCAT('%', #{searchword}, '%')
+								and copnm Like CONCAT('%', #{searchword}, '%')
+								and dec_name Like CONCAT('%', #{searchword}, '%')
+							</otherwise>
+						</choose>
+					</if>
+				</if>
+			</where>
+		ORDER BY accno DESC
+		LIMIT #{pageIndex}, #{pageSize}
+	</select>
+
+
+	<!-- 의료 신고서 목록 총 갯수 조회 -->
+ 	<select id="approvalCnt" resultType="int">
+		/*kr.happy.study.adm.dao.ApprovalDao.approvalCnt*/
+		SELECT COUNT(*) AS tot_cnt FROM tb_medicalinfo
+			<where>
+			<if test="(searchword != null) or (searchword != '')">
+			    <if test="searchkey != 'all_cod'.toString()">
+					<choose>
+						<when test="searchkey eq '0'.toString()">
+							and modelnm Like CONCAT('%', #{searchword}, '%')
+						</when>
+						<when test="searchkey eq '1'.toString()">
+							and copnm Like CONCAT('%', #{searchword}, '%')
+						</when>
+						<when test="searchkey eq '2'.toString()">
+							and dec_name Like CONCAT('%', #{searchword}, '%')
+						</when>
+						<otherwise>
+							and modelnm Like CONCAT('%', #{searchword}, '%')
+							and copnm Like CONCAT('%', #{searchword}, '%')
+							and dec_name Like CONCAT('%', #{searchword}, '%')
+						</otherwise>
+					</choose>
+				</if>
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 의료 신고서 단건 조회 -->
+	<select id="selectApprovalCod" resultType="kr.happyjob.study.adm.model.ApprovalModel">
+		SELECT 
+				accno as accno
+				, date_format(regDate, '%Y-%m-%d') as regDate
+				, dec_name as dec_name
+				, dec_birth as dec_birth
+				, dec_address as dec_address
+				, copnm as copnm
+				, coplicense as coplicense
+				, copaddress as copaddress
+				, type as type
+				, divdtl as divdtl
+				, modelnm as modelnm
+				, divno as divno
+				, shape as shape
+				, property as property
+				, usepurpose as usepurpose
+				, usemethod as usemethod
+				, hints as hints
+				, manufacturer as manufacturer
+				, etc as etc
+				, accyn as accyn
+				, manager as manager
+				, managerphone as managerphone
+				, meditype as meditype
+				, otheryn as otheryn
+				, reporNumber as reporNumber
+				, accas as accas
+				, divcd as divcd
+				, copphone as copphone
+		FROM tb_medicalinfo
+		WHERE accno = #{accno}
+	</select>
+
+	
+	<!-- 의료 신청서 신규 등록 -->
+	<insert id="insertapprovalcode">
+	/*kr.happy.study.adm.dao.ApprovalDao.insertapprovalcode*/
+	<!-- Insert로 입력하기 전에 key값인 accno의 기존값에 +1을 시킨 후 그 값을 입력시키기 위해 먼저 사용
+		변수명을 따로 준 이유는 컨트롤러에서 이미 accno가 값이 넘어왔기 때문에 겹치지 않게 하기 위해.
+		accno로 사용하였을 경우, 기존에 컨트롤러에서 넘어온 accno가 우선으로 적용되어 에러가 뜬다. -->
+	<selectKey keyProperty="selaccno" resultType="int" order="BEFORE"> 
+	   	SELECT IFNULL(MAX(accno),0) +1
+				  FROM tb_medicalinfo
+	</selectKey>
+		INSERT into tb_medicalinfo
+				(
+				  accno
+				, regDate
+				, dec_name
+				, dec_birth
+				, dec_address
+				, copnm
+				, coplicense
+				, copaddress
+				, type
+				, divdtl
+				, modelnm
+				, divno
+				, shape
+				, property
+				, usepurpose
+				, usemethod
+				, hints
+				, manufacturer
+				, etc
+				, accyn
+				, manager
+				, managerphone
+				, divcd
+				) values (
+				  #{selaccno}
+				, now()
+				, #{dec_name}
+				, #{dec_birth}
+				, #{dec_address}
+				, #{copnm}
+				, #{coplicense}
+				, #{copaddress}
+				, #{type}
+				, #{divdtl}
+				, #{modelnm}
+				, #{divno}
+				, #{shape}
+				, #{property}
+				, #{usepurpose}
+				, #{usemethod}
+				, #{hints}
+				, #{manufacturer}
+				, #{etc}
+				, '0'
+				, #{manager}
+				, #{managerphone}
+				, #{divcd}
+				)
+	</insert>
+	
+
+	<!-- 의료 신고서 승인 및 반려 -->
+	<update id="updateApprovalCod">
+	/*kr.happy.study.adm.dao.ApprovalDao.updateApprovalCod*/
+		UPDATE tb_medicalinfo SET
+				accyn = #{accyn}
+			,	accno = #{accno}
+		WHERE accno = #{accno};
+	</update>
+
+
+	<!-- 의료 신고서(세 건 전부 사용) 수정 -->
+	<update id="updateApprovalMedicalCod">
+	/*kr.happy.study.adm.dao.ApprovalDao.updateApprovalMedicalCod*/
+		UPDATE tb_medicalinfo SET
+				  accyn = #{accyn}
+				, accno = #{accno}
+				, regDate = #{regDate}
+				, dec_name = #{dec_name}
+				, dec_birth = #{dec_birth}
+				, dec_address = #{dec_address}
+				, copnm = #{copnm}
+				, coplicense = #{coplicense}
+				, copaddress = #{copaddress}
+				, type = #{type}
+				, divdtl = #{divdtl}
+				, modelnm = #{modelnm}
+				, divno = #{divno}
+				, shape = #{shape}
+				, property = #{property}
+				, usepurpose = #{usepurpose}
+				, usemethod = #{usemethod}
+				, hints = #{hints}
+				, manufacturer = #{manufacturer}
+				, etc = #{etc}
+				, manager = #{manager}
+				, managerphone = #{managerphone}
+				, divcd = #{divcd}
+				, copphone = #{copphone}
+				, meditype = #{meditype}
+				, otheryn = #{otheryn}
+				, accas = #{accas}
+				, reporNumber = #{reporNumber}
+		WHERE accno = #{accno};
+	</update>
+	
+
+	<!-- 의료기기 수리업 신청서 신규 등록 -->
+	<insert id="insertmedicalcode">
+	/*kr.happy.study.adm.dao.ApprovalDao.insertapprovalcode*/
+	<selectKey keyProperty="mdaccno" resultType="int" order="BEFORE"> <!-- Insert로 입력하기 전에 key값인 accno의 기존값에 +1을 시킨 후 그 값을 입력시키기 위해 먼저 사용 -->
+	   	SELECT IFNULL(MAX(accno),0) +1
+				  FROM tb_medicalinfo
+	</selectKey>
+		INSERT into tb_medicalinfo
+				(
+				  accno
+				, regDate
+				, dec_name
+				, dec_birth
+				, dec_address
+				, copnm
+				, copphone
+				, copaddress
+				, meditype
+				, otheryn
+				, etc
+				, accyn
+				, manager
+				, managerphone
+				) values (
+				  #{mdaccno}
+				, now()
+				, #{dec_name}
+				, #{dec_birth}
+				, #{dec_address}
+				, #{copnm}
+				, #{copphone}
+				, #{copaddress}
+				, #{meditype}
+				, #{otheryn}
+				, #{etc}
+				, '0'
+				, #{manager}
+				, #{managerphone}
+				, '2'
+				)
+	</insert>
+
+
+	<!-- 의료기기 판매업 신청서 신규 등록 -->
+	<insert id="insertSaleRentcode">
+	/*kr.happy.study.adm.dao.ApprovalDao.insertapprovalcode*/
+	<selectKey keyProperty="sraccno" resultType="int" order="BEFORE"> <!-- Insert로 입력하기 전에 key값인 accno의 기존값에 +1을 시킨 후 그 값을 입력시키기 위해 먼저 사용 -->
+	   	SELECT IFNULL(MAX(accno),0) +1
+				  FROM tb_medicalinfo
+	</selectKey>
+		INSERT into tb_medicalinfo
+				(
+				  accno
+				, regDate
+				, dec_name
+				, dec_birth
+				, dec_address
+				, copnm
+				, reporNumber
+				, copaddress
+				, accas
+				, accyn
+				, manager
+				, managerphone
+				) values (
+				  #{sraccno}
+				, now()
+				, #{dec_name}
+				, #{dec_birth}
+				, #{dec_address}
+				, #{copnm}
+				, #{reporNumber}
+				, #{copaddress}
+				, #{accas}
+				, '0'
+				, #{manager}
+				, #{managerphone}
+				, '3'
+				)
+	</insert>
+
+
+
+
+
+
+
+</mapper>

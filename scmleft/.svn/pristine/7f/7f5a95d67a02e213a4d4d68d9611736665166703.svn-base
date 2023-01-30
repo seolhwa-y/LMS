@@ -1,0 +1,26 @@
+# \ud30c\uc77c \uc5c5\ub85c\ub4dc \uacbd\ub85c \uc124\uc815
+#fileUpload.rootPath=D:\\FileRepository
+#fileUpload.rootPath=/www/crystal-clear_kr/FileRepository
+fileUpload.virtualRootPath=/FileRepository
+fileUpload.rootPath=/Users/FileRepository
+fileUpload.prducimage=product
+fileUpload.noticePath=notice
+fileUpload.officePath=office
+fileUpload.bbsPath=community
+fileUpload.roomimage=roomimage
+
+# \uc774\ubbf8\uc9c0 \ub9ac\uc0ac\uc774\uc988 \uc124\uc815
+image.resize.with=1600
+image.allow.ext=jpg,jpeg,png,bmp
+
+# \uba54\uc77c\ub9c1 \uc11c\ube44\uc2a4
+mail.sender=crystalclear@crystal-clear.kr
+
+# LGD Pay \uc124\uc815
+PAY.LGD.CST_MID=gb_cleardent
+PAY.LGD.CST_PLATFORM=test
+PAY.LGD.LGD_MERTKEY=6ef6005d5fa1b819108ad8b42221d109
+PAY.LGD.LGD_RETURNURL=/PGMgmt/returnurl.do
+PAY.LGD.LGD_CASNOTEURL=/PGMgmt/casNoteurl.do
+PAY.LGD.CONFIG_PATH=D:/common/lgdacom
+#PAY.LGD.CONFIG_PATH=/www/crystal-clear_kr/lgdacom

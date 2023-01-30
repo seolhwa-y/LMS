@@ -23,7 +23,7 @@
 	function init(){
 		/* 서치바 */
 		search = new Vue({
-			el: "#divSearchBar",
+			el: "#divSarchBar",
 			data: {
 				search : "",
 				options : [{value : "", text : "검색요건", disabled : "disabled", selected : "selected"},
@@ -37,10 +37,10 @@
 			methods: {
 				/* 공지사항 검색 및 페이징 */
 				searchNotice : function(pageNum){
-					if(search.endDate.replaceAll("-", "") - search.startDate.replaceAll("-", "") < 0) return swal("날짜를 다시 선택하세요.");
-					if(search.search == "" && search.keyword != "") return swal("검색구분을 선택하세요.");
+					if(search.endDate.replaceAll("-", "") - search.startDate.replaceAll("-", "") < 0) return alert("날짜를 다시 선택하세요.");
+					if(search.search == "" && search.keyword != "") return alert("검색구분을 선택하세요.");
 					
-					var currentPage = (pageNum != undefined ? pageNum : vueNotice.pageNum) || 1;
+					var currentPage = pageNum || 1;
 					var param = {
 							pageNum : currentPage, 
 							listCount : listCount,
@@ -51,9 +51,9 @@
 					}
 					
 					var listCallBack = function(data) {
-						vueNotice.noticelist = data.noticeList;
-						vueNotice.pagenavi = getPaginationHtml(currentPage, data.noticeCount, listCount, pageCount, 'paging');
-						vueNotice.pageNum = currentPage;
+						console.log(data);
+						vueNotice.noticelist = data.result.noticeList;
+						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
 						search.keyword = "";
 					}
 					
@@ -74,7 +74,6 @@
 			data: {
 				loginId : "${loginId}", 
 				loginName : "${name}",
-				pageNum : 1,
 				noticelist : ${result}.noticeList,
 				pagenavi : getPaginationHtml(1, ${result}.noticeCount, listCount, pageCount, 'paging'),
 			},
@@ -86,7 +85,6 @@
 					var detailCallBack = function(data) {
 						noticeModalFeel(false, data.result);
 						gfModalPop("#noticeModal");
-						swal(data.result.message);
 					}
 					
 					callAjax("/scm/checkNoticeList", "post", "json", true, param, detailCallBack);
@@ -130,12 +128,14 @@
 							notTitle : vueNoticeDetail.notTitle,
 							notCon : vueNoticeDetail.notCon,
 					}
+
 					var detailCallBack = function(data) {
-						vueNotice.noticelist = data.result.noticeList;
-						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
-					
+						//vueNotice.noticelist = data.result.noticeList;
+						//vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
+					 	search.searchNotice();
 						gfCloseModal();
-						swal(data.result.message);
+						alert(data.result.message);
+						
 					}
 					
 					num == 1 ? callAjax("/scm/insertNotice", "post", "json", true, param, detailCallBack) 
@@ -151,12 +151,13 @@
 							listCount : listCount,
 							notCode : vueNoticeDetail.notCode,
 					}
+
 					var detailCallBack = function(data) {
-						vueNotice.noticelist = data.result.noticeList;
-						vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
-					
+						//vueNotice.noticelist = data.result.noticeList;
+						//vueNotice.pagenavi = getPaginationHtml(currentPage, data.result.noticeCount, listCount, pageCount, 'paging');
+						search.searchNotice();
 						gfCloseModal();
-						swal(data.result.message);
+						alert(data.result.message);
 					}
 					
 					callAjax("/scm/deleteNotice", "post", "json", true, param, detailCallBack);
@@ -172,14 +173,12 @@
 	
 	// 모달 내용 경우의 수
 	function noticeModalFeel(action, data){
-		var date = new Date();
-
 		switch(action){
 		case true : 
 			vueNoticeDetail.notCode = "";
 			vueNoticeDetail.notTitle = "";
 			vueNoticeDetail.name = vueNotice.loginName;
-			vueNoticeDetail.notDate = date.toLocaleDateString();
+			vueNoticeDetail.notDate = "";
 			vueNoticeDetail.notCon = "";
 			vueNoticeDetail.nameRead = "";
 			vueNoticeDetail.notDateRead = "";
@@ -214,8 +213,10 @@
 </head>
 <body onload="init()">
 <form id="myForm" action=""  method="">
+		<!-- 모달 배경 -->
 		<div id="mask"></div>
 		<div id="wrap_area">
+			<h2 class="hidden">컨텐츠 영역</h2>
 			<div id="container">
 				<ul>
 					<li class="lnb">
@@ -236,7 +237,7 @@
 							<br>
 							
 							<!-- 검색 영역 -->
-							<div id = "divSearchBar">
+							<div id = "divSarchBar">
 									<select v-model = "search">
 										<template v-for = "sear in options">
 											<option :value = "sear.value" :disabled = "sear.disabled" :selected = "sear.selected" >{{sear.text}}</option>
@@ -253,7 +254,10 @@
 							
 							<!-- 게시글 목록 영역 -->
 							<div id = "divNoticeList">
+								<input type="hidden" v-model="loginId" />
+								<input type="hidden" v-model="loginName" />
 								 <table class="col">
+		                              <caption>caption</caption>
 		                              <colgroup>
 		                                 <col width="5%">
 		                                 <col width="30%">
@@ -261,6 +265,7 @@
 		                                 <col width="15%">
 		                                 <col width="15%">
 		                              </colgroup>
+		         
 		                              <thead>
 		                                 <tr>
 		                                    <th scope="col">글번호</th>
@@ -283,10 +288,7 @@
 		                                    </tr>                           
 		                              </tbody>
 		                           </table>
-                           		<div class = "paging_area"  id = "divNoticePaging" v-html = "pagenavi"></div>
-                           		<input type="hidden" v-model="loginId" />
-								<input type="hidden" v-model="loginName" />
-								<input type="hidden" v-model="pageNum" />
+                           		<div class = "paging_area"  id = "divNoticePaging" v-html = "pagenavi"> </div>
 							</div>
 						</div>
 					</li>

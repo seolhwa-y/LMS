@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.scm.dao.ProductInfoDao">
+
+  <!-- 검색조건 -->
+	<sql id="search">
+	  <where>
+		<if test="(search != null) and (!search.equals(''))">
+			<choose>
+				<when test="select eq 'pro_no'.toString()">
+					AND p.PD_CODE Like CONCAT('%',#{search},'%')
+				</when>
+				<when test="select eq 'pro_nm'.toString()">
+					and p.PD_NAME Like CONCAT('%',#{search},'%')
+				</when>
+				<when test="select eq 'model_nm'.toString()">
+					and p.MODEL_NAME Like CONCAT('%',#{search},'%')
+				</when>
+				<when test="select eq 'pd_corp'.toString()">
+					and p.PD_CORP Like CONCAT('%',#{search},'%')
+				</when> 
+				  <otherwise>
+                    and ( 
+                          p.PD_CODE Like CONCAT('%',#{search},'%')
+                       or p.PD_NAME Like CONCAT('%',#{search},'%')
+                       or p.MODEL_NAME Like CONCAT('%',#{search},'%')
+                       or p.PD_CORP Like CONCAT('%',#{search},'%')
+                       )
+                  </otherwise>				
+			</choose>
+		</if>
+	  </where>
+   </sql>
+
+
+	<!-- 제품정보관리 목록 조회 -->
+	<select id="productInfoList" resultType="kr.happyjob.study.scm.model.ProductInfoModel">
+		SELECT
+		       p.MODEL_CODE as modelCode
+		      ,p.MODEL_NAME as modelName
+		      ,p.PD_CODE    as pdCode
+		      ,p.PD_NAME    as pdName
+		      ,p.PD_CORP    as pdCorp
+		      ,p.PD_PRICE   as pdPrice
+		      ,u.company
+		 FROM PD_INFO p
+		      inner join tb_userinfo u ON p.loginID = u.loginID
+     ORDER BY p.MODEL_CODE desc
+		
+		<!-- 검색조건 -->
+	    <include refid="search"></include>
+		
+		LIMIT #{pageIndex}, #{pageSize}
+	</select>
+
+
+	<!-- 제품정보관리 목록 총 갯수 조회 -->
+	<select id="productInfoListCnt" resultType="int">
+
+		SELECT count(*)
+		  FROM PD_INFO p
+		       inner join tb_userinfo u ON p.loginID = u.loginID
+		
+		<!-- 검색조건 -->
+		<include refid="search"></include>
+	</select>
+
+
+	<!-- 제품정보관리 상세 조회 -->
+	<select id="productOne" parameterType="java.util.Map"
+		resultType="kr.happyjob.study.scm.model.ProductInfoModel">
+		SELECT p.MODEL_CODE  as modelCode
+		      ,p.PD_CODE     as pdCode
+		      ,p.PD_NAME     as pdName
+		      ,p.MODEL_NAME  as modelName
+		      ,p.PD_CORP     as pdCorp
+		      ,p.PD_PRICE    as pdPrice
+		      ,u.company
+		      ,p.PDFILE_CODE as pdfileCode
+		      ,p.PD_DETAIL   as pdDetail
+		      ,u.loginID     as loginId
+		      ,f.PDFILE_NAME as pdfileName
+		      ,f.PD_NADD     as pdNadd
+		      ,f.PD_MADD     as pdMadd
+		      ,f.PD_SIZE     as pdSize
+		FROM PD_INFO p
+		     left outer join PD_FILE f on f.PDFILE_CODE = p.PDFILE_CODE 
+		     inner join tb_userinfo u ON p.loginID = u.loginID
+	   WHERE p.MODEL_CODE = #{modelCode}
+		<!-- 단건조회 할 때 넘겨준 값으로 whewe절 걸어서 한건만 조회하기!! -->
+	</select>
+
+
+	<!-- 제품정보관리 신규등록(저장) : -->
+	<insert id="insertProduct" parameterType="java.util.Map">
+		<selectKey resultType="string" keyProperty="modelCode"
+			order="BEFORE">
+			SELECT IFNULL(MAX(MODEL_CODE),0) + 1 FROM PD_INFO
+		</selectKey>
+		INSERT
+		  INTO PD_INFO
+				(
+				   MODEL_CODE
+				 , PD_CODE
+				 , PD_NAME
+				 , MODEL_NAME
+				 , PD_CORP
+				 , PD_PRICE
+				 , PD_DETAIL
+				 , loginID
+				 <if test="fileyn eq 'Y'.toString()">
+				 , PDFILE_CODE
+				 </if>
+				)
+		VALUES
+				(
+				#{modelCode}
+				, #{pdCode}
+				, #{pdName}
+				, #{modelName}
+				, #{pdCorp}
+				, #{pdPrice}
+				, #{pdDetail}
+				, #{loginId}
+		        <if test="fileyn eq 'Y'.toString()">
+		            , (select max(PDFILE_CODE) from PD_FILE)
+		        </if>
+				)
+	</insert>
+	
+	
+	<!-- 파일업로드 신규저장  -->
+	<insert id="insertFile" parameterType="java.util.Map">
+		<selectKey resultType="int" keyProperty="pdfileCode"
+			order="BEFORE">
+			SELECT IFNULL(MAX(PDFILE_CODE),0) + 1 FROM PD_FILE
+		</selectKey>
+		INSERT
+		  INTO PD_FILE
+			  (
+			   PDFILE_CODE
+			  ,PDFILE_NAME
+			  ,PD_NADD
+			  ,PD_MADD
+			  ,PD_SIZE
+			  )
+		VALUES
+			  (
+			  #{pdfileCode}
+			 ,#{file_nm}
+			 ,#{logpath}
+			 ,#{file_loc}		
+			 ,#{file_size}
+		      )
+	</insert>
+
+	
+	<!-- 제품정보관리 수정 -->
+	<update id="updateProduct" parameterType="java.util.Map">
+		UPDATE PD_INFO
+		   SET MODEL_CODE = #{modelCode}
+	             ,PD_CODE = #{pdCode}
+	             ,PD_NAME = #{pdName}
+	          ,MODEL_NAME = #{modelName}
+	             ,PD_CORP = #{pdCorp}
+	            ,PD_PRICE = #{pdPrice}
+	             <if test ="fileyn eq 'Y'.toString()">
+                  , PDFILE_CODE = (select max(PDFILE_CODE) from PD_FILE)
+                 </if>
+	             <if test ="fileyn eq 'N'.toString()">
+                  , PDFILE_CODE = null
+                 </if>
+	           ,PD_DETAIL = #{pdDetail}
+	             ,loginID = #{loginId}
+		 WHERE MODEL_CODE = #{modelCode}
+	</update>
+
+
+	<!--파일업로드 파일삭제  -->
+    <delete id="clearfile">
+       DELETE 
+         FROM PD_FILE
+        WHERE PDFILE_CODE = (
+                               select PDFILE_CODE
+                                 from PD_INFO
+                                where MODEL_CODE = #{modelCode} 
+                             )
+    </delete> 
+ 
+ 
+    <!--파일업로드 수정  -->   
+    <update id="clearpdinfo">
+       UPDATE PD_INFO
+          SET PDFILE_CODE = null
+        WHERE MODEL_CODE = #{modelCode}      
+    </update>
+   
+   
+	<!-- 제품정보관리 삭제  //비지니스內 삭제 불필요 
+	<delete id="deleteProduct"> 
+	DELETE 
+	  FROM PD_INFO 
+	 WHERE MODEL_CODE = #{modelCode} 
+	</delete> -->
+
+</mapper>
+

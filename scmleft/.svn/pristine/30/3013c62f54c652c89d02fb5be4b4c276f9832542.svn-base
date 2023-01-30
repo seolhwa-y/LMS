@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.scm.dao.OrderHistoryDAO">
+
+<!-- 일별수주내역 조회 -->
+<select id="getOrderHistoryList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
+			OH.*
+	FROM 	ORDERHISTORY OH
+	WHERE	(@ROWNUM:=0) = 0
+	<choose>
+		<when test="type != null">
+			<if test="type.equals('jorder')">
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+			</if>
+			<if test="type.equals('return')">
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.REDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.REDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+				
+			</if>
+		</when>
+	</choose>
+	<choose>
+		<when test="reType != null">
+			<if test="reType.equals('true')">
+				AND OH.REDATE IS NOT NULL
+			</if>
+			<if test="reType.equals('false')">
+				AND OH.REDATE IS NULL
+			</if>
+		</when>
+	</choose>
+	LIMIT 	#{startPage}, #{endPage}
+</select>
+
+<select id = "getHistoryCount" resultType="int" parameterType="java.util.HashMap">
+	SELECT 	COUNT(*)
+	FROM 	ORDERHISTORY OH
+	<where>
+	<choose>
+		<when test="type != null">
+			<if test="type.equals('jorder')">
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+			</if>
+			<if test="type.equals('return')">
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.REDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.REDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+				
+			</if>
+		</when>
+	</choose>
+	<choose>
+		<when test="reType != null">
+			<if test="reType.equals('true')">
+				AND OH.REDATE IS NOT NULL
+			</if>
+			<if test="reType.equals('false')">
+				AND OH.REDATE IS NULL
+			</if>
+		</when>
+	</choose>
+	</where>
+</select>
+
+<!-- 창고 정보 -->
+<select id="getWHInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT	WI.WH_CODE AS 'WHCODE', 
+			WI.WH_NAME AS 'WHNAME', 
+			WS.MODEL_CODE AS 'MODELCODE', 
+			PD.PD_NAME AS 'PDNAME', 
+			WS.WH_STOCK AS 'WHSTOCK'
+	FROM	WHOUSE_STOCK WS INNER JOIN WHOUSE_INFO WI ON WS.WH_CODE = WI.WH_CODE
+						   	INNER JOIN PD_INFO PD ON WS.MODEL_CODE = PD.MODEL_CODE
+	WHERE	WS.MODEL_CODE = #{modelCode}
+</select>
+
+<!-- 발주지시서 정보 -->
+<select id="getBorderInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	JI.JORD_CODE AS 'JORDCODE',
+			JI.JORD_AMT AS 'JORDAMT',
+			PD.MODEL_CODE AS 'MODELCODE',
+			PD.PD_NAME AS 'PDNAME',
+			PD.PD_CODE AS 'PDCODE',
+			PD.PD_CORP AS 'PDCORP',
+			PD.loginID AS 'LOGINID',
+			UI.company AS 'COMPANYNAME'
+	FROM 	PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
+					   INNER JOIN JORDER_INFO JI ON PD.MODEL_CODE = JI.MODEL_CODE 
+	WHERE 	JI.JORD_CODE = #{jordCode} AND PD.MODEL_CODE = #{modelCode}
+</select>
+
+<!-- 지시서 정보 --> 
+<select id="getDirecInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	JI.JORD_CODE AS 'JORDCODE',
+			JI.JORD_DATE AS 'JORDDATE', 
+			UI.company AS 'COMPANYNAME', 
+			JI.MODEL_CODE AS 'MODELCODE',
+			PD.PD_NAME AS 'PDNAME',
+			PD.PD_CODE AS 'PDCODE',
+			PD.PD_CORP AS 'PDCORP',
+			JI.JORD_AMT AS 'JORDAMT', 
+			JI.JORD_IN AS 'JORDIN' 
+	FROM 	JORDER_INFO JI INNER JOIN tb_userinfo UI ON JI.loginID = UI.loginID  
+						   INNER JOIN PD_INFO PD ON JI.MODEL_CODE = PD.MODEL_CODE 
+	WHERE 	JI.JORD_CODE = #{jordCode} AND JI.MODEL_CODE = #{modelCode}
+</select>
+
+<!-- 배달 요원 -->
+<select id="getDeliInfo" parameterType="java.util.HashMap" resultType="kr.happyjob.study.scm.model.OrderHistoryModel">
+	SELECT 	loginID, 
+			name AS 'DELINAME'
+	FROM 	tb_userinfo TB
+	WHERE 	user_type ='B'
+</select>
+
+<!-- 지시서  -->
+<insert id="insertDirection" parameterType="java.util.HashMap">
+	INSERT INTO DIRECTION(DIR_CODE, DIR_TYPE, DIR_DATE, DIR_AMT, loginID)
+	VALUES ((SELECT	DI.DIRCODE
+		 	 FROM	(SELECT IFNULL(MAX(DIR_CODE) + 1, 1) AS 'DIRCODE'
+				 	 FROM	DIRECTION) DI), #{dirType}, DATE_FORMAT(now(), '%Y%m%d'), #{jordAmt}, #{loginId})
+	<selectKey order="AFTER" keyProperty="dirCode" resultType="int">
+		SELECT 	DI.DIRCODE
+		FROM 	(SELECT MAX(DIR_CODE) AS 'DIRCODE'
+				 FROM 	DIRECTION
+				 WHERE	DIR_TYPE = #{dirType} AND DIR_AMT = #{jordAmt} AND loginID = #{loginId}) DI
+	</selectKey>
+</insert>
+
+<!-- 발주지시서 -->
+<insert id="insertBorderInfo" parameterType="java.util.HashMap">
+	<selectKey order="BEFORE" keyProperty="napCode" resultType="int">
+		SELECT 	NI.NAPCODE AS 'NAPCODE'
+		FROM 	(SELECT NI.NAP_CODE AS 'NAPCODE'
+			 	 FROM tb_userinfo UI INNER JOIN NAP_INFO NI ON UI.loginID = NI.loginID 
+		     	 WHERE UI.company  = #{companyName}) NI
+	</selectKey>
+	INSERT INTO BORDER_INFO (BORD_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, NAP_CODE, BORD_AMT,  BORD_TYPE)
+	VALUES ((SELECT 	BI.BORDCODE
+			FROM 	(SELECT IFNULL(MAX(BORD_CODE) + 1, 1) AS 'BORDCODE'
+			 		 FROM 	BORDER_INFO) BI), #{dirCode}, #{jordCode}, #{whCode}, #{modelCode}, #{napCode}, #{jordAmt}, '0')
+</insert>
+
+<!-- 배송지시서 -->
+<insert id="insertShipInfo" parameterType="java.util.HashMap">
+	<selectKey order="BEFORE" keyProperty="bordCode" resultType="int">
+		SELECT max(BORD_CODE) AS 'BORDCODE'
+		FROM BORDER_INFO
+		WHERE JORD_CODE = #{jordCode} AND MODEL_CODE = #{modelCode}
+	</selectKey>
+	INSERT INTO SHIP_INFO (SH_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, loginID, BORD_CODE, SH_AMT, SH_TYPE)
+	VALUES ((SELECT SI.SHCODE
+			 FROM (SELECT 	IFNULL(MAX(SH_CODE) + 1, 1) AS 'SHCODE'
+				   FROM 	SHIP_INFO) SI), #{dirCode}, #{jordCode}, #{whCode}, #{modelCode}, #{deliID}, #{bordCode}, #{jordAmt}, '0')
+
+</insert>
+
+</mapper>

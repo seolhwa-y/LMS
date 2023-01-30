@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.cmp.dao.RefundConfirmDao">
+
+	<!--반품 리스트 목록조회 -->
+	<select id = "refundConfirmMgt" resultType = "kr.happyjob.study.cmp.model.RefundConfirmModel">
+							select DI.DIR_CODE
+								  ,JI.JORD_CODE
+								  ,RI.RE_CODE
+							      ,ui.name
+							      ,PN.PD_NAME
+							      ,DATE_FORMAT(JI.JORD_DATE, '%Y-%m-%d') as JORD_DATE
+							      ,DATE_FORMAT(RI.RE_DATE, '%Y-%m-%d') as RE_DATE
+							      ,RI.RE_AMT
+							      ,PN.PD_PRICE*RI.RE_AMT as RE_PRICE
+							      ,RI.RE_TYPE
+								
+							from DIRECTION DI
+							  inner join RETURN_INFO RI on DI.DIR_CODE = RI.DIR_CODE
+							  inner join JORDER_INFO JI on RI.JORD_CODE = JI.JORD_CODE 	
+							  inner join PD_INFO PN on JI.MODEL_CODE = PN.MODEL_CODE
+							  inner join tb_userinfo ui on JI.loginID = ui.loginID										  
+		where PN.PD_NAME  Like CONCAT('%', #{searchvalue}, '%') 
+         	limit #{startnum},#{pagesize}
+		</select>
+	
+	<!-- 공지사항 목록 총 갯수 조회 -->
+	<select id="refundConfirmMgtcnt" resultType="int">
+			 			 select count(*)
+			  					
+							from DIRECTION DI
+							  inner join RETURN_INFO RI on DI.DIR_CODE = RI.DIR_CODE
+							  inner join JORDER_INFO JI on RI.JORD_CODE = JI.JORD_CODE
+							  inner join PD_INFO PN on JI.MODEL_CODE = PN.MODEL_CODE
+							  inner join tb_userinfo ui on JI.loginID = ui.loginID
+		where PN.PD_NAME  Like CONCAT('%', #{searchvalue}, '%') 
+         
+	</select>	
+	<update id="SclickRefundConfirm" parameterType="Map" >
+        UPDATE RETURN_INFO 
+           set RE_TYPE=#{re_TYPE} 
+         where RE_CODE = #{re_code}      
+    </update>
+    
+</mapper>
+

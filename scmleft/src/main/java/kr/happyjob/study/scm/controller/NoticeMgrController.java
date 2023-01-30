@@ -45,9 +45,10 @@ public class NoticeMgrController {
 	public HashMap<String, Object> searchNoticeCtl (@RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {	
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 
+		resultMap.put("loginId", session.getAttribute("loginId"));
 		resultMap.put("result", ni.getNoticeList(map));
 		
-		return map;
+		return resultMap;
 	}
 	
 	// 조회 :: 게시글 눌렀을 때 
@@ -56,7 +57,7 @@ public class NoticeMgrController {
 	public HashMap<String, Object> checkNoticeCtl (@RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 
-		map.put("loginId", session.getAttribute("loginId"));
+		resultMap.put("loginId", session.getAttribute("loginId"));
 		resultMap.put("result", ni.updateNotice(map));
 
 		return resultMap;

@@ -31,7 +31,7 @@ public class NoticeMgrService implements NoticeMgrInter {
 		if(nd.insertNotice(map) > 0) map.put("message", "게시글 등록 완료");
 		else map.put("message", "게시글 등록 실패"); 
 		
-		this.getNoticeList(map);
+		//this.getNoticeList(map);
 		
 		return map;
 	}
@@ -45,7 +45,7 @@ public class NoticeMgrService implements NoticeMgrInter {
 			}
 			else {
 				map.put("message", "게시글 수정 완료");
-				this.getNoticeList(map);
+				//this.getNoticeList(map);
 			}
 		} else map.put("message", "게시글 수정 실패");  
 		
@@ -57,7 +57,7 @@ public class NoticeMgrService implements NoticeMgrInter {
 		if(nd.deleteNotice(map) > 0) map.put("message", "게시글 삭제 완료");
 		else map.put("message", "게시글 삭제 실패");  
 
-		this.getNoticeList(map);
+		//this.getNoticeList(map);
 		
 		return map;
 	}

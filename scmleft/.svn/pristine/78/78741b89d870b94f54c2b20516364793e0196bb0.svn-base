@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.pur.dao.PurPurchaseDirectionDAO">
+
+	<select id="getPurDirectionList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.pur.model.PurPurchaseDirectionModel">
+		SELECT		BI.BORD_CODE AS 'BORDCODE',
+					PD.PDNAME,
+					PD.COMPANYNAME,
+					PD.NAME,
+					FORMAT(BI.BORD_AMT, 0) AS 'BORDAMT',
+					FORMAT(PD.PDPRICE, 0) AS 'PDPRICE',
+					FORMAT((BI.BORD_AMT * PD.PDPRICE), 0) AS 'TOTAL',
+					WI.WH_NAME AS 'WHNAME',
+					DATE_FORMAT(DI.DIR_DATE, '%Y-%m-%d') AS 'DIRDATE',
+					BI.BORD_TYPE AS 'BORDTYPE',
+					DC.detail_name AS 'TYPENAME'
+		FROM 		BORDER_INFO BI INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+								   INNER JOIN WHOUSE_INFO WI ON BI.WH_CODE = WI.WH_CODE 
+								   INNER JOIN (SELECT	PD.MODEL_CODE,
+								   						PD.PD_NAME AS 'PDNAME',
+								   						PD.PD_PRICE AS 'PDPRICE',
+								   						PD.loginID AS 'LOGINID',
+								   						UI.company AS 'COMPANYNAME',
+								   						UI.name AS 'NAME'
+								   			   FROM		PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID) PD ON BI.MODEL_CODE = PD.MODEL_CODE
+								   INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND BI.BORD_TYPE = DC.detail_code
+		<where>
+			AND BI.BORD_TYPE <![CDATA[<]]> 3
+			<if test="type != null and !type.equals('')">
+				<choose>
+					<when test="type.equals('companyName')">
+						AND PD.COMPANYNAME LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test="type.equals('pdName')">
+						AND PD.PDNAME LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test = "type.equals('all')">
+						AND (PD.COMPANYNAME LIKE CONCAT('%', #{keyword},'%') OR PD.PDNAME LIKE CONCAT('%', #{keyword},'%')) 
+					</when>
+				</choose>
+				<if test="(startDate != null) and (!endDate.equals(''))">
+					AND DATE_FORMAT(DI.DIR_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
+				</if>
+			</if>
+			<if test="(bordCode != null) and (!bordCode.equals(''))">
+				AND BI.BORD_CODE = #{bordCode}
+			</if>
+		</where>
+		ORDER BY	DI.DIR_DATE DESC, BI.BORD_CODE
+		LIMIT		#{startPage}, #{endPage}
+	</select>
+	
+	
+	<select id = "getPurDirectionCount" resultType="int" parameterType="java.util.HashMap">
+		SELECT  COUNT(*)
+		FROM 		BORDER_INFO BI INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
+								   INNER JOIN WHOUSE_INFO WI ON BI.WH_CODE = WI.WH_CODE 
+								   INNER JOIN (SELECT	PD.MODEL_CODE,
+								   						PD.PD_NAME AS 'PDNAME',
+								   						PD.PD_PRICE AS 'PDPRICE',
+								   						PD.loginID AS 'LOGINID',
+								   						UI.company AS 'COMPANYNAME',
+								   						UI.name AS 'NAME'
+								   			   FROM		PD_INFO PD INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID) PD ON BI.MODEL_CODE = PD.MODEL_CODE
+								   INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND BI.BORD_TYPE = DC.detail_code
+		<where>
+			AND BI.BORD_TYPE <![CDATA[<]]> 3
+			<if test="type != null and !type.equals('')">
+				<choose>
+					<when test="type.equals('companyName')">
+						AND PD.COMPANYNAME LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test="type.equals('pdName')">
+						AND PD.PDNAME LIKE CONCAT('%', #{keyword},'%') 
+					</when>
+					<when test = "type.equals('all')">
+						AND (PD.COMPANYNAME LIKE CONCAT('%', #{keyword},'%') OR PD.PDNAME LIKE CONCAT('%', #{keyword},'%')) 
+					</when>
+				</choose>
+				<if test="(startDate != null) and (!endDate.equals(''))">
+					AND DATE_FORMAT(DI.DIR_DATE, '%Y%m%d') BETWEEN #{startDate} AND #{endDate}
+				</if>
+			</if>
+		</where>
+	</select>
+	
+	<update id="updatePurDirectionType" parameterType="java.util.HashMap">
+		UPDATE	BORDER_INFO
+		SET		BORD_TYPE = #{bordType}
+		WHERE	BORD_CODE = #{bordCode}
+	</update>
+</mapper>

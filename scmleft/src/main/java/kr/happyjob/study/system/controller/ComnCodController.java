@@ -260,6 +260,43 @@ public class ComnCodController {
 		return "/system/comnDtlCodList";
 	}	
 
+	   /**
+	    * 공통 상세 코드 목록 조회
+	    */
+	   @RequestMapping("groupDetailVue.do")
+	   @ResponseBody
+	   public Map<String, Object> groupDetailVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+	         HttpServletResponse response, HttpSession session) throws Exception {
+	      
+	      logger.info("+ Start " + className + ".listComnDtlCod");
+	      logger.info("   - paramMap : " + paramMap);
+	      
+	      
+	      int currentPage = Integer.parseInt((String)paramMap.get("currentPage"));   // 현재 페이지 번호
+	      int pageSize = Integer.parseInt((String)paramMap.get("pageSize"));         // 페이지 사이즈
+	      int pageIndex = (currentPage-1)*pageSize;                                    // 페이지 시작 row 번호
+	      
+
+	      paramMap.put("pageIndex", pageIndex);
+	      paramMap.put("pageSize", pageSize);
+	      
+	      Map<String, Object> retrunmap = new HashMap<String, Object>();
+	      
+	      // 공통 상세코드 목록 조회
+	      List<ComnDtlCodModel> listComnDtlCodModel = comnCodService.listComnDtlCod(paramMap);      
+	      retrunmap.put("listComnDtlCodModel", listComnDtlCodModel);
+	      
+	      // 공통 상세코드 목록 카운트 조회
+	      int totalCount = comnCodService.countListComnDtlCod(paramMap);
+	      retrunmap.put("totalCntComnDtlCod", totalCount);
+	      retrunmap.put("pageSize", pageSize);
+	      retrunmap.put("currentPageComnDtlCod",currentPage);
+	      
+	      logger.info("+ End " + className + ".listComnDtlCod");
+
+	      return retrunmap;
+	   }   
+	
 	/**
 	 *  공통 상세 코드 단건 조회
 	 */

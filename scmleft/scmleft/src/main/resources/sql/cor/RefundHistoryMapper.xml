@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.cor.dao.RefundHistoryDAO">
+
+<select id="getReturnList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.cor.model.RefundHistoryModel">
+	SELECT  RI.RE_CODE AS 'RECODE',
+	        RI.JORD_CODE AS 'JORDCODE',
+	        PD.PD_NAME AS 'PDNAME',
+	        PD.PD_CODE AS 'PDCODE',
+	        RI.RE_AMT AS 'REAMT',
+	        (PD.PD_PRICE * RI.RE_AMT) AS 'TOTAL',
+	        IFNULL(DATE_FORMAT(RI.RE_DATE, "%Y-%m-%d"), "") AS 'REDATE',
+	        DC.detail_name AS 'RETYPE'
+	FROM 	RETURN_INFO RI INNER JOIN PD_INFO PD ON RI.MODEL_CODE = PD.MODEL_CODE
+	                       INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND DC.detail_code = RI.RE_TYPE
+	<if test="type != null and type.equals('Y'.toString())">
+		WHERE RI.RE_CODE = #{reCode}
+	</if>                                 
+	LIMIT 	#{startPage}, #{endPage}
+</select>
+
+<select id="getReturnCount" parameterType="java.util.HashMap" resultType="int">
+	SELECT  COUNT(*)
+	FROM 	RETURN_INFO RI INNER JOIN PD_INFO PD ON RI.MODEL_CODE = PD.MODEL_CODE
+	                       INNER JOIN tb_detail_code DC ON DC.group_code = 'purchaseCD' AND DC.detail_code = RI.RE_TYPE
+	<if test="type != null and type.equals('Y'.toString())">
+		WHERE RI.RE_CODE = #{reCode}
+	</if>                                 
+	LIMIT 	#{startPage}, #{endPage}
+</select>
+
+</mapper>

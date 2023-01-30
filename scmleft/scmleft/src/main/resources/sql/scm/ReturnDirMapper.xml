@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.scm.dao.ReturnDirDao">
+	<select id="returnDirList" resultType="kr.happyjob.study.scm.model.ReturnDirVO">
+						     
+			select  
+			      jn.JORD_DATE
+			      , jn.loginID as COMPANY
+			      , pn.PD_NAME
+			      , rn.RE_AMT
+			      , pn.PD_PRICE*rn.RE_AMT as RETURN_PRICE
+			      , dr.loginID
+			      , rn.RE_TYPE
+			from RETURN_INFO rn
+			     inner join DIRECTION dr on dr.DIR_CODE = rn.DIR_CODE
+			     inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+			     inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+			<where>
+				<if test = "(cpname != null) and (!cpname.equals(''))">
+				and jn.loginID like concat('%',#{cpname},'%')
+				</if>
+				<if test = "(sdate != null) and (!sdate.equals(''))">
+				and <![CDATA[jn.JORD_DATE >= #{sdate}]]>
+				</if>
+				<if test = "(edate != null) and (!edate.equals(''))">
+				and <![CDATA[jn.JORD_DATE <= #{edate}]]>
+				</if>
+			</where>
+			 LIMIT #{pageIndex},#{pageSize}
+	</select>
+
+	<select id="returnDirTotalCnt" resultType="int">
+						     
+			select count(*)
+			  from RETURN_INFO rn
+			       inner join DIRECTION dr on dr.DIR_CODE = rn.DIR_CODE
+			       inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+			       inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+			<where>
+				<if test = "(cpname != null) and (!cpname.equals(''))">
+				and jn.loginID like concat('%',#{cpname},'%')
+				</if>
+				<if test = "(sdate != null) and (!sdate.equals(''))">
+				and <![CDATA[jn.JORD_DATE >= #{sdate}]]>
+				</if>
+				<if test = "(edate != null) and (!edate.equals(''))">
+				and <![CDATA[jn.JORD_DATE <= #{edate}]]>
+				</if>
+			</where>
+			
+	</select>
+
+
+</mapper>

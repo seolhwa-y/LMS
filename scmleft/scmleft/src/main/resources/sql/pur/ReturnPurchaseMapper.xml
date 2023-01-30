@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.pur.dao.ReturnPurchaseDao">
+	<!-- 반품지시서 조회 -->
+	<select id = "returnPurchaseList" resultType="kr.happyjob.study.pur.model.ReturnPurchaseModel">
+<!-- 		반품번호	반품회사	반품제품	반품수량	날짜	입금확인 -->
+		select rn.RE_CODE
+			 	, jn.loginID
+			 	, pn.PD_NAME
+			 	, rn.RE_AMT
+			 	, rn.RE_DATE
+			 	, rn.RE_OUT
+			from RETURN_INFO rn
+				inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+				inner join PD_INFO pn on rn.PD_NAME = pn.PD_NAME
+		<where>
+			<if test = "(cpname != null) and (!cpname.equals(''))">
+				and jn.loginID like concat('%',#{cpname},'%')
+			</if>
+			<if test = "(pdname != null) and (!pdname.equals(''))">
+				and jn.loginID like concat('%',#{pdname},'%')
+			</if>
+			<if test = "(sdate != null) and (!sdate.equals(''))">
+				and <![CDATA[rn.RE_DATE >= #{sdate}]]>
+			</if>
+			<if test = "(edate != null) and (!edate.equals(''))">
+				and <![CDATA[rn.RE_DATE <= #{edate}]]>
+			</if>
+		</where>
+			order by RE_DATE
+			LIMIT #{pageIndex},#{pageSize}
+	</select>
+	
+	<!-- 총 개수  -->
+	<select id="returnOrderCnt" resultType="int">
+						     
+			select count(*)
+			  from RETURN_INFO rn
+			       inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+			       inner join PD_INFO pn on rn.PD_NAME = rn.PD_NAME
+			<where>
+				<if test = "(cpname != null) and (!cpname.equals(''))">
+					and jn.loginID like concat('%',#{cpname},'%')
+				</if>
+				<if test = "(pdname != null) and (!pdname.equals(''))">
+					and jn.loginID like concat('%',#{pdname},'%')
+				</if>
+				<if test = "(sdate != null) and (!sdate.equals(''))">
+					and <![CDATA[rn.RE_DATE >= #{sdate}]]>
+				</if>
+				<if test = "(edate != null) and (!edate.equals(''))">
+					and <![CDATA[rn.RE_DATE <= #{edate}]]>
+				</if>
+			</where>
+			
+	</select>
+</mapper>

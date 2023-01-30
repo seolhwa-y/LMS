@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.cmp.dao.SalesStatusDao">
+
+	<!-- 공지사항 목록 조회 -->
+	<select id = "transactionHistory" resultType = "kr.happyjob.study.cmp.model.SalesStatusModel">
+	SELECT 
+	sum(pd.PD_PRICE  * jo.JORD_AMT) as macul
+	, pd.MODEL_CODE 
+	, pd.MODEL_NAME 
+	, pd.PD_CORP 
+	, pd.PD_PRICE 
+	, jo.JORD_AMT 
+	, jo.JORD_IN 
+	, jo.JORD_DATE
+	
+	from PD_INFO pd
+	join JORDER_INFO jo on pd.MODEL_CODE =jo.MODEL_CODE
+	
+<!-- 	<where>
+			<if test ="(comName != null) and (!comName.equals(''))">
+			    
+			</if>	
+	</where> -->
+	where 1=1
+	and pd.PD_CORP  Like CONCAT('%', #{comName}, '%')
+	and jo.JORD_IN =1
+	and date(jo.JORD_DATE) BETWEEN #{stDate} and #{edDate}
+	
+	
+	group by pd.PD_CORP
+	order by macul desc
+	limit #{pageIndex}, #{pageSize} 
+	</select>
+	
+	<!-- 공지사항 목록 총 갯수 조회 -->
+	<select id="transactionHistoryCnt" resultType="int">
+		
+		select count(*)
+		  from PD_INFO pd 
+		       join JORDER_INFO jo on pd.MODEL_CODE =jo.MODEL_CODE 
+		where jo.JORD_IN =1
+	
+	</select>	
+	
+	<!-- 상세내역 조회 -->
+	<select id="dtlList" resultType = "kr.happyjob.study.cmp.model.SalesStatusModel">
+		SELECT
+		 pd.PD_CORP
+		,pd.MODEL_NAME
+		,(pd.PD_PRICE * jo.JORD_AMT) as price
+		,DATE_FORMAT(jo.JORD_DATE, '%Y-%m-%d') as dtldate
+		
+		FROM
+		PD_INFO pd
+		JOIN JORDER_INFO jo on
+		pd.MODEL_CODE = jo.MODEL_CODE
+		
+		WHERE 1=1
+		AND pd.PD_CORP = #{comName2}
+		order by dtldate desc
+		
+	</select>	
+	
+	<!-- 상세내역 총 갯수 조회 -->
+	<select id="dtlLisCnt" resultType="int">
+		
+		SELECT
+		 count(*)
+		FROM
+		PD_INFO pd
+		JOIN JORDER_INFO jo on
+		pd.MODEL_CODE = jo.MODEL_CODE
+		
+		WHERE 1=1
+		AND pd.PD_CORP = #{comName2}
+		
+	</select>	
+
+</mapper>
+

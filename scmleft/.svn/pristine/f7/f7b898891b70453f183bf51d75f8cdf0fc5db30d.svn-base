@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.cor.dao.OrderStatusDAO">
+
+<!-- 기업회원별 주문이력 조회 -->
+<select id="getOrderStatusList" parameterType="java.util.HashMap" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
+	SELECT 	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
+			OS.*
+	FROM 	ORDERSTATUS OS 
+	WHERE 	OS.LOGINID = #{loginId} AND (@ROWNUM:=0) = 0
+	<if test="startDate != '' and endDate != null">
+		AND OS.JORDDATE BETWEEN #{startDate} AND #{endDate}
+	</if>
+	LIMIT #{startPage}, #{endPage}
+</select>
+
+<select id = "getOrderCount" resultType="int" parameterType="java.util.HashMap">
+	SELECT 	COUNT(*)
+	FROM 	ORDERSTATUS OS
+	WHERE	OS.LOGINID = #{loginId}
+	<if test="startDate != '' and endDate != null">
+		AND OS.JORDDATE BETWEEN #{startDate} AND #{endDate}
+	</if>
+</select>
+
+<!-- 주문별 항목 조회 -->
+<select id="getOrderDetails" parameterType="kr.happyjob.study.cor.model.OrderStatusModel" resultType="kr.happyjob.study.cor.model.OrderStatusModel">
+	SELECT	@ROWNUM:=@ROWNUM + 1 AS 'NUM',
+			OD.*
+	FROM	ORDERSTATUSDETAIL OD
+	WHERE   OD.JORDNO = #{jordNo} AND (@ROWNUM:=0) = 0
+	LIMIT 	#{startPage}, #{endPage}
+</select>
+
+<select id = "getDetailCount" resultType="int" parameterType="string">
+	SELECT 	COUNT(*)
+	FROM 	ORDERSTATUSDETAIL OD
+	WHERE	OD.JORDNO = #{jordNo}
+</select>
+
+<!-- 입금하기 -->
+<update id="updateJorderInStatus" parameterType="java.util.HashMap">
+	UPDATE 	JORDER_INFO 
+	SET JORD_IN = #{jordIn}
+	WHERE 	JORD_NO = #{jordNo}
+</update>
+
+<!-- 반품신청 -->
+<insert id="insertReturnInfoJ" parameterType="kr.happyjob.study.cor.model.OrderStatusModel">
+	INSERT INTO RETURN_INFO (RE_CODE, DIR_CODE, JORD_CODE, WH_CODE, MODEL_CODE, BORD_CODE, RE_AMT, RE_OUT)
+	VALUES ((SELECT R.CODE
+        	 FROM (SELECT IFNULL(MAX(RE_CODE) + 1, 1) AS 'CODE'
+        		   FROM RETURN_INFO) R), NULL, #{jordCode}, #{whCode}, #{modelCode},
+																        		   <if test="bordCode.equals(0)">
+																        		   		NULL, #{reAmt}, "0")	
+																        		   </if>
+																        		   <if test="bordCode > 0">
+																        		    	#{bordCode}, #{reAmt}, "0")	
+																        		   </if>
+</insert>
+
+<update id="updateShipInfo" parameterType="kr.happyjob.study.cor.model.OrderStatusModel">
+	UPDATE 	SHIP_INFO
+	SET 	RE_CODE = (SELECT	R.RECODE
+					   FROM 	(SELECT	RE_CODE AS 'RECODE'
+								 FROM 	RETURN_INFO
+								 WHERE 	JORD_CODE = #{jordCode}) R)
+	WHERE 	SH_CODE = (SELECT	S.SHCODE
+					   FROM		(SELECT	SH_CODE AS 'SHCODE'
+								 FROM	SHIP_INFO
+							   	 WHERE	JORD_CODE = #{jordCode} AND MODEL_CODE = #{modelCode} AND WH_CODE = #{whCode}) S) 
+			AND JORD_CODE = #{jordCode} AND MODEL_CODE = #{modelCode} 
+</update>
+</mapper>

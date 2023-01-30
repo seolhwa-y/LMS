@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.scm.dao.WHInventoryFormDao">
+	
+	<!-- 창고별 재고 조회 -->
+	<select id="getList" resultType="kr.happyjob.study.scm.model.WHInventoryFormModel">
+		select wi.wh_code
+		      ,ws.model_code
+		      ,wi.wh_name
+		      ,pdi.pd_name
+		      ,ifnull(ws.wh_stock,0) as wh_stock
+		      ,concat(wi.WH_ADDR, ' ', wi.WH_ADDR_DTL) as wh_addr
+		 from WHOUSE_INFO wi
+	     left outer join WHOUSE_STOCK ws on wi.WH_CODE = ws.WH_CODE
+	     inner join PD_INFO pdi ON pdi.MODEL_CODE = ws.MODEL_CODE
+			<where>
+			<if test="(sname != null) and (!sname.equals(''))">
+				<choose>
+					<when
+						test="oname eq 'pd_name'.toString()">
+						and pdi.PD_NAME Like CONCAT('%', #{sname}, '%')
+					</when>
+					<when
+						test="oname eq 'wh_name'.toString()">
+						and wi.wh_name Like CONCAT('%', #{sname}, '%')
+					</when>
+					<otherwise>
+						AND 1=2
+					</otherwise>
+					
+				</choose>
+			</if>
+			</where>
+			group by wi.wh_code,ws.model_code
+			LIMIT #{pageIndex}, #{pageSize}
+	</select>	
+	
+	<select id="countList" resultType="int">
+		select count(*)
+		 from WHOUSE_INFO wi
+	     left outer join WHOUSE_STOCK ws on wi.WH_CODE = ws.WH_CODE
+	     inner join PD_INFO pdi ON pdi.MODEL_CODE = ws.MODEL_CODE
+			<where>
+			<if test="(sname != null) and (!sname.equals(''))">
+				<choose>
+					<when
+						test="oname eq 'pd_name'.toString()">
+						and pdi.PD_NAME Like CONCAT('%', #{sname}, '%')
+					</when>
+					<when
+						test="oname eq 'wh_name'.toString()">
+						and wi.wh_name Like CONCAT('%', #{sname}, '%')
+					</when>
+					<otherwise>
+						AND 1=2
+					</otherwise>
+					
+				</choose>
+			</if>
+			</where>
+	</select>
+	
+	
+	<select id="SgetList" resultType="kr.happyjob.study.scm.model.WHInventoryFormModel">
+		     
+       	select wh.wh_date
+      ,wh.model_code
+      ,pdi.pd_name
+      ,ifnull(wh3.wh_amt,0) as input
+      ,ifnull(wh2.wh_amt,0) as output
+		from WHOUSE_HOUSING wh
+		     inner join PD_INFO pdi ON pdi.MODEL_CODE = wh.MODEL_CODE
+		     left outer join (
+                    select wh_date,wh_no, model_code, sum(wh_amt) as wh_amt
+		                  from WHOUSE_HOUSING  
+		                 where WH_TYPE = 1
+                    group by  wh_code,model_code, wh_no
+		          ) wh2 on wh2.MODEL_CODE = wh.MODEL_CODE and wh.WH_NO = wh2.wh_no and wh.WH_DATE = wh2.WH_DATE
+		     left outer join (
+                    select wh_date,wh_no, model_code, sum(wh_amt) as wh_amt
+		                  from WHOUSE_HOUSING  
+		                 where WH_TYPE = 0
+                    group by  wh_code,model_code, wh_no
+		          ) wh3 on wh3.MODEL_CODE = wh.MODEL_CODE  and wh.WH_NO = wh3.wh_no and wh.WH_DATE = wh3.WH_DATE
+		where wh.model_code = #{li_no}
+       and wh.wh_code = #{wh_code}
+       group by wh.MODEL_CODE, wh.WH_DATE, wh.WH_NO
+	</select>	
+	
+	<select id="ScountList" resultType="int">
+		select count(*)
+				from WHOUSE_HOUSING wh
+		     inner join PD_INFO pdi ON pdi.MODEL_CODE = wh.MODEL_CODE
+		     left outer join (
+                    select wh_date,wh_no, model_code, sum(wh_amt) as wh_amt
+		                  from WHOUSE_HOUSING  
+		                 where WH_TYPE = 1
+                    group by  wh_code,model_code, wh_no
+		          ) wh2 on wh2.MODEL_CODE = wh.MODEL_CODE and wh.WH_NO = wh2.wh_no and wh.WH_DATE = wh2.WH_DATE
+		     left outer join (
+                    select wh_date,wh_no, model_code, sum(wh_amt) as wh_amt
+		                  from WHOUSE_HOUSING  
+		                 where WH_TYPE = 0
+                    group by  wh_code,model_code, wh_no
+		          ) wh3 on wh3.MODEL_CODE = wh.MODEL_CODE  and wh.WH_NO = wh3.wh_no and wh.WH_DATE = wh3.WH_DATE
+		where wh.model_code = #{li_no}
+       and wh.wh_code = #{wh_code}
+	</select>
+</mapper>

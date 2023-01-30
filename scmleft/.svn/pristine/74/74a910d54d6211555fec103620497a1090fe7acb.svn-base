@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+	<!-- 반품 신청 목록 조회 -->
+
+<mapper namespace="kr.happyjob.study.scm.dao.RefundInfoDao">
+	<select id="refundInfoList" resultType="kr.happyjob.study.scm.model.RefundInfoVO">
+		select pn.MODEL_NAME   
+		      , rn.RE_DATE
+		      , rn.RE_AMT
+		      , pn.PD_PRICE*rn.RE_AMT as RE_PRICE
+        	  , wn.WH_NAME
+        	  , rn.re_code 
+        	  ,jn.loginID      	 
+			from RETURN_INFO rn
+		     inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+		     inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE		
+             inner join WHOUSE_INFO wn on rn.WH_CODE = wn.WH_CODE 	     
+		   <where>
+				<if test = "(pdname != null) and (!pdname.equals(''))">
+				and pn.MODEL_NAME like concat('%',#{pdname},'%')
+				</if>
+				<if test = "(sdate != null) and (!sdate.equals(''))">
+				and <![CDATA[rn.RE_DATE >= #{sdate}]]>
+				</if>
+				<if test = "(edate != null) and (!edate.equals(''))">
+				and <![CDATA[rn.RE_DATE <= #{edate}]]>
+				</if>				
+			</where>
+			 LIMIT #{pageIndex},#{pageSize}
+	</select>	
+	
+	<select id="countRefundInfoList" resultType="int">
+		select count(*)
+		  from RETURN_INFO rn
+		       inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+		       inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+		         inner join WHOUSE_INFO wn on rn.WH_CODE = wn.WH_CODE 	     
+		   <where>
+				<if test = "(pdname != null) and (!pdname.equals(''))">
+				and pn.MODEL_NAME like concat('%',#{pdname},'%')
+				</if>
+				<if test = "(sdate != null) and (!sdate.equals(''))">
+				and <![CDATA[rn.RE_DATE >= #{sdate}]]>
+				</if>
+				<if test = "(edate != null) and (!edate.equals(''))">
+				and <![CDATA[rn.RE_DATE <= #{edate}]]>
+				</if>
+			</where>    
+		   
+	</select>	
+	
+	<!-- 모달  -->
+	<select id = "refundDtModalList"  parameterType="Map" resultType = "kr.happyjob.study.scm.model.RefundInfoVO">
+			
+       select pn.MODEL_NAME   
+		      , rn.RE_DATE
+		      , rn.RE_AMT
+		      , pn.PD_PRICE*rn.RE_AMT as RE_PRICE
+        	  , wn.WH_NAME
+        	  , rn.re_code
+           	  , rn.WH_CODE as origin_ware_no
+		from RETURN_INFO rn
+		     inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
+		     inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE		
+             inner join WHOUSE_INFO wn on rn.WH_CODE = wn.WH_CODE 
+			<where>
+			 and rn.re_code  = #{re_code}
+			</where>
+			   
+		
+	</select>
+	
+	<!-- 창고  -->
+	<select id = "selectWareInfo" resultType = "kr.happyjob.study.scm.model.WarehouseVO">
+					         				
+	
+  	 select 
+			         wh.WH_CODE
+			        , wh.WH_NAME
+		
+   
+			FROM  WHOUSE_INFO wh
+      group by wh.WH_CODE;
+    			 
+	</select>
+	
+	<!--  승인 요청 -->
+	
+	<update id="updateRefund" parameterType="java.util.Map" >
+        UPDATE RETURN_INFO 
+        set dir_code = (SELECT DI.DIR_CODE
+        				FROM ( SELECT MAX(DIR_CODE) as DIR_CODE 
+							     FROM DIRECTION 
+							     WHERE DIR_DATE = DATE_FORMAT(now(), '%Y%m%d') AND DIR_AMT = #{RE_AMT})DI)
+		where re_code = #{re_code}          
+    </update>
+	
+
+	<!-- <update id="updateDirRefund"  parameterType="map" >	
+		 UPDATE RETURN_INFO  set 
+        	dir_code = #{dir_code}
+		where re_code = #{re_code} 
+         
+		
+    </update> -->
+    
+    <!-- 지시서코드 생성 -->
+    <insert id="insertDir"   parameterType="java.util.Map">	    
+        insert into DIRECTION 
+       		 (		
+       		 DIR_CODE	  
+			  ,DIR_TYPE
+			  ,DIR_DATE
+			  ,DIR_AMT
+			  ,loginID		  
+				)			
+			values
+			(
+			 (SELECT DI.DIR_CODE
+			  FROM(SELECT IFNULL(MAX(DIR_CODE),0) + 1 as DIR_CODE FROM DIRECTION) DI)  
+		    ,'1'
+			, DATE_FORMAT(now(), '%Y%m%d')
+			, #{RE_AMT}
+			, #{loginId}
+			  )
+	</insert>
+	
+</mapper>

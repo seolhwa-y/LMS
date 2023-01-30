@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.pur.dao.OrdDtManagementDao">
+
+	<!-- 주문내역 + 검색 -->
+	 <select id="ordDtManagementList" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
+						     
+			select bn.BORD_CODE
+			       , jn.loginID 
+			       , pn.MODEL_NAME
+			       , bn.BORD_AMT
+			       , bn.BORD_DATE
+			       , bn.BORD_TYPE
+			       , jn.JORD_IN
+			from BORDER_INFO bn
+			inner join JORDER_INFO jn
+			on bn.JORD_CODE = jn.JORD_CODE
+			inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+			
+		<where>		
+				
+			  <if test="(checkBoxStatus != null) and (checkBoxStatus.equals('checked'))">
+			  	and bn.BORD_TYPE = '1'
+			  </if>			  
+		  	<if test="(searchKey != null) and (!searchKey.equals(''))">
+		  		<choose>
+		  		    <when test="(searchKey != null) and (searchKey eq 'cpname'.toString())">
+		  				AND jn.loginID LIKE CONCAT('%', #{searchWord}, '%')	
+		  				<if test="(!sdate.equals('')) or (!edate.equals(''))">
+		  					<![CDATA[
+		  						AND bn.BORD_DATE >= DATE(#{sdate}) 
+		  						AND bn.BORD_DATE < DATE(#{edate})+1
+		  					]]>						  					
+		  				</if>	  				
+		  			</when>
+		  			 <when test="(searchKey != null) and (searchKey eq 'pdname'.toString())">
+		  				AND pn.MODEL_NAME LIKE CONCAT('%', #{searchWord}, '%')	
+		  				<if test="(!sdate.equals('')) or (!edate.equals(''))">
+		  					<![CDATA[
+		  						AND bn.BORD_DATE >= DATE(#{sdate}) 
+		  						AND bn.BORD_DATE < DATE(#{edate})+1
+		  					]]>						  					
+		  				</if>	  				
+		  			</when>
+		  					  			 
+		  		</choose>
+		  	</if>
+		  </where>  
+		  order by bn.BORD_CODE DESC
+		  LIMIT #{pageIndex}, #{pageSize}
+		  
+	</select>
+
+	<!-- 주문내역 총카운트 -->
+	<select id="ordDtManagementTotalCnt" resultType="int">
+						     
+			select count(*)
+			from BORDER_INFO bn
+			inner join JORDER_INFO jn
+			on bn.JORD_CODE = jn.JORD_CODE
+			inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+			<where>		
+			   <if test="(checkBoxStatus != null) and (checkBoxStatus.equals('checked'))">
+			  	and bn.BORD_TYPE = '1'
+			  </if>
+			  
+		  	<if test="(searchKey != null) and (!searchKey.equals(''))">
+		  		<choose>
+		  		
+		  		    <when test="(searchKey != null) and (searchKey eq 'cpname'.toString())">
+		  				AND jn.loginID LIKE CONCAT('%', #{searchWord}, '%')	
+		  				<if test="(!sdate.equals('')) or (!edate.equals(''))">
+		  					<![CDATA[
+		  						AND bn.BORD_DATE >= DATE(#{sdate}) 
+		  						AND bn.BORD_DATE < DATE(#{edate})+1
+		  					]]>						  					
+		  				</if>	  				
+		  			</when>
+		  			 <when test="(searchKey != null) and (searchKey eq 'pdname'.toString())">
+		  				AND pn.MODEL_NAME LIKE CONCAT('%', #{searchWord}, '%')	
+		  				<if test="(!sdate.equals('')) or (!edate.equals(''))">
+		  					<![CDATA[
+		  						AND bn.BORD_DATE >= DATE(#{sdate}) 
+		  						AND bn.BORD_DATE < DATE(#{edate})+1
+		  					]]>						  					
+		  				</if>	  				
+		  			</when>
+		  					  			 
+		  		</choose>
+		  	</if>
+		  </where>  
+	</select>
+
+	<!-- 단건조회 -->
+	<select id="ordDtManagementSelect" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
+						     
+			select bn.BORD_CODE
+			       , jn.loginID 
+			       , pn.MODEL_NAME
+			       , bn.BORD_AMT
+			       , bn.BORD_DATE
+			       , bn.BORD_TYPE
+			       , jn.JORD_IN
+			from BORDER_INFO bn
+			       inner join JORDER_INFO jn 	on bn.JORD_CODE = jn.JORD_CODE
+			       inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+	
+			where bn.BORD_CODE = #{bordCode}
+		
+	</select> 
+
+	<update id="updateBordType">
+		UPDATE JORDER_INFO jn, BORDER_INFO bn
+		      SET jn.JORD_IN = '1'
+		WHERE  bn.BORD_CODE = #{bordCode}
+			 AND jn.JORD_CODE = bn.JORD_CODE
+	</update>
+	
+</mapper>
