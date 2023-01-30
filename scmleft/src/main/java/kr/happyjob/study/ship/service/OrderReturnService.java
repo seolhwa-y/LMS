@@ -39,9 +39,6 @@ public class OrderReturnService implements OrderReturnInter{
 		if(ord.insertReturnInfo(map) > 0) map.put("message", "반품신청이 완료되었습니다.");
 		else map.put("message", "반품신청이 실패하였습니다.");
 		
-		this.getOrderReturnList(map);
-		this.getOrderReturnDetailList(map);
-		
 		return map;
 	}
 	
@@ -50,19 +47,21 @@ public class OrderReturnService implements OrderReturnInter{
 		// 재고처리(입고, 출고)
 		switch ((String) map.get("type")) {
 		case "in" : 
-			if(ord.updateReturnInfo(map) > 0) map.put("message", "입고처리가 완료되었습니다.");
+			if(ord.updateBorderInfo(map) > 0) 
+				if(ord.insertWhouseHousing(map) > 0)
+					if(ord.updateWhouseStock(map) > 0)
+						map.put("message", "입고처리가 완료되었습니다.");
 			else map.put("message", "입고처리가 실패하였습니다.");
 			break;
 		case "out" :
-			if(ord.updateBorderInfo(map) > 0) map.put("message", "출고처리가 완료되었습니다."); 
+			if(ord.updateReturnInfo(map) > 0)
+				if(ord.updateBorderInfo(map) > 0) 
+					if(ord.insertWhouseHousing(map) > 0)
+						if(ord.updateWhouseStock(map) > 0)
+							map.put("message", "출고처리가 완료되었습니다.");
 			else map.put("message", "출고처리가 실패하였습니다.");
 			break;
 		default:
-			if(ord.insertWhouseHousing(map) > 0)
-				if(ord.updateWhouseStock(map) > 0)
-					System.err.println("message ======== 실패");
-					this.getOrderReturnList(map);
-					this.getOrderReturnDetailList(map);
 			break;
 		}
 

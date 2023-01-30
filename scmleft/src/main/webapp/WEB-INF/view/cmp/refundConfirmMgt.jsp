@@ -20,15 +20,39 @@
     
     var pagesize = 5;
     var pagenumsize = 5;
+    
+    var refundarea;
 
     
 	/** OnLoad event */ 
 		$(function() {
+			
+			init();
 
 			refundConfirm();
 			
 		fRegisterButtonClickEvent();
 	});
+	
+		function init() {
+			refundarea = new Vue({
+				el : '#refundConfirm',
+				data : {
+					refundConfirmList : [],
+					re_TYPE : "",
+				},
+				methods : {
+					sclick : function(re_TYPE) {
+						this.re_TYPE = "1";
+						Sclick(re_TYPE );
+					},
+					cancle : function(re_TYPE) {
+						this.re_TYPE = "2";
+						Sclick(re_TYPE);
+					}
+				}
+			});
+		}
 
 	
 		/** 버튼 이벤트 등록 */
@@ -56,10 +80,8 @@
 			
 			clickpagenum = clickpagenum || 1;
 			
-	
 			
 			var param = {
-					
 					searchvalue : $("#searchvalue").val(),
 					sdate :  $('#sdate').val().replaceAll('-', ''),
 					edate :  $('#edate').val().replaceAll('-', ''),
@@ -70,23 +92,26 @@
 			
 			var firstsearchcallback = function(returndata) {
 				
-				console.log("returndata : " + returndata);
+				console.log("returndata : " + JSON.stringify(returndata));
 				
 				firstsearchcallbackprocess(returndata,clickpagenum);
 				
 			}
 			
-			callAjax("/cmp/refundConfirmMgt.do", "post", "text", true, param, firstsearchcallback);			
+			callAjax("/cmp/refundConfirmMgt.do", "post", "json", true, param, firstsearchcallback);			
 		}
 		
 		function firstsearchcallbackprocess(returndata,clickpagenum) {
 
-			$("#refundConfirmMgt").empty().append(returndata);
+			refundarea.refundConfirmList = returndata.refundConfirmlist;
+			
+			console.log(refundarea.refundConfirmList);
 			
 			
-			var totalcnt = $("#refundConfirmMgtcnt").val();
+			var totalcnt = returndata.refundConfirmMgtcnt;
+			var list = $("#refundConfirmMgtcnt").val();
 			
-			var paginationHtml = getPaginationHtml(clickpagenum, totalcnt, pagesize, pagenumsize, 'refundConfirm');
+			var paginationHtml = getPaginationHtml(clickpagenum, totalcnt, pagesize, pagenumsize, 'refundConfirm', [ list ]);
 			
 			console.log("paginationHtml : " + paginationHtml);
 			
@@ -95,24 +120,25 @@
 			$("#hclickpagenum").val(clickpagenum);
 		}	
 		 	
-		function Sclick( re_code , status ) { //반품시 넘겨줘야할 코드가 반품코드,지시서코드  생각했지만 주문코드 발주코드도 들어가 줘야 하는가? 
+		function Sclick(re_code) { //반품시 넘겨줘야할 코드가 반품코드,지시서코드  생각했지만 주문코드 발주코드도 들어가 줘야 하는가? 
 			
 			
 			// console.log("DIR_CODE 22222222222222222222:  " + re_code   + $("RE_CODE").val());
 
 			var param = { 
- 					status : status,
+					re_TYPE : refundarea.re_TYPE,
  					re_code : re_code
 			}
 			
-			
  			var Sclickcallback = function(returndata) {
 				
-				if ( status  == 1 ){
+				console.log(returndata);
+				
+				if ( refundarea.re_TYPE  == 1 ){
 					
 					alert("승인 완료")
 					return false;
-			    } else { ( status == 2 )
+			    } else if( refundarea.re_TYPE == 2 ){
 						
 				    alert("승인 반려 ")  
 				    return false;  
@@ -189,7 +215,7 @@
 	                        </tr>	
                         </table> 
                         
-                   	<div class="divfileuploadList">
+                   	<div id="refundConfirm">
 							<table class="col">
 								<caption>caption</caption>
 								<colgroup>
@@ -200,7 +226,6 @@
 									<col width="15%">
 									<col width="15%">
 									<col width="15%">
-																		
 								</colgroup>
 	
 								<thead>
@@ -214,8 +239,25 @@
 										<th scope="col">반품 승인</th>
 									</tr>
 								</thead>
-								
-								<tbody id="refundConfirmMgt"></tbody>
+								<tbody>
+								<tr v-for="(item, index) in refundConfirmList" v-if="refundConfirmList.length != 0">
+									<td>{{ item.name }}</td>
+									<td>{{ item.pd_NAME }}</td>
+									<td>{{ item.jord_DATE }}</td>
+									<td>{{ item.re_DATE }}</td>
+									<td>{{ item.re_AMT }}</td>
+									<td>{{ item.re_PRICE }}</td>
+									<td v-if='item.re_TYPE == "0"'>
+									<a @click="sclick(item.re_CODE)"
+												class="btnType blue" id="btnSclick" name="btn" ><span>승인</span></a>
+									<a @click="cancle(item.re_CODE)"
+												class="btnType blue" id="btnSclick" name="btn" ><span>반려</span></a>
+									</td>
+									<td v-else-if='item.re_TYPE == "1"'> 승인 </td>
+									<td v-else-if='item.re_TYPE == "2"'> 반려 </td>
+									<td v-else></td>
+								</tr>
+								</tbody>
 							</table>
 							<div class="paging_area"  id="refundConfirmMgtPagination"> </div>
 						</div>

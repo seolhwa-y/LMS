@@ -4,7 +4,7 @@
 <mapper namespace="kr.happyjob.study.pur.dao.OrdDtManagementDao">
 
 	<!-- 주문내역 + 검색 -->
-	<!-- <select id="ordDtManagementList" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
+	 <select id="ordDtManagementList" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
 						     
 			select bn.BORD_CODE
 			       , jn.loginID 
@@ -47,10 +47,13 @@
 		  		</choose>
 		  	</if>
 		  </where>  
-	</select> -->
+		  order by bn.BORD_CODE DESC
+		  LIMIT #{pageIndex}, #{pageSize}
+		  
+	</select>
 
 	<!-- 주문내역 총카운트 -->
-	<!-- <select id="ordDtManagementTotalCnt" resultType="int">
+	<select id="ordDtManagementTotalCnt" resultType="int">
 						     
 			select count(*)
 			from BORDER_INFO bn
@@ -87,10 +90,10 @@
 		  		</choose>
 		  	</if>
 		  </where>  
-	</select> -->
+	</select>
 
 	<!-- 단건조회 -->
-	<!-- <select id="ordDtManagementSelect" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
+	<select id="ordDtManagementSelect" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
 						     
 			select bn.BORD_CODE
 			       , jn.loginID 
@@ -100,43 +103,18 @@
 			       , bn.BORD_TYPE
 			       , jn.JORD_IN
 			from BORDER_INFO bn
-			inner join JORDER_INFO jn
-			on bn.JORD_CODE = jn.JORD_CODE
-			inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+			       inner join JORDER_INFO jn 	on bn.JORD_CODE = jn.JORD_CODE
+			       inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
 	
-			where bn.BORD_TYPE='1' and 	bn.BORD_CODE = #{bn.BORD_CODE}
+			where bn.BORD_CODE = #{bordCode}
 		
-	</select> -->
-	
-	<!-- 단건 상세조회 -->
-	<!-- <select id="ordDtlList" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
-						     
-			select bn.BORD_CODE
-			       , jn.loginID 
-			       , pn.MODEL_NAME
-			       , bn.BORD_AMT
-			       , bn.BORD_DATE
-			       , bn.BORD_TYPE
-			       , jn.JORD_IN
-			from BORDER_INFO bn
-			inner join JORDER_INFO jn
-			on bn.JORD_CODE = jn.JORD_CODE
-			inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
-	
-			where bn.BORD_TYPE='1' and 	bn.BORD_CODE = #{bn.BORD_CODE}
-		
-	</select> -->
+	</select> 
 
-	<!-- 단건 상세조회 -->
-	<!-- <select id="countOrdDtlList" resultType="kr.happyjob.study.pur.model.OrdDtManagementVO">
-						     
-			select (*)
-			from BORDER_INFO bn
-			inner join JORDER_INFO jn
-			on bn.JORD_CODE = jn.JORD_CODE
-			inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE
+	<update id="updateBordType">
+		UPDATE JORDER_INFO jn, BORDER_INFO bn
+		      SET jn.JORD_IN = '1'
+		WHERE  bn.BORD_CODE = #{bordCode}
+			 AND jn.JORD_CODE = bn.JORD_CODE
+	</update>
 	
-			where bn.BORD_TYPE='1' and 	bn.BORD_CODE = #{bn.BORD_CODE}
-		
-	</select> -->
 </mapper>

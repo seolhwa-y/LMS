@@ -52,6 +52,7 @@
   					 
  					 var listCallBack = function(data) {
   						console.log(data);
+  						vueOrderReturn.orderReturnList = [];
   						vueOrderReturn.orderReturnList = data.result.orderReturnList;
   						vueOrderReturn.pagenavi = getPaginationHtml(1, data.result.orderReturnCount, listCount, pageCount, 'paging', [true]);
   						vueOrderReturn.pageNum = vueOrderReturn.pageNum;
@@ -71,37 +72,46 @@
 			  el : '#divOrderReturnList',
 			  data : {
 				  orderReturnList: ${result}.orderReturnList,
-				  pagenavi: getPaginationHtml(1, ${result}.orderReturnCount, listCount, pageCount, 'paging', [false]),
+				  pagenavi: getPaginationHtml(1, ${result}.orderReturnCount, listCount, pageCount, 'paging', [true]),
 			   	  pageNum : 1,
 			  },
 			  methods : {
 				  /* 발주지시서 상세보기 */
-				  orderReturnDetailList : function(loginId){ 
+				  orderReturnDetailList : function(id, pageNum){ 
+					  var currentPage = (pageNum != undefined ? pageNum : vueOrderReturn.pageNum) || 1; 
+				  	  var loginId = (id != undefined ? id : vueOrderReturnDetail.loginId);          
+					  
 					  var param = {
-							  pageNum : vueOrderReturn.pageNum, 
+							  pageNum : currentPage, 
 	 						  listCount : listCount,
 							  loginId : loginId, 
 	 				  } 
+					  
+					  console.log(param);
 	  					 
 	 				  var listCallBack = function(data) {
 						  console.log(data);
 						  
-						  
-	 					vueOrderReturnDetail.orderReturnDetailList = data.result.orderReturnDetailList;
-	 					vueOrderReturnDetail.pageNum = data.result.pageNum;
-	 					vueOrderReturnDetail.loginId = data.loginId;
-	 					vueOrderReturnDetail.pagenavi = getPaginationHtml(data.result.pageNum, data.result.orderReturnDetailCount, listCount, pageCount, 'paging', [false, vueOrderReturnDetail.loginId]);
-	 					console.log(data.result.orderReturnDetailList);
+						  vueOrderReturnDetail.orderReturnDetailList = [];
+	 					  vueOrderReturnDetail.orderReturnDetailList = data.result.orderReturnDetailList;
+	 					  vueOrderReturnDetail.pageNum = data.result.pageNum;
+	 					  vueOrderReturnDetail.loginId = data.result.loginId;
+	 					  vueOrderReturnDetail.pagenavi = getPaginationHtml(data.result.pageNum, data.result.orderReturnDetailCount, listCount, pageCount, 'paging', [false]);
+	 					  
+	 					  console.log(data.result.orderReturnDetailList);
+	 					 
+	 					  data = data.result.orderReturnDetailList;
+	 					  
+	 					  for(i = 0; i < data.length; i++){
+	 						  vueOrderReturnDetail.bordCode[i] = data[i].bordCode;
+		 					  vueOrderReturnDetail.modelCode[i] = data[i].modelCode;
+		 					  vueOrderReturnDetail.whCode[i] = data[i].whCode;
+		 					  vueOrderReturnDetail.reCode[i] = data[i].reCode;
+		 					  vueOrderReturnDetail.bordDate[i] = data[i].bordDate;
+	 					  }
+	 				  }
 	 					
-	 					data.result.orderReturnDetailList.forEach((item, index) => {
- 							vueOrderReturnDetail.bordCode[index] = item.bordCode
-		 					vueOrderReturnDetail.modelCode[index] = item.modelCode
-		 					vueOrderReturnDetail.whCode[index] = item.whCode
-		 					vueOrderReturnDetail.reCode[index] = item.reCode
- 						})
-	 				}
-	 					
-	 				callAjax("/ship/searchOrderReturnDetail", "post", "json", true, param, listCallBack);
+	 				  callAjax("/ship/searchOrderReturnDetail", "post", "json", true, param, listCallBack);
 	            }
 			},
 		});	  
@@ -118,58 +128,111 @@
 				modelCode : [],
 				whCode : [],
 				reCode : [],
-				ormList : [],
+				bordDate : [],
 			},
 			methods : {
 				/* 반품처리 */
 				insertOrderReturn : function(){ console.log("insertOrderReturn");
 					var ormList = {};
 					var checkBox = document.querySelectorAll("input[name='isCheck']:checked");
-					var clientData = "";
-				
-					for(i = 0; i < checkBox.length; i++){
-						clientData += "bordCode=" + vueOrderReturnDetail.bordCode[i]
-									+ "&modelCode=" + vueOrderReturnDetail.bordCode[i]
-									+ "&whCode=" + vueOrderReturnDetail.whCode[i]
-									+ "&reCode=" + vueOrderReturnDetail.reCode[i]
-									+ "&bordAmt=" + parseInt(checkBox[i].parentElement.parentElement.children[7].innerText.replaceAll(",", ""))
-									+ "&type=" + '0';
-						if(checkBox.length-1 != i) clientData += "&";
-						
-						ormList[i] = {};
-						ormList[i].bordCode = vueOrderReturnDetail.bordCode[i];
-						ormList[i].modelCode = vueOrderReturnDetail.modelCode[i];
-						ormList[i].whCode = vueOrderReturnDetail.whCode[i];
-						ormList[i].reCode = vueOrderReturnDetail.reCode[i];
-						ormList[i].bordAmt = parseInt(checkBox[i].parentElement.parentElement.children[7].innerText.replaceAll(",", ""));
-						ormList[i].type = '0'; 
-					}
-					console.log("    clientData      ::::   "   + clientData);
+					var message = "";
 
-					var param = { ormList : JSON.stringify(ormList) };
+					for(i = 0; i < checkBox.length; i++){
+						console.log(vueOrderReturnDetail.bordDate[i]);
+						console.log(vueOrderReturnDetail.reCode[i]);
+						
+				 		if(vueOrderReturnDetail.bordDate[i] != 'null'){
+				 			if(vueOrderReturnDetail.reCode[i] === 0) {
+								ormList[i] = {};
+								ormList[i].bordCode = vueOrderReturnDetail.bordCode[i];
+								ormList[i].modelCode = vueOrderReturnDetail.modelCode[i];
+								ormList[i].whCode = vueOrderReturnDetail.whCode[i];
+								ormList[i].reCode = vueOrderReturnDetail.reCode[i];
+								ormList[i].bordAmt = parseInt(checkBox[i].parentElement.parentElement.children[7].innerText.replaceAll(",", ""));
+								ormList[i].type = '0'; 
+								
+								message += "주문번호 " + vueOrderReturnDetail.bordCode[i]; 
+				 			}
+						}
+					}
+					console.log(ormList);
+
+					if(message !== '') {
+						message += " 반품신청이 들어갑니다.";
+						swal(message);
+					} else return swal("반품신청 들어갈 수 있는 제품이 없습니다. \n재고처리를 진행하세요.");
+
+					var param = { 
+							ormList : JSON.stringify(ormList),
+					};
 					
 					console.log(ormList);
 					console.log(param);
 					
 	 				var listCallBack = function(data) {
 	 					 console.log(data);
+	 					 vueOrderReturn.orderReturnDetailList();
+
 	 				}
 	 					
-	 				//callAjax("/ship/insertOrderReturn", "post", "json", true, JSON.stringify(ormList), listCallBack);
 	 				callAjax("/ship/insertOrderReturn", "post", "json", true, param, listCallBack);
 				},
 				/* 재고처리 */
            		updateOrderReturn : function(){ console.log("updateOrderReturn");
-           		  var param = {
-						  
- 				  } 
-  					 
- 				  var listCallBack = function(data) {
- 					 console.log(data);
+	           		var ormList = {};
+					var checkBox = document.querySelectorAll("input[name='isCheck']:checked");
+					var message = "";
 
- 				}
+					for(i = 0; i < checkBox.length; i++){
+						console.log(vueOrderReturnDetail.bordDate[i]);
+						console.log(vueOrderReturnDetail.reCode[i]);
+				 		if(vueOrderReturnDetail.bordDate[i] == null && vueOrderReturnDetail.reCode[i] === 0){
+				 			/* 입고 */
+							ormList[i] = {};
+							ormList[i].bordCode = vueOrderReturnDetail.bordCode[i];
+							ormList[i].modelCode = vueOrderReturnDetail.modelCode[i];
+							ormList[i].whCode = vueOrderReturnDetail.whCode[i];
+							ormList[i].reCode = vueOrderReturnDetail.reCode[i];
+							ormList[i].bordAmt = parseInt(checkBox[i].parentElement.parentElement.children[7].innerText.replaceAll(",", ""));
+							ormList[i].loginId = vueOrderReturnDetail.loginId;
+							ormList[i].type = 'in'; 
+							
+							message += "주문번호 " + vueOrderReturnDetail.bordCode[i]; 
+						} else if(vueOrderReturnDetail.bordDate[i] != null && vueOrderReturnDetail.reCode[i] > 0){
+				 			/* 출고 */
+							ormList[i] = {};
+							ormList[i].bordCode = vueOrderReturnDetail.bordCode[i];
+							ormList[i].modelCode = vueOrderReturnDetail.modelCode[i];
+							ormList[i].whCode = vueOrderReturnDetail.whCode[i];
+							ormList[i].reCode = vueOrderReturnDetail.reCode[i];
+							ormList[i].bordAmt = parseInt(checkBox[i].parentElement.parentElement.children[7].innerText.replaceAll(",", ""));
+							ormList[i].loginId = vueOrderReturnDetail.loginId;
+							ormList[i].type = 'out'; 
+							
+							message += "주문번호 " + vueOrderReturnDetail.bordCode[i]; 
+						}
+					}
+					
+					console.log(ormList);
+	
+					if(message !== '') {
+						message += " 재고처리 들어갑니다.";
+						swal(message);
+					} else return swal("재고처리 할 수 있는 제품이 없습니다.");
+	
+					var param = { 
+							ormList : JSON.stringify(ormList),
+					};
+					
+					console.log(ormList);
+					console.log(param);
+					
+	 				var listCallBack = function(data) {
+	 					 console.log(data);
+	 					 vueOrderReturn.orderReturnDetailList();
+	 				}
  					
- 					 callAjax("/ship/updateOrderReturn", "post", "json", true, param, listCallBack);
+ 					callAjax("/ship/updateOrderReturn", "post", "json", true, param, listCallBack);
            		} 
 			}
 		});
@@ -180,11 +243,12 @@
 		console.log(isCheck);
 		switch (isCheck) {
 		case "true" : vueSearch.searchBordReturnList(pageNum); break;
-		case "false" : vueOrderReturn.orderReturnDetailList(pageNum); break;
+		case "false" : vueOrderReturn.orderReturnDetailList(vueOrderReturnDetail.loginId, pageNum); console.log("false"); break;
 		default:
 			break;
 		}
 	}
+	
 </script>
 
 </head>
@@ -292,14 +356,14 @@
 								<tbody>
 									<tr v-for = " (item, index) in orderReturnDetailList" v-if = "orderReturnDetailList.length > 0" >
 										<td>
-											<input type="checkBox" name = "isCheck" v-bind:disabled = "item.reType == 1" /> <!-- 반품처리 및 재고처리에 필요한 체크박스 -->
+											<input type="checkBox" name = "isCheck" /> <!-- 반품처리 및 재고처리에 필요한 체크박스 -->
 										</td>
 										<td>{{ item.modelName }}</td>
 										<td>{{ item.modelCode }}</td>
 										<td>{{ item.pdName }}</td>	
 										<td>{{ item.pdCode }}</td>
 										<td>{{ item.pdCorp }}</td>
-										<td>{{ item.dirDate }}</td>	
+										<td >{{ item.dirDate }}</td>	
 										<td>{{ item.bordAmt }}</td>
 										<td>{{ item.pdPrice }}</td>
 										<td>{{ item.whName }}</td>	
@@ -312,10 +376,13 @@
 							<div class = "paging_area"  id = "divPurDirectionPaging" v-html = "pagenavi"></div>
                            	<input type="hidden" v-model="pageNum" />
                            	<input type="hidden" v-model="loginId" />
+                     <!--       	<input type="hidden" v-model="action" /> -->
                            	<br/>
                            	<div style="margin-left: 40%;">
-                            	<a class="btnType gray" v-on:click = "insertOrderReturn()"><span>반품처리</span></a>
-                           		<a class="btnType blue" v-on:click = "updateOrderReturn()"><span>재고처리</span></a>
+<!--                            	 	<a class="btnType gray" v-on:click = "checkAction('re')" v-show = "rePle"><span>반품요청</span></a>
+                           		<a class="btnType blue" v-on:click = "checkAction('st')" v-show = "stPle"><span>입출고</span></a> -->
+                             	<a class="btnType gray" v-on:click = "insertOrderReturn()" ><span>반품처리</span></a>
+                           		<a class="btnType blue" v-on:click = "updateOrderReturn()" ><span>재고처리</span></a> 
                            	</div>
 						</div>
 						

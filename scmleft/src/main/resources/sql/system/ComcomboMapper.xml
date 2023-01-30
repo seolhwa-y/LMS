@@ -60,4 +60,18 @@
 			 order by pr.MODEL_CODE
   </select>   
   
+  
+    <!-- 사용자  목록 조회 -->
+  <select id="selectuserlist" resultType="kr.happyjob.study.system.model.comcombo">
+    /*kr.happyjob.study.system.dao.ComnComboDao.selectdivproductlist*/
+			select loginID as cd
+			       ,name
+			  from tb_userinfo
+			 <where>
+			  <if test="(code != null) and (!code.equals(''))">
+			      AND user_type = #{code}
+			  </if>
+			</where>  
+			 order by loginID
+  </select>   
 </mapper>

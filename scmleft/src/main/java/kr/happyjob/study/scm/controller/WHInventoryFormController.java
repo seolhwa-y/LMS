@@ -44,7 +44,7 @@ public class WHInventoryFormController {
 	public String initComnCod(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
 	
-		return "scm/lecListMgt";
+		return "scm/lecListMgt2";
 	}
 	
 	
@@ -107,11 +107,11 @@ public class WHInventoryFormController {
 		// 공통 그룹코드 목록 조회
 		List<WHInventoryFormModel> admsmtLecPersonListMgtModel = service.SgetList(paramMap);
 		model.addAttribute("admsmtLecPersonListMgtModel", admsmtLecPersonListMgtModel);
-		
+		System.out.println("admsmtLecPersonListMgtModel : "+admsmtLecPersonListMgtModel);
 		// 공통 그룹코드 목록 카운트 조회
 		int totalCount = service.ScountList(paramMap);
 		model.addAttribute("totalCntAdmsmtLecPersonList", totalCount);
-		
+		System.out.println("totalCntAdmsmtLecPersonList : "+totalCount);
 		model.addAttribute("pageSize", pageSize);
 		model.addAttribute("currentPageAdmsmtLecList",currentPage);
 		

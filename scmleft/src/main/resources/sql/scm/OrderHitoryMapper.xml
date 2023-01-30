@@ -11,10 +11,21 @@
 	<choose>
 		<when test="type != null">
 			<if test="type.equals('jorder')">
-				AND OH.JORDDATE BETWEEN #{startDate} AND #{endDate}
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
 			</if>
 			<if test="type.equals('return')">
-				AND OH.REDATE BETWEEN #{startDate} AND #{endDate}
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.REDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.REDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+				
 			</if>
 		</when>
 	</choose>
@@ -35,26 +46,37 @@
 	SELECT 	COUNT(*)
 	FROM 	ORDERHISTORY OH
 	<where>
-		<choose>
-			<when test="type != null">
-				<if test="type.equals('jorder')">
-					AND OH.JORDDATE BETWEEN #{startDate} AND #{endDate}
-				</if>
-				<if test="type.equals('return')">
-					AND OH.REDATE BETWEEN #{startDate} AND #{endDate}
-				</if>
-			</when>
-		</choose>
-		<choose>
-			<when test="reType != null">
-				<if test="reType.equals('true')">
-					AND OH.REDATE IS NOT NULL
-				</if>
-				<if test="reType.equals('false')">
-					AND OH.REDATE IS NULL
-				</if>
-			</when>
-		</choose>
+	<choose>
+		<when test="type != null">
+			<if test="type.equals('jorder')">
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.JORDDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+			</if>
+			<if test="type.equals('return')">
+			    <if test="(startDate != null) and (!startDate.equals(''))">
+			        AND OH.REDATE <![CDATA[>=]]> REPLACE(#{startDate},'-','')
+			    </if>
+			    <if test="(endDate != null) and (!endDate.equals(''))">
+			        AND OH.REDATE <![CDATA[<=]]> REPLACE(#{endDate},'-','')
+			    </if>
+				
+			</if>
+		</when>
+	</choose>
+	<choose>
+		<when test="reType != null">
+			<if test="reType.equals('true')">
+				AND OH.REDATE IS NOT NULL
+			</if>
+			<if test="reType.equals('false')">
+				AND OH.REDATE IS NULL
+			</if>
+		</when>
+	</choose>
 	</where>
 </select>
 

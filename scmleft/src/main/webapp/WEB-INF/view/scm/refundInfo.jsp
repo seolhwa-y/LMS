@@ -15,13 +15,52 @@
 		var refundPageSize = 5;
 		var refundPageBlock = 3;
 		
+		var refundarea;
+		var refundeditvue;
+		
 		
 		$(function() {
+			
+		init();
 		
 		refundInfoList();
 		
 		fButtonClickEvent();
 	});
+		
+		function init(){
+			
+			refundarea = new Vue({
+				el : '#refundlist',
+				data : {
+					refunditem : []
+				},
+				methods : {
+					detailview : function(re_code) {
+						rDtModal(re_code);
+					}
+				}
+			});
+			
+			refundeditvue = new Vue({
+				el : '#refundDirection',
+				data : {
+					re_code : "",
+					model_NAME : "",
+					re_DATE : "",
+					re_AMT : "",
+					re_PRICE : "",
+					dir_CODE : "",
+					model_NAMEread : "",
+					re_DATEread : "",
+					re_AMTread : "",
+					re_PRICEread : "",
+					dir_CODEread : "",
+					re_TYPE : "",
+					re_TYPEread : ""
+				}
+			})
+		}
 		
 		
 		
@@ -72,28 +111,31 @@
 
 		}
 		var resultCallBack = function(data){
+			
+			console.log("resultCallBack : " + JSON.stringify(data));
 			refundInfoListResult(data, currentPage);
 		}
-		callAjax("/scm/refundInfoList.do", "post", "text", true, param, resultCallBack );
+		callAjax("/scm/refundInfoListVue.do", "post", "json", true, param, resultCallBack );
 	} 
 	
 		
 		
 		//페이징
 		 function refundInfoListResult(data, currentPage) {
-		    	console.log(data);
+				
+		    	refundarea.refunditem = data.refundInfoList
 		    	
-		    	$("#refundInfoList").empty().append(data);
+		    	console.log(data.refundInfoList);
 		    	
-		    	var totalCnt = $("#totalCnt").val();
+		    	var totalCnt = data.totalCnt;
 		    	var list = $("#tmpList").val();
 		    	
 			    var pagingnavi = getPaginationHtml(currentPage, totalCnt, refundPageSize, refundPageBlock, 'refundInfoList', [list]);
 				 
-			    console.log("pagingnavi : " + pagingnavi);
+			   // console.log("pagingnavi : " + pagingnavi);
 				
 				$("#pagingnavi").empty().append(pagingnavi);
-				$("#currentPage").val(currentPage);
+				//$("#currentPage").val(currentPage);
 		    	
 		    }		
 			
@@ -124,75 +166,42 @@
 		 	 
 
 		    //반품 지시서 모달 오픈 , 
-		    function rDtModal(re_code ) {
+		    function rDtModal(re_code) {
 		       
+		    	console.log("re_code : " + re_code);
+		    	
 		       var param = {
 		    		   re_code : re_code
-		    		 
 		          };
-		          
 		          var searchcallback = function(data){
-		             
 		        	console.log("searchcallback !!!! " +  JSON.stringify(data));
-		             console.log("searchcallback : " + data.re_code);
-		             
-		             resultRDtModal(data.result, re_code);
-		             makeSelectBox(data.wareInfo);
+		             resultRDtModal(data);
 		          }
-		             
 		          callAjax("/scm/refundDtModal.do", "post", "json", true, param, searchcallback);
-		          
 		    }
 		    
 		     //모달 콜백
-		    function resultRDtModal(object, re_code) {		    	 
+		    function resultRDtModal(data) {		
+		    	 
+		    	 console.log("a : " + JSON.stringify(data) );
 		    	
 		    	 gfModalPop("#refundDirection");
-		    	 console.log(object);
-		    	 console.log("resultRDtModal data !!!! " +  JSON.stringify(object));
-		    	 console.log(re_code);
-	             
-	           //  $("#JORD_CODE").val(object.jord_CODE);
-		    	 $("#MODEL_NAME").val(object.model_NAME);
-	             $("#RE_DATE").val(object.re_DATE);
-	             $("#RE_AMT").val(object.re_AMT);
-	             $("#RE_PRICE").val(object.re_PRICE);
-	             $("#re_code").val(object.re_code);
-	             $("#loginID").val(object.loginID);
-	             
-	             
-	             
-	             $("#origin_ware_no").val(object.origin_ware_no);
+		    	 refundmodal(data.result);
+		    	 
+		    	 console.log("aa" + data.result);
+		    	 
 		    }
-		     
-		     //모달 콜백 2 + 창고 셀렉트박스
-		     
-		function makeSelectBox(object){
+		    
+		     function refundmodal(object) { 
+		    	 
 		    	 console.log(object);
-	
-		var targetObj = document.getElementById("pick_warehouse");
-		
-		console.log("makeSelectBox !!!! " +  JSON.stringify(object));
-		
-		$("#pick_warehouse").empty();	
-		
-        
-        for(var item in object){
-        	
-        	var item_wh_code = object[item].wh_CODE;
-        	var item_wh_name = object[item].wh_NAME;
-        	
-        	console.log("wareName.WH_CODE ! " + object[item].wh_CODE);
-        	console.log("wareName.WH_NAME ! " + object[item].wh_NAME);
-        	
-			var option = document.createElement('option');
-			option.value = item_wh_code
-			option.text = item_wh_name;
-			targetObj.options.add(option); 
-        }
-
-        
-	}
+		    	 refundeditvue.model_NAME = object.model_NAME;
+			     refundeditvue.re_DATE = object.re_DATE;
+			     refundeditvue.re_AMT = object.re_AMT;
+			     refundeditvue.re_PRICE = object.re_PRICE;
+			     refundeditvue.re_TYPE = object.re_TYPE;
+		     }
+		     
 		function  btnGoToCEO(re_code, status){
 			
 			/* sweetalert 창에 대한 버튼 */
@@ -239,12 +248,12 @@
 </head>
 <body>
 	<form id="myForm" action="" method="">
-		<input type="hidden" id="currentPage" value="1"> 
-		<input type="hidden" id="tmpList" value="">
-		<input type="hidden" name="action" id="action" value="">
-		<input type="hidden" name="re_code" id="re_code" value="">
-		<input type="hidden" name="loginID" id="loginID" value="">
-		
+		<input type="hidden" id="currentPage" value="1"> <input
+			type="hidden" id="tmpList" value=""> <input type="hidden"
+			name="action" id="action" value=""> <input type="hidden"
+			name="re_code" id="re_code" value=""> <input type="hidden"
+			name="loginID" id="loginID" value="">
+
 		<div id="mask"></div>
 		<div id="wrap_area">
 
@@ -263,33 +272,32 @@
 						<div class="content">
 
 							<p class="Location">
-								<a href="/dashboard/dashboard.do" class="btn_set home">메인으로</a> 
-								<a class="btn_nav">거래내역</a>
-								 <span class="btn_nav bold">반품 신청 목록</span> 
-								<a href="" class="btn_set refresh">새로고침</a>
+								<a href="/dashboard/dashboard.do" class="btn_set home">메인으로</a>
+								<a class="btn_nav">거래내역</a> <span class="btn_nav bold">반품
+									신청 목록</span> <a href="" class="btn_set refresh">새로고침</a>
 							</p>
 
 							<p class="conTitle">
-								<span>반품 신청 목록</span>
-								<span class="fr"> 									
-								</span>
+								<span>반품 신청 목록</span> <span class="fr"> </span>
 							</p>
 
-							<div class="RefundInfoList">
-							<div class="conTitle" style="margin: 0 25px 10px 0; " align=center>
-								<!-- <label>
-									<input type="checkbox" id="delcheck" name="delcheck" value="del">
-									삭제된 정보 표시
-								</label>  -->
-							
-						    <!-- enter입력하면 검색실행   -->
-						    <span>제품명</span>
-							<input type="text" style="width: 160px; height: 30px;" id="pdname" name="pdname" onkeypress="if( event.keyCode == 13 ){refundInfoList();}">  
-							<input type="date" style="width: 160px; height: 30px;" id="sdate" name="sdate" onkeypress="if( event.keyCode == 13 ){refundInfoList();}">  
-							<input type="date" style="width: 160px; height: 30px;" id="edate" name="edate" onkeypress="if( event.keyCode == 13 ){refundInfoList();}">  
-							<a href="javascript:refundInfoList()" class="btnType blue" id="searchBtn" name="btn" ><span>검  색</span></a>
-									
-									</div>
+							<div class="conTitle" style="margin: 0 25px 10px 0;" align=center>
+
+								<!-- enter입력하면 검색실행   -->
+								<span>제품명</span> <input type="text"
+									style="width: 160px; height: 30px;" id="pdname" name="pdname"
+									onkeypress="if( event.keyCode == 13 ){refundInfoList();}">
+								<input type="date" style="width: 160px; height: 30px;"
+									id="sdate" name="sdate"
+									onkeypress="if( event.keyCode == 13 ){refundInfoList();}">
+								<input type="date" style="width: 160px; height: 30px;"
+									id="edate" name="edate"
+									onkeypress="if( event.keyCode == 13 ){refundInfoList();}">
+								<a href="javascript:refundInfoList()" class="btnType blue"
+									id="searchBtn" name="btn"><span>검 색</span></a>
+							</div>
+
+							<div id="refundlist">
 								<table class="col">
 									<caption>caption</caption>
 									<colgroup>
@@ -306,32 +314,25 @@
 											<th scope="col">반품 완료날짜</th>
 											<th scope="col">반품수량</th>
 											<th scope="col">반품 금액</th>
-											
+
 										</tr>
 									</thead>
-									<tbody id="refundInfoList"></tbody>
+									
+									<tbody v-for="(item,index) in refunditem" v-if="refunditem.length != 0">
+									<tr @click="detailview(item.re_code)">
+										<td>{{ item.model_NAME }}</td>
+										<td>{{ item.re_DATE }}</td>
+										<td>{{ item.re_AMT }}</td>
+										<td>{{ item.re_PRICE }}</td>
+									</tr>
+									</tbody>
 								</table>
-								
+
 								<!-- 페이징 처리 -->
-								<div class="paging_area" id="pagingnavi">
-									<div class="paging">
-										<a class="first" href="javascript:refundInfoList()(1)"> <span
-											class="hidden">맨앞</span></a> <a class="pre"
-											href="javascript:refundInfoList()(1)"> <span
-											class="hidden">이전</span></a> <strong>1</strong> <a
-											href="javascript:refundInfoList()(2)">2</a> <a
-											href="javascript:refundInfoList()(3)">3</a> <a
-											href="javascript:refundInfoList()(4)">4</a> <a
-											href="javascript:refundInfoList()(5)">5</a> <a class="next"
-											href="javascript:refundInfoList()(5)"> <span
-											class="hidden">다음</span></a> <a class="last"
-											href="javascript:refundInfoList()(5)"> <span
-											class="hidden">맨뒤</span></a>
-									</div>
-								</div>
-							
+								 <div class="paging_area" id="pagingnavi"></div> 
+
 							</div>
-							
+
 						</div> <!--// content -->
 
 						<h3 class="hidden">풋터 영역</h3> <jsp:include
@@ -340,78 +341,61 @@
 				</ul>
 			</div>
 		</div>
-	
-	<!-- 반품 지시서 모달 -->
-	
-	<div id="refundDirection" class="layerPop layerType2"
+
+		<!-- 반품 지시서 모달 -->
+
+		<div id="refundDirection" class="layerPop layerType2"
 			style="width: 1000px; height: auto;">
-		<input type="hidden" id="refund" name="modal">
-		<dl>
-			<dt>
-				<strong>반품지시서</strong>
-			</dt>
-			<dd class="content">
-				<!-- s : 여기에 내용입력 -->
+			<input type="hidden" id="refund" name="modal">
+			<dl>
+				<dt>
+					<strong>반품지시서</strong>
+				</dt>
+				<dd class="content">
+					<!-- s : 여기에 내용입력 -->
 
-				<table class="col" id="refundModalTable">
-					<caption>caption</caption>
-					<colgroup>
-
-						<col width="8%">
-						<col width="6%">
-						<col width="8%">
-						<col width="8%">
-					
-					</colgroup>
-
-					<thead>
-						<tr>
-							<th scope="col">반품 제품명</th>
-							<th scope="col">반품 완료날짜</th>
-							<th scope="col">반품수량</th>
-							<th scope="col">반품 금액</th>												
-						</tr>											
-					</thead>											
- 					</tbody>
- 					<tr>					
-							<td id=""><input type="text"  name="MODEL_NAME" readonly id="MODEL_NAME" value="" /></td>							
-							<td id=""><input type="text" name="RE_DATE" readonly id="RE_DATE" value="" /></td>						
-							<td id=""><input type="text" name="RE_AMT" id="RE_AMT"  readonly value="" /></td>							
-							<td id=""><input type="text" name="RE_PRICE" id="RE_PRICE"  readonly value="" /></td>					
-						</tr>
-				</table>
-			<input type="hidden" id="origin_ware_no" name="origin_ware_no" value="" align=right>	 		
-					<table class="row">
-						<caption>선택박스</caption>
+					<table class="col" id="refundModalTable">
+						<caption>caption</caption>
 						<colgroup>
-							<col width="15%">
-							<col width="5%">
-							<col width="10%">
-							<col width="15%">
+
+							<col width="8%">
+							<col width="6%">
+							<col width="8%">
+							<col width="8%">
+
 						</colgroup>
 
-						<tbody>
+						<thead>
 							<tr>
-									<th scope="col">반품 창고 지정</th>
-							<td>
-							<select style="width: 200px" id="pick_warehouse"
-									name="pick_warehouse">
-								
-							</select>
-							</td>
+								<th scope="col">반품 제품명</th>
+								<th scope="col">반품 완료날짜</th>
+								<th scope="col">반품수량</th>
+								<th scope="col">반품 금액</th>
 							</tr>
-
+						</thead>
 						</tbody>
+						<tr>
+							<td id=""><input type="text" name="model_NAME" readonly
+								id="model_NAME" v-model="model_NAME" /></td>
+							<td id=""><input type="text" name="re_DATE" readonly
+								id="re_DATE" v-model="re_DATE" /></td>
+							<td id=""><input type="text" name="re_AMT" id="re_AMT"
+								readonly v-model="re_AMT" /></td>
+							<td id=""><input type="text" name="re_PRICE" id="re_PRICE"
+								readonly v-model="re_PRICE" /></td>
+						</tr>
 					</table>
-					
-				<div class="btn_areaC mt30">
-						<a href="javascript:btnGoToCEO()" class="btnType blue" ><span>승인요청</span></a>
+
+					<div class="btn_areaC mt30">
+					<templete v-if='re_TYPE == "0"'>
+						<a href="javascript:btnGoToCEO()" class="btnType blue"><span>승인요청</span></a>
+					</templete>
 						<a href="" class="btnType gray" id="btnClose" name="btn"><span>닫기</span></a>
-				</div>
-			</dd>
-		</dl>
-		<a href="" class="closePop" id="btnX"><span class="hidden">닫기</span></a>
-	</div>
+					</div>
+				</dd>
+			</dl>
+			<a href="" class="closePop" id="btnX"><span class="hidden">닫기</span></a>
+		</div>
 
 	</form>
 </body>

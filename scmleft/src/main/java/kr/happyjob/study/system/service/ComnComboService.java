@@ -27,5 +27,8 @@ public interface ComnComboService {
     /** 제품 분류별  목록 조회 */
     public List<comcombo> selectdivproductlist(Map<String, Object> paramMap) throws Exception;
   
+    /** 사용자  목록 조회 */
+    public List<comcombo> selectuserlist(Map<String, Object> paramMap) throws Exception;
+  
   
 }

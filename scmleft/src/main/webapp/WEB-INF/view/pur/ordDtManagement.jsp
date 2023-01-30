@@ -13,7 +13,9 @@
 <link rel="stylesheet" type="text/css" href="${CTX_PATH}/css/duDatePicker/duDatepicker.css">
 <!-- duDatePicker import js -->
 <script type="text/javascript" src="${CTX_PATH}/js/duDatePicker/duDatepicker.js"></script>
-
+<style>
+	h2 { text-align: center; }
+</style>
 <script type="text/javascript">
 
 	//제품정보 페이징 처리
@@ -24,13 +26,19 @@
 	var modalPageBlock = 5;
 	
 	var checkBoxStatus;
-	
+	var areaVar;
+	var editVue;
 	$(document).ready(function() {
+		
+		init();
+		
 		// 목록 조회
 		ordDtManagementList();
 		
 		//체크박스 작동 메소드
 		checkBoxStatus();
+		
+		fRegisterButtonClickEvent();
 		
 		//엔터 검색
 		$("#searchWord").keypress(function (e){
@@ -42,6 +50,58 @@
 		});
 	});
 	
+	function init() {
+		
+		areaVar = new Vue({
+			  el: '#orderList',
+			  
+			  data: {
+				  	listitem:[],
+                    action:"",
+                    pagenavi:""
+			  }, 
+			  methods:{					
+				  detailview:function(no){
+					  alert(no);
+					  ordDtManagementSelect(no);
+				  }
+			  }  
+			  
+			});	
+
+		editVue = new Vue({
+			  el: '#layer1',
+			  data: {
+				  bord_CODE:"",
+				  loginID:"",
+				  model_NAME:"",
+				  bord_AMT:"",
+				  bord_DATE:"",
+				  bord_TYPE:"",
+				  jord_IN:"",
+				  flag:true
+			  }
+			});	
+		
+	}
+	
+	/** 버튼 이벤트 등록 */
+    function fRegisterButtonClickEvent() {
+       $('a[name=btn]').click(function(e) {
+          e.preventDefault();
+
+          var btnId = $(this).attr('id');
+          switch (btnId) {
+             case 'btnClose' :
+             gfCloseModal();
+             break;
+             case 'btnSave' :
+            updateModal();
+             break;                   
+                
+       }
+    });
+	}
 	
 	//주문내역 전체 조회
 	function ordDtManagementList(currentPage) {
@@ -56,28 +116,33 @@
 			}
 		
 		var resultCallBack = function(data){
+			
+			console.log("resultCallback : " + JSON.stringify(data));
+			
 			ordDtManagementListResult(data, currentPage);
 			
 		}
 
-		callAjax("/pur/ordDtManagementList.do", "post", "text", true, param, resultCallBack );
+		callAjax("/pur/ordDtManagementList.do", "post", "json", true, param, resultCallBack );
 	} 
 	
 	//전체 주문내역 페이징 처리
     function ordDtManagementListResult(data, currentPage) {
-    	console.log("data" + data);
+    	//console.log(data);		
+		areaVar.listitem = data.listOrdDtManagement;
 		
-    	$("#listOrdDtManagement").empty().append(data);
+    	//$("#listOrdDtManagement").empty().append(data);
     	
-    	var totalCnt = $("#totalCnt").val();
+    	var totalCnt = data.totalCnt;
     	
     	//var list = $("#tmpList").val();
 
     	
-		var pagingnavi = getPaginationHtml(currentPage, totalCnt, ordPageSize, ordPageBlock, 'ordDtManagementList');
+		areaVar.pagenavi = getPaginationHtml(currentPage, totalCnt, ordPageSize, ordPageBlock, 'ordDtManagementList');
+		
 		
 		//(paginationHtml);
-		$("#pagingnavi").empty().append(pagingnavi);
+		//$("#pagingnavi").empty().append(pagingnavi);
 		$("#currentPage").val(currentPage);
 		  	
     }
@@ -95,9 +160,7 @@
 		var edate = $("#edate").val();
 		
 		if ($("#depositCheck").is(":checked")) {
-			alert("checked");
 			checkBoxStatus="checked";
-		
 		}		
 		else{
 			//alert("unChecked");
@@ -121,7 +184,7 @@
 			
 		}
 
-		callAjax("/pur/ordDtManagementList.do", "post", "text", true, param, resultCallBackSearch );
+		callAjax("/pur/ordDtManagementList.do", "post", "json", true, param, resultCallBackSearch );
 	} 
 	
 	
@@ -149,7 +212,7 @@
 			var resultCallBack = function(data){
 				checkBoxListResult(data, currentPage);
 			}
-			callAjax("/pur/ordDtManagementList.do", "post", "text", true, param, resultCallBack);
+			callAjax("/pur/ordDtManagementList.do", "post", "json", true, param, resultCallBack);
 		});
 	}
 	
@@ -185,83 +248,97 @@
 				
 			}
 			
-			callAjax("/pur/ordDtManagementList.do", "post", "text", true, param, resultCallBack );
+			callAjax("/pur/ordDtManagementList.do", "post", "json", true, param, resultCallBack );
 		} 
 	
 	//체크박스 상태에 따른 화면
 	function checkBoxListResult(data, currentPage){
-		$("#listOrdDtManagement").empty().append(data);
-		
-		var totalCnt = $("#totalCnt").val();
+		//$("#listOrdDtManagement").empty().append(data);
+		areaVar.listitem = data.listOrdDtManagement;
+		var totalCnt = data.totalCnt;
     
     	
-		var pagingnavi = getPaginationHtml(currentPage, totalCnt, ordPageSize, ordPageBlock, 'checkBoxList');
+		areaVar.pagenavi = getPaginationHtml(currentPage, totalCnt, ordPageSize, ordPageBlock, 'checkBoxList');
 		
 		//(paginationHtml);
-		$("#pagingnavi").empty().append(pagingnavi);
+		//$("#pagingnavi").empty().append(pagingnavi);
 		$("#currentPage").val(currentPage);
 		  	
     }
 	
 	//단건 조회
-	function ordDtManagementSelect(BORD_CODE){
+	function ordDtManagementSelect(bordCode){
 		
 		var param = {
-				BORD_CODE : BORD_CODE
-		}
+				bordCode : bordCode
+		};
 		var resultCallBack = function(data){
+			
+			console.log("resultCallback : " + JSON.stringify(data));
+			
 			ordDtManagementSelectResult(data);			
-		}		
-		callAjax("/pur/ordDtManagementSelect.do", "post", "json", true, param, resultCallBack );
+		};	
+		callAjax("/pur/ordDtManagementSelect.do", "post", "json", true, param, resultCallBack);
 	} 
 	
 	//단건조회 콜백
-	function ordDtManagementSelect(data){
-		gfModalPop("#layer1");
+	function ordDtManagementSelectResult(data){
 		
-		setOrdModal(data.ordDtManagementVO);
-	}
-	
-	//단건 상세조회
-	function ordDtlList(BORD_CODE, currentPage){
-		currentPage = currentPage || 1;
-		
-		var param = {
-				BORD_CODE : BORD_CODE,
-				currentPage : currentPage,
-				pageSize : modalPageSize
-		}
-		var resultCallBack = function(data){
-			ordDtlListResult(data, currentPage);
-		}
-		callAjax("modalOrdDtl.do", "post", "text", true, param, resultCallBack);
-	}
-	
-	//단건 상세조회콜백
-	function ordDtlListResult(data, currentPage){
 		console.log(data);
 		
-		$("listModalOrdDtl").empty().append(data);
 		
-		var modalTotalCnt = $("#modalTotalCnt").val();
+		if(data.resultMsg == "SUCCESS"){
+			areaVar.action = "U"
+			 //모달 띄우기 
+			 gfModalPop("#layer1");
+			
+			 frealPopModal(data.result);
+
+		 }else{
+			 alert(data.resultMsg);
+		 }
+		
 	}
-	
-	//확인버튼 클릭
-	function confirmBtnClickEvent(BORD_TYPE, BORD_CODE){
-		if(BORD_TYPE == "1"){
-			$("#btnSendConfirm").show();
-		}else{
-			$("#btnSendConfirm").hide();
+
+	function frealPopModal(object){
+
+	          editVue.bord_CODE = object.bord_CODE;
+		      editVue.jord_IN = object.jord_IN;
+		      
+		      console.log("aa : " +editVue.bord_CODE );
+			  console.log("bb : " +editVue.jord_IN );
+		      if(editVue.jord_IN == 1){
+	          	editVue.flag = false;		    	  
+		      }else{
+	          	editVue.flag = true;		    	  
+		      }
+	       
+	}
+	//주문고객의 반품내역 리스트 메일 전송
+	function updateModal(){	
+		
+		var param={
+				action : areaVar.action,
+				bordCode : editVue.bord_CODE,
+				jordIn : editVue.jord_IN
 		}
+		console.log(param);
+		var saveCallback = function(saveReturn){
+    		
+    		console.log("saveCallback : " + JSON.stringify(saveReturn));
+    		
+    		if(saveReturn.result == "UPDATED"){
+    			alert("저장 되었습니다.");
+    			gfCloseModal();
+    			ordDtManagementList();
+    		}else{
+    			alert("실패 되었습니다.");
+
+    		}
+    	}
 		
-		ordDtManagementSelect(BORD_CODE);
-		ordDtlList(BORD_CODE);
+		callAjax("/pur/updateList.do", "post", "json", true, param, saveCallback);
 	}
-	
-	function setOrdModal(object){
-		
-	}
-	
 </script>
 
 </head>
@@ -300,7 +377,7 @@
 								
 							</p>
 						
-							<div class="OrderList">
+							<div id="orderList">
 							<div class="conTitle" style="margin: 0 25px 10px 0; " align=center>
 							
 							<select name="searchKey" id="searchKey">
@@ -341,95 +418,60 @@
 											<th scope="col">입금확인</th>											
 										</tr>
 									</thead>
-									<tbody id="listOrdDtManagement"></tbody>
+									<tbody id="listOrdDtManagement" v-for="(item,index) in listitem"
+													v-if="listitem.length">
+													<tr @click="detailview(item.bord_CODE)">
+														<td>{{ item.bord_CODE }}</td>
+														<td>{{ item.loginID }}</td>
+														<td>{{ item.model_NAME }}</td>
+														<td>{{ item.bord_AMT }}</td>
+														<td>{{ item.bord_DATE }}</td>
+														<td>
+                                                               <templete v-if="item.bord_TYPE == '1'">
+                                                                   Y
+                                                               </templete>
+                                                               <templete v-else-if="item.bord_TYPE == '0'">
+                                                                   N
+                                                               </templete>
+                                                               <templete v-else>
+                                                                   미승인
+                                                               </templete>														
+														</td>
+														<td>
+                                                               <templete v-if="item.jord_IN == '1'">
+                                                                   <!--  <a class="btnType3 color1" id="depositConfirm" href="javascript:confirmBtnClickEvent('${list.BORD_TYPE}', '${list.BORD_CODE}');"><span>확인</span></a> -->
+                                                               		<div style="color: skyblue;font-weight: bold;">입금</div>
+                                                               </templete>
+                                                               <templete v-else>
+                                                                   <div style="color: red;font-weight: bold;">미입금</div>
+                                                               </templete>	
+														</td>
+													</tr>
+									</tbody>
 								</table>
 								
 								<!-- 페이징 처리 -->								
-								<div class="paging_area" id="pagingnavi">														
+								<div class="paging_area" id="pagenavi" v-html="pagenavi">														
 								</div> 																				
 							</div>
-							
-						
 									<!-- Modal 시작 -->
-		<div id="layer1" class="layerPop layerType2" style="width: 900px;">
+		<div id="layer1" class="layerPop layerType2" style="width: 300px; height: 200px;">
+		<input type="hidden" id="bord_CODE" name="bord_CODE" value="${BORD_CODE}">
 		<dl>
 			<dt>
 				<strong>발주 지시서</strong>
 			</dt>
 			<dd class="content">
-				<!-- s : 여기에 내용입력 -->
-				<table class="row">
-					<caption>caption</caption>
-					<colgroup>
-						<col width="50px">
-						<col width="40px">
-						<col width="40px">
-						<col width="50px">
-						<col width="40px">
-						<col width="60px">
-					</colgroup>
-
-					<tbody>
-						<tr>
-							<th scope="row">발주번호</th>
-							<td><input style="text-align: center;" type="text" class="inputTxt p100" name="purchase_no" id="purchase_no" readonly="readonly"/></td>
-							<th scope="row">회사명</th>
-							<td><input style="text-align: center;" type="text" class="inputTxt p100" name="deli_company" id="deli_company" readonly="readonly"/></td>
-							<th scope="row">발주날짜</th>
-							<td><input style="text-align: center;" type="text" class="inputTxt p100" name="purchase_date" id="purchase_date" readonly="readonly"/></td>
-						</tr>
-					</tbody>
-				</table>
-				<table class="row">
-					<caption>caption</caption>
-					<colgroup>
-						<col width="50px">
-						<col width="40px">
-						<col width="40px">
-						<col width="60px">
-					</colgroup>
-					<tbody>
-						<tr>
-							<th scope="row">담당자</th>
-							<td><input style="text-align: center;" type="text" class="inputTxt p100" name="deli_name" id="deli_name" readonly="readonly"/></td>
-							<th scope="row">총액</th>
-							<td><input style="text-align: center;" type="text" class="inputTxt p100" name="total_price" id="total_price" readonly="readonly"/></td>
-						</tr>
-					</tbody>
-				</table>
-				<table class="row mt20" id="modalOrdDtlList">
-					<colgroup>
-						<col width="8%">
-						<col width="5%">
-						<col width="6%">
-						<col width="8%">
-						<col width="5%">
-						<col width="10%">
-						<col width="20%">
-					</colgroup>
-					<thead>
-						<tr style="background-color: silver;">
-							<th scope="row" style="font-weight: bold;">제품</th>
-							<th scope="row" style="font-weight: bold;">수량</th>
-							<th scope="row" style="font-weight: bold;">납품금액</th>
-							<th scope="row" style="font-weight: bold;">합계금액</th>
-							<th scope="row" style="font-weight: bold;">창고번호</th>
-							<th scope="row" style="font-weight: bold;">창고이름</th>
-							<th scope="row" style="font-weight: bold;">창고주소</th>
-						</tr>
-					</thead>
-					<tbody id="listModalPurchaseDtl">					
-					</tbody>	
-				</table>
 				<!-- 테이블 페이지 네비게이션 영역 -->
-				<div class="pagingArea" id="ModalPurchaseDtlPagination"></div>	
+				<div>
+				<h2>입금완료 하시겠습니까?</h2>
+				</div>	
 
 				<!-- e : 여기에 내용입력 -->
 
 				<div class="btn_areaC mt30">
-					<a href="javascript:sendPurchaseDirection()" class="btnType blue" id="btnSendConfirm" name="btn"><span>발주 지시서 전송</span></a>
-					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<a href="javascript:gfCloseModal()"	class="btnType gray" name="btn"><span>취소</span></a>
+					<a href="" class="btnType gray" id="btnSave" name="btn" v-show="flag"><span>입금 완료</span></a>
+					<a href=""	class="btnType gray" id="btnClose" name="btn"><span>취소</span></a>
 				</div>
 			</dd>
 		</dl>

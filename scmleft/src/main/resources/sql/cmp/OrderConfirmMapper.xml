@@ -56,7 +56,6 @@
 				</when>
 			</choose>
 		</where>
-		LIMIT 	#{startPage}, #{endPage}
 	</select>	
 
 	<update id="updateBorderType" parameterType="java.util.HashMap">

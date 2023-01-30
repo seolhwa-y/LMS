@@ -7,28 +7,102 @@
 <meta charset="UTF-8">
 <title>Chain Maker :: SupplierInfo</title>
 <c:if test="${sessionScope.userType ne 'A'}">
-    <c:redirect url="/dashboard/dashboard.do"/>
+	<c:redirect url="/dashboard/dashboard.do" />
 </c:if>
 
 <jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
+
 <script type="text/javascript">
 	/*납품업체 페이징 처리*/
-	var pageSizeDelivery = 5;
-	var pageBlockSizeDelivery = 5;
+	var pageSizeSupplier = 5;
+	var pageBlockSizeSupplier = 5;
 
 	//제품정보 페이징 처리
 	var pageSizeProduct = 5;
 	var pageBlockSizeProduct = 5;
 
+	var supplierarea;
+	var productarea;
+
+	var suppliereditvue;
+
+	var searcharea;
+
 	/*OnLoad event*/
-	$(function() {
-		//납품업체 목록 조회
-		fListDelivery();
-		//삭제된 목록 표시 체크 클릭 이벤트
-		//checkClickEvent();
-		//버튼 이벤트 등록
+	$(document).ready(function() {
+
+		init();
+
+		// 납품 업체 목록 조회
+		fsupplierlist();
+
+		// 제품 정보 목록 조회
+		fProductList();
+
+		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
 	});
+
+	function init() {
+
+		supplierarea = new Vue({
+			el : '#supplier',
+			data : {
+				SupplierListItem : [],
+				action : "",
+				loginID : ""
+			},
+			methods : {
+				ListProduct : function(loginID) {
+					this.loginID = loginID;
+					productarea.a = false;
+
+					fProductList();
+				},
+				DetailSupplier : function(loginID) {
+					fDetailSupplier(loginID);
+				}
+
+			}
+		});
+
+		productarea = new Vue({
+			el : '#product',
+			data : {
+				ProductListItem : [],
+				a : true,
+			}
+		});
+
+		suppliereditvue = new Vue({
+			el : '#suppliersave',
+			data : {
+				napcode : "",
+				company : "",
+				loginID : "",
+				password : "",
+				name : "",
+				hp : "",
+				email : "",
+				napcoderead : true,
+				companyread : "",
+				loginIDread : true,
+				passwordread : "",
+				nameread : "",
+				hpread : "",
+				emailread : ""
+			}
+		});
+
+		searcharea = new Vue({
+			el : '#searcharea',
+			data : {
+				select : "supplier",
+				search : ""
+			}
+		})
+
+	}
 
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {
@@ -41,17 +115,15 @@
 
 			switch (btnId) {
 			case 'searchBtn':
-				board_search(); // 검색하기
+				fsupplierlist(); // 검색하기
+				fProductList();
 				break;
-			case 'btnSaveDelivery'://저장하기
-				fSaveDelivery();
+			case 'btnSaveSupplier'://저장하기
+				fSupplierSave();
 				break;
-			/* case 'btnDeleteDelivery'://삭제하기
-				fDeleteDelivery();
-			 	break;
-			case 'btnRecoveryDelivery': //복원하기
-				fRecoveryDelivery();
-				break; */
+			case 'btnUpdateSupplier':
+				fSupplierModal();
+				break;
 			case 'btnCloseDelivery': //닫기
 				gfCloseModal();
 				break;
@@ -60,378 +132,225 @@
 
 	}
 
-	/** 납품업체 폼 초기화 */
-	function fInitFormDelivery(object) {
-		$("#deli_company").focus();
-		
-		console.log("object :" + JSON.stringify(object));
-		if (object == "" || object == null || object == undefined) {
-			$("#deli_no").val("");
-			$("#deli_no").attr("readonly", true);
-			$("#deli_company").val("");
-			$("#deli_id").val("");
-			$("#deli_password").val("");
-			$("#deli_name").val("");
-			$("#deli_phone").val("");
-			$("#deli_email").val("");
-			$("#btnDeleteDelivery").hide();
-			$("#btnRecoveryDelivery").hide();
+	//납품 업체 목록 조회
+	function fsupplierlist(currentPage) {
 
-		} else{
-			$("#deli_no").val(object.deli_no);
-			$("#deli_no").attr("readonly", true);
-			$("#deli_company").val(object.deli_company);
-			$("#deli_id").val(object.deli_id);
-			$("#deli_password").val(object.deli_password);
-			$("#deli_name").val(object.deli_name);
-			$("#deli_phone").val(object.deli_phone);
-			$("#deli_email").val(object.deli_email);
-			/* if(object.del_cd == "0"){ 
-				$("#btnDeleteDelivery").show();
-				$("#btnRecoveryDelivery").hide();
+		currentPage = currentPage || 1;
+
+		var param = {
+			select : searcharea.select,
+			search : searcharea.search,
+			currentPage : currentPage,
+			pageSize : pageSizeSupplier,
+		}
+
+		console.log(searcharea.search);
+
+		var resultCallback = function(data) {
+
+			console.log("resultCallback : " + JSON.stringify(data));
+
+			fsupplierlistresult(data, currentPage);
+
+		}
+		callAjax("/scm/SupplierListVue.do", "post", "json", true, param,
+				resultCallback);
+
+	}
+
+	// 납품 업체 목록 조회 콜백
+	function fsupplierlistresult(data, currentPage) {
+
+		supplierarea.SupplierListItem = data.SupplierList;
+
+		console.log(searcharea.search);
+		console.log(searcharea.select);
+
+		// 총 개수 추출
+		var totalSupplierCnt = data.SupplierCnt;
+		var list = $("#currentPageSupplier").val();
+
+		// 페이지 네비게이션 생성
+		var paginationHtml = getPaginationHtml(currentPage, totalSupplierCnt,
+				pageSizeSupplier, pageBlockSizeSupplier, 'fsupplierlist',
+				[ list ]);
+
+		$("#SupplierPagination").empty().append(paginationHtml);
+	}
+
+	// 납품 업체 단건 조회
+	function fDetailSupplier(loginID) {
+
+		console.log(loginID);
+
+		var param = {
+			loginID : loginID
+		};
+
+		var resultCallBack3 = function(data) {
+			console.log("resultCallBack3 : " + JSON.stringify(data));
+			fDetailSupplierResult(data);
+		}
+
+		callAjax("/scm/DetailSupplier.do", "post", "json", true, param,
+				resultCallBack3);
+	}
+
+	function fDetailSupplierResult(data) {
+
+		console.log("Aa : " + JSON.stringify(data));
+
+		if (data.resultMsg == "SUCCESS") {
+			supplierarea.action = "U";
+
+			gfModalPop("#suppliersave");
+
+			fSupplierModal(data.result);
+		} else {
+			alert(data.resultMsg);
+		}
+	}
+
+	// 납품 업체 신규 등록
+	function fSupplierNew() {
+
+		supplierarea.action = "I";
+
+		console.log("action : " + supplierarea.action);
+
+		gfModalPop('#suppliersave');
+
+		fSupplierModal();
+
+	}
+
+	// 팝업(신규등록 및 수정)
+	function fSupplierModal(object) {
+
+		console.log(object);
+
+		console.log("fSupplierModal action : " + supplierarea.action);
+
+		if (supplierarea.action == "I") {
+			suppliereditvue.napcode = "";
+			suppliereditvue.company = "";
+			suppliereditvue.loginID = "";
+			suppliereditvue.password = "";
+			suppliereditvue.name = "";
+			suppliereditvue.hp = "";
+			suppliereditvue.email = "";
+
+			suppliereditvue.loginIDread = false;
+			suppliereditvue.napcoderead = false;
+		} else {
+			console.log(object.company);
+			suppliereditvue.napcode = object.napcode;
+			suppliereditvue.company = object.company;
+			suppliereditvue.loginID = object.loginID;
+			suppliereditvue.password = object.password;
+			suppliereditvue.name = object.name;
+			suppliereditvue.hp = object.hp;
+			suppliereditvue.email = object.email;
+
+			suppliereditvue.loginIDread = true;
+			suppliereditvue.napcoderead = true;
+
+		}
+
+	}
+
+	// 납품 업체 저장 및 수정
+	function fSupplierSave() {
+
+		console.log("action : " + supplierarea.action);
+
+		var param = {
+			action : supplierarea.action,
+			napcode : suppliereditvue.napcode,
+			company : suppliereditvue.company,
+			loginID : suppliereditvue.loginID,
+			password : suppliereditvue.password,
+			name : suppliereditvue.name,
+			hp : suppliereditvue.hp,
+			email : suppliereditvue.email
+		}
+
+		console.log(param);
+
+		var saveCallBack = function(saveReturn) {
+
+			console.log("saveCallBack : " + JSON.stringify(saveReturn));
+
+			if (saveReturn.resultMsg == "SUCCESS"
+					|| saveReturn.resultMsg == "UPDATE") {
+				alert("저장");
+				gfCloseModal();
+
+				fsupplierlist();
 			} else {
-				$("#btnDeleteDelivery").hide();
-				$("#btnRecoveryDelivery").show();
-			} */
-		} 
-	}
-	/** 납품업체 저장 validation */
-	function fValidateDelivery() {
-		var chk = checkNotEmpty([ 
-		        [ "deli_company", "납품 업체명을 입력하세요." ],
-				[ "deli_id", "Login ID를 입력하세요." ],
-				[ "deli_password", "비밀번호룰 입력하세요." ],
-				[ "deli_name", "담당자명을 입력하세요." ],
-				[ "deli_phone", "담당자 연락처를 입력하세요." ], 
-				[ "deli_email", "담당자 이메일을 입력하세요." ] 
-		       ]);
-		if (!chk) {
-			return;
+				alert("실패");
+			}
 		}
-		return true;
-	}
-	/** 납품업체 모달 실행 */
-	function fPopModalDelivery(deli_no) {
-
-		//신규 저장
-		if (deli_no == null || deli_no == "") {
-
-			$("#action").val("I");
-			fInitFormDelivery();
-
-			gfModalPop("#layer1");
-		} else {
-			$("#action").val("U");
-
-			fSelectDelivery(deli_no);
-		}
-	}
-	//납품 업체 단건 조회
-	function fSelectDelivery(deli_no) {
-		var param = {
-			deli_no : deli_no
-		};
-
-		var resultCallback = function(data) {
-			fSelectDeliveryResult(data);
-		};
-
-		callAjax("/scm/selectDelivery.do", "post", "json", true, param,
-				resultCallback);
+		callAjax("/scm/SupplierSave.do", "post", "json", true, param,
+				saveCallBack);
 	}
 
-	//납품 업체 단건 조회 콜백 함수
-	function fSelectDeliveryResult(data) {
-		if (data.result == "SUCCESS") {
+	// 제품 정보 목록 조회
+	function fProductList(currentPage) {
 
-			gfModalPop("#layer1")
-
-			fInitFormDelivery(data.supplierInfoModel);
-		} else {
-			alert(data.resultMsg);
-		}
-	}
-
-	//납품업체 저장
-	function fSaveDelivery() {
-
-		//validation 체크
-		if (!fValidateDelivery()) {
-			return;
-		}
-
-		var resultCallback = function(data) {
-			console.log(data);
-			fSaveDeliveryResult(data);
-		};
-		callAjax("/scm/saveDelivery.do", "post", "json", true, $("#myForm")
-				.serialize(), resultCallback);
-	}
-
-	//납품 업체 저장 콜백 함수
-	function fSaveDeliveryResult(data) {
-
-		var currentPage = "1";
-		if ($("#action").val() != "I") {
-			currentPage = $("#currentPageDelvery").val();
-		}
-
-		if (data.result == "SUCCESS") {
-			alert(data.resultMsg);
-			gfCloseModal();
-
-			fListDelivery(currentPage);
-		} else {
-			alert(data.resultMsg);
-		}
-		fInitFormDelivery();
-
-	}
-	
-	//납품 업체 삭제
-	/* function fDeleteDelivery(deli_no){
-		var con = confirm("삭제하시겠습니까 ?");
-		var currentPage = "1";
-		if (con){
-			var resultCallback = function(data) {
-			fSaveDeliveryResult(data);
-		}
-		$("#action").val("D");
-		callAjax("/scm/saveDelivery.do", "post", "json", true, $("#myForm").serialize(), resultCallback );
-		} else {
-			gfCloseModal();
-			fListDelivery(currentPage);
-			fInitFormDelivery();
-		}
-	} */
-	
-	//납품 업체 복구
-	/* function fRecoveryDelivery(deli_no){
-		var con = confirm("복원하시겠습니까 ?");
-		var currentPage = "1";
-		if (con){
-			var resultCallback = function(data) {
-			fSaveDeliveryResult(data);
-	}
-	$("#action").val("R");
-	callAjax("/scm/saveDelivery.do", "post", "json", true, $("#myForm").serialize(), resultCallback );
-	} else {
-		gfCloseModal();
-		fListDelivery(currentPage);
-		fInitFormDelivery();
-		}
-	} */
-
-	//검색 기능
-	function board_search(currentPage) {
-
-		$('#listProduct').empty();
-
-		currentPage = currentPage || 1;
-
-		var sname = $('#sname');
-		var searchKey = document.getElementById("searchKey");
-		var oname = searchKey.options[searchKey.selectedIndex].value;
-		
-		/*  if ($("input:checkbox[name=delcheck]").is(":checked") == true) {
-             //체크가 되어있을때.
-             console.log('체크되었씁니당.');
-             var del_cd = 1;
-     } else {
-             //체크가 안되어있을때.
-	        	 console.log('체크 해지용.');
-	        	 var del_cd = 0;
-     } */
+		console.log(currentPage);
+		var currentPage = currentPage || 1;
 
 		var param = {
-			sname : sname.val(),
-			oname : oname,
+			loginID : supplierarea.loginID,
+			select : searcharea.select,
+			search : searcharea.search,
 			currentPage : currentPage,
-			pageSize : pageSizeDelivery,
-			//del_cd : del_cd
+			pageSize : pageSizeProduct,
 		}
-		
-		
 
-		var resultCallback = function(data) {
-			flistDeliveryResult(data, currentPage);
+		console.log(param);
+		console.log("loginID : " + loginID);
 
-		};
+		var ProductListVueCallBack = function(data) {
 
-		callAjax("/scm/listDelivery.do", "post", "text", true, param,
-				resultCallback);
+			console.log("ProductListVueCallBack : " + JSON.stringify(data));
+
+			fProductLsitResult(data, currentPage);
+		}
+
+		callAjax("/scm/ProductListVue.do", "post", "json", true, param,
+				ProductListVueCallBack);
 	}
 
-	/*납품 업체  조회*/
-	function fListDelivery(currentPage) {
+	// 제품 정보 콜백 
+	function fProductLsitResult(data, currentPage) {
 
-		currentPage = currentPage || 1;
-		var sname = $('#sname');
-		var searchKey = document.getElementById("searchKey");
-		var oname = searchKey.options[searchKey.selectedIndex].value;
-		
+		productarea.ProductListItem = data.ProductList;
 
-		console.log("currentPage : " + currentPage);
-		
-		 /* if ($("input:checkbox[name=delcheck]").is(":checked") == true) {
-            //체크가 되어있을때.
-            var del_cd = 1;
-  			  } else {
-            //체크가 안되어있을때.
-        	 var del_cd = 0;
-    		}  */
+		var totalProductCnt = data.ProductCnt;
+		var list = $("#currentPageProduct").val();
 
-		var param = {
-			sname : sname.val(),
-			oname : oname,
-			currentPage : currentPage,
-			pageSize : pageSizeDelivery,
-			//del_cd : del_cd
-		}
-
-		var resultCallback = function(data) {
-			flistDeliveryResult(data, currentPage);
-		}
-
-		callAjax("/scm/listDelivery.do", "post", "text", true, param,
-				resultCallback);
-	}
-
-	/*납품업체 조회 콜백 함수*/
-	function flistDeliveryResult(data, currentPage) {
-
-		//alert(data);
 		console.log(data);
-		//기존 목록 삭제
-		$('#listDelivery').empty();
+		//$("loginID").val(data.loginID);
 
-		$("#listDelivery").append(data);
+		// 페이지 네비게이션 생성
+		var paginationHtml = getPaginationHtml(currentPage, totalProductCnt,
+				pageSizeProduct, pageBlockSizeProduct, 'fProductList',
+				[ data.loginId ]);
 
-		// 총 개수 추출
-		var totalDelivery = $("#totalDelivery").val();
+		$("#ProductPagination").empty().append(paginationHtml);
 
-		//페이지 네비게이션 생성
-		var paginationHtml = getPaginationHtml(currentPage, totalDelivery,
-				pageSizeDelivery, pageBlockSizeDelivery, 'fListDelivery');
-
-		$("#deliveryPagination").empty().append(paginationHtml);
-		//현재 페이지 설정
-
-		console.log("totalDelivery: " + totalDelivery);
-		$("#currentPageDelivery").val(currentPage);
-	}
-
-	/*제품 목록 조회*/
-	function fListProduct(currentPage, deli_company, deli_no) {
-		//납품업체명 매개변수 설정
-		currentPage = currentPage || 1;
-
-		$("#tmpdeli_company").val(deli_company);
-		$("#tmpdeli_no").val(deli_no);
-
-		var param = {
-				deli_company : deli_company //납품업체명 변수설정
-			,	deli_no : deli_no
-			,	currentPage : currentPage
-			,	pageSize : pageSizeProduct
-
-		}
-		//console.log("param:" + JSON.stringify(param));
-		
-		
-		console.log("deli_company : " + deli_company);
-		console.log("deli_no : " + deli_no);
-
-		var resultCallback = function(data) {
-			flistProductResult(data, currentPage);
-		};
-
-		callAjax("/scm/listProduct.do", "post", "text", true, param,
-				resultCallback);
-	}
-
-	/*제품목록 조회 콜백 함수*/
-	function flistProductResult(data, currentPage) {
-
-		//기존 목록 삭제
-		$('#listProduct').empty();
-
-		// 신규 목록 생성
-
-		$("#listProduct").append(data);
-		//$("#listProduct").append($listProduct.children());	
-
-		// 총 개수 추출
-		var totalProduct = $("#totalProduct").val();
-
-		//페이지 네비게이션 생성
-		var deli_company = $("#tmpdeli_company").val();
-		var deli_no = $("#tmpdeli_no").val();
-
-		var paginationHtml = getPaginationHtml(currentPage, totalProduct,
-				pageSizeProduct, pageBlockSizeProduct, 'fListProduct', [
-						deli_company, deli_no ]);
-		console.log("paginationHtml : " + paginationHtml);
-		$("#productPagination").empty().append(paginationHtml);
-
-		console.log("totalProduct: " + totalProduct);
-		// 현재 페이지 설정
-		$("#currentPageProduct").val(currentPage);
+		console.log(paginationHtml);
 
 	}
-	
-	//삭제된 정보 표시 체크
-	/* function checkClickEvent(currentPage) {
-		currentPage = currentPage || 1;
-		
-		$("#delcheck").change(
-				function() {
-					
-					if ($("#delcheck").is(":checked")) {
-						$("#sname").val("");
-						var del_cd = 1;
-
-						var param = {
-							currentPage : currentPage,
-							pageSize : pageSizeDelivery,
-							del_cd : del_cd
-						}
-
-						var resultCallback = function(data) {
-							flistDeliveryResult(data, currentPage);
-						};
-
-						callAjax("/scm/listDelivery.do", "post", "text", true,
-								param, resultCallback);
-
-					} else {
-						$("#sname").val("");
-						var del_cd = 0;
-
-						var param = {
-							currentPage : currentPage,
-							pageSize : pageSizeDelivery,
-							del_cd : del_cd
-						}
-
-						var resultCallback = function(data) {
-							flistDeliveryResult(data, currentPage);
-						};
-
-						callAjax("/scm/listDelivery.do", "post", "text", true,
-								param, resultCallback);
-					}
-				});
-	} */
 </script>
 </head>
 <body>
 	<form id="myForm" action="" method="">
-		<input type="hidden" id="currentPageDelivery" value="1"> 
-		<input type="hidden" id="currentPageProduct" value="1"> 
-		<input type="hidden" id="tmpdeli_company" value=""> 
-		<input type="hidden" id="tmpdeli_no" value=""> 
-		<input type="hidden" name="action" id="action" value="">
+		<input type="hidden" id="currentPage" value="1"> <input
+			type="hidden" id="currentPageSupplier" value="1"> <input
+			type="hidden" id="currentPageProduct" value="1">
 		<div id="mask"></div>
 		<div id="wrap_area">
 
@@ -451,39 +370,31 @@
 						<div class="content">
 
 							<p class="Location">
-								<a href="/dashboard/dashboard.do" class="btn_set home">메인으로</a> 
-								<a class="btn_nav">기준 정보</a>
-								 <span class="btn_nav bold">납품 업체 정보</span> 
-								<a href="" class="btn_set refresh">새로고침</a>
+								<a href="/dashboard/dashboard.do" class="btn_set home">메인으로</a>
+								<a class="btn_nav">기준 정보</a> <span class="btn_nav bold">납품
+									업체 정보</span> <a href="" class="btn_set refresh">새로고침</a>
 							</p>
 
 							<p class="conTitle">
-								<span>납품 업체 정보</span>
-								<span class="fr"> 
-									
-									
-									<a href="javascript:fPopModalDelivery()" class="btnType blue" name="modal">
-									<span>신규등록</span>
-									</a>
+								<span>납품 업체 정보</span> <span class="fr"> <a
+									href="javascript:fSupplierNew()" class="btnType blue"
+									name="modal"> <span>신규등록</span>
+								</a>
 								</span>
 							</p>
 
+							<div id="searcharea" style="margin: 0 25px 10px 0; float: right;">
+								<select id="select" name="select" style="width: 100px;"
+									v-model="select">
+									<option value="supplier" selected="selected">납품 업체</option>
+									<option value="product">제품명</option>
+								</select> <input type="text" style="width: 160px; height: 30px;"
+									id="search" name="search" v-model="search"> <a href=""
+									class="btnType blue" id="searchBtn" name="btn"> <span>검색</span>
+								</a>
+							</div>
 
-							<div class="DeliveryList">
-							<div class="conTitle" style="margin: 0 25px 10px 0; float: right;">
-								<!-- <label>
-									<input type="checkbox" id="delcheck" name="delcheck" value="del">
-									삭제된 정보 표시
-								</label>  -->
-							<select id="searchKey" name="searchKey" style="width: 100px;" v-model="searchKey">
-										<option value="del_nm" selected="selected">납품 업체</option>
-										<option value="pro_nm">제품명</option>
-									</select> 
-									<input type="text" style="width: 160px; height: 30px;" id="sname" name="sname">
-									<a href="" class="btnType blue" id="searchBtn" name="btn"> 
-										<span>검 색</span>
-									</a> 
-									</div>
+							<div id="supplier">
 								<table class="col">
 									<caption>caption</caption>
 									<colgroup>
@@ -491,7 +402,7 @@
 										<col width="9%">
 										<col width="9%">
 										<col width="6%">
-										<col width="5%">
+										<col width="10%">
 										<col width="10%">
 										<col width="9%">
 										<col width="6%">
@@ -505,22 +416,36 @@
 											<th scope="col">패스워드</th>
 											<th scope="col">담당자명</th>
 											<th scope="col">담당자 연락처</th>
-											<th scopt="col">담당자 이메일</th>
+											<th scope="col">담당자 이메일</th>
 											<th scope="col">비고</th>
 										</tr>
 									</thead>
-									<tbody id="listDelivery"></tbody>
+
+									<tbody v-for="(item, index) in SupplierListItem"
+										v-if="SupplierListItem.length">
+										<tr @click="ListProduct(item.loginID)">
+											<td>{{ item.napcode }}</td>
+											<td>{{ item.company }}</td>
+											<td>{{ item.loginID }}</td>
+											<td>{{ item.password }}</td>
+											<td>{{ item.name }}</td>
+											<td>{{ item.hp }}</td>
+											<td>{{ item.email }}</td>
+											<td><a @click="DetailSupplier(item.loginID)"
+												class="btnType blue" id="btnUpdateSupplier" name="btn"><span>수정</span></a></td>
+										</tr>
+									</tbody>
 								</table>
 							</div>
 
-							<div class="paging_area" id="deliveryPagination"></div>
+							<div class="paging_area" id="SupplierPagination"></div>
 
 							<p class="conTitle mt50">
 								<span>제품 정보</span>
 							</p>
 
 
-							<div class="ProductList">
+							<div id="product">
 								<table class="col">
 									<caption>caption</caption>
 									<colgroup>
@@ -532,18 +457,25 @@
 										<tr>
 											<th scope="col">제품번호</th>
 											<th scope="col">제품명</th>
-											<th scope="col">납품단가</th>
+											<th scope="col">제조사</th>
 										</tr>
 									</thead>
-									<tbody id="listProduct">
-										<tr>
+									<tbody id="productlist">
+										<tempete v-if="ProductListItem.length">
+										<tr v-for="(item, index) in ProductListItem">
+											<td>{{ item.pd_CODE }}</td>
+											<td>{{ item.pd_NAME }}</td>
+											<td>{{ item.pd_CORP }}</td>
+										</tr>
+										</tempete>
+										<tr v-show="a">
 											<td colspan="12">납품 업체를 선택해 주세요.</td>
 										</tr>
 									</tbody>
 								</table>
 							</div>
 
-							<div class="paging_area" id="productPagination"></div>
+							<div class="paging_area" id="ProductPagination"></div>
 
 
 						</div> <!--// content -->
@@ -555,7 +487,8 @@
 			</div>
 		</div>
 		<!-- 모달! -->
-		<div id="layer1" class="layerPop layerType2" style="width: 600px;">
+		<div id="suppliersave" class="layerPop layerType2"
+			style="width: 600px;">
 			<dl>
 				<dt>
 					<strong>납품 업체 관리</strong>
@@ -572,32 +505,43 @@
 						<tbody>
 							<tr>
 								<th scope="row">납품 업체 번호 <span class="font_red">*</span></th>
-								<td colspan="3"><input type="text" class="inputTxt p100"
-									name="deli_no" id="deli_no" /></td>
+								<td colspan="3">
+								<templete v-if="napcoderead"> 
+								<input type="text" class="inputTxt p100" name="napcode" id="napcode"
+										v-model="napcode" readonly /> 
+								</templete> 
+								<templete v-else> 
+								<input type="text" class="inputTxt p100" name="napcode" id="napcode"
+										v-model="napcode" /> 
+								</templete>
+								</td>
 							</tr>
 							<tr>
 								<th scope="row">납품업체명 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100"
-									name="deli_company" id="deli_company" /></td>
+								<td><input type="text" class="inputTxt p100" name="company"
+									id="company" v-model="company" /></td>
 								<th scope="row">LoginID<span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100" name="deli_id"
-									id="deli_id" /></td>
+								<td><templete v-if="loginIDread"> <input
+										type="text" class="inputTxt p100" name="loginID" id="loginID"
+										v-model="loginID" readonly /> </templete> <templete v-else> <input
+										type="text" class="inputTxt p100" name="loginID" id="loginID"
+										v-model="loginID" /> </templete></td>
 							</tr>
 							<tr>
 								<th scope="row">패스워드 <span class="font_red">*</span></th>
 								<td><input type="text" class="inputTxt p100"
-									name="deli_password" id="deli_password" /></td>
+									name="password" id="password" v-model="password" /></td>
 								<th scope="row">담당자명 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100"
-									name="deli_name" id="deli_name" /></td>
+								<td><input type="text" class="inputTxt p100" name="name"
+									id="name" v-model="name" /></td>
 							</tr>
 							<tr>
 								<th scope="row">담당자 연락처 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100"
-									name="deli_phone" id="deli_phone" /></td>
-									<th scope="row">담당자 이메일 <span class="font_red">*</span></th>
-								<td><input type="text" class="inputTxt p100"
-									name="deli_email" id="deli_email" /></td>
+								<td><input type="text" class="inputTxt p100" name="hp"
+									id="hp" v-model="hp" /></td>
+								<th scope="row">담당자 이메일 <span class="font_red">*</span></th>
+								<td><input type="text" class="inputTxt p100" name="email"
+									id="email" v-model="email" /></td>
 							</tr>
 							<!-- <tr class="hidden">
 								<th scope="row">삭제여부 <span class="font_red">*</span></th>
@@ -610,7 +554,7 @@
 
 
 					<div class="btn_areaC mt30">
-						<a href="" class="btnType blue" id="btnSaveDelivery" name="btn"><span>저장</span></a>
+						<a href="" class="btnType blue" id="btnSaveSupplier" name="btn"><span>저장</span></a>
 						<!-- <a href="" class="btnType blue" id="btnDeleteDelivery" name="btn"><span>삭제</span></a>
 						<a href="" class="btnType blue" id="btnRecoveryDelivery"
 							name="btn"><span>복원</span></a> <a href="" class="btnType gray"

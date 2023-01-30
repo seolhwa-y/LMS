@@ -4,17 +4,6 @@ public class NoticeModel {
 	
 	// 게시판 글 번호
 	private int row_num;
-	private int notcode;
-	private String loginid;
-	private String nottitle;
-	private String noticeContent;
-	private String noticeRegdate;
-	private String notdate;
-	private String name;
-	
-	
-	
-
 	public int getRow_num() {
 		return row_num;
 	}
@@ -63,11 +52,13 @@ public class NoticeModel {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	@Override
-	public String toString() {
-		return "NoticeModel [row_num=" + row_num + ", notcode=" + notcode + ", loginid=" + loginid + ", nottitle="
-				+ nottitle + ", noticeContent=" + noticeContent + ", noticeRegdate=" + noticeRegdate + ", notdate="
-				+ notdate + ", name=" + name + "]";
-	}
+	private int notcode;
+	private String loginid;
+	private String nottitle;
+	private String noticeContent;
+	private String noticeRegdate;
+	private String notdate;
+	private String name;
+	
+	
 }

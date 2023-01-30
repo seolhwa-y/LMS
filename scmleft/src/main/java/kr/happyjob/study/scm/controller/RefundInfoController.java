@@ -40,8 +40,9 @@ public class RefundInfoController {
 	}
 	
 	
-	@RequestMapping("refundInfoList.do")
-	public String refundInfoList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+	@RequestMapping("refundInfoListVue.do")
+	@ResponseBody
+	public Map<String, Object> refundInfoList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session ) throws Exception{
 
 		logger.info("+ Start" + className + ".refundInfoList");
@@ -53,31 +54,32 @@ public class RefundInfoController {
 		paramMap.put("pageIndex", pageIndex);
 		paramMap.put("pageSize", pageSize);
 		
-		String pdname = (String)paramMap.get("pdname");
-		String sdate = (String)paramMap.get("sdate");
-		String edate = (String)paramMap.get("edate");
-		String searchKey = (String)paramMap.get("searchKey");
-		
-		paramMap.put(pdname, pdname);
-		paramMap.put(sdate, sdate);
-		paramMap.put(edate, edate);
-		paramMap.put(searchKey, searchKey);
+//		String pdname = (String)paramMap.get("pdname");
+//		String sdate = (String)paramMap.get("sdate");
+//		String edate = (String)paramMap.get("edate");
+//		String searchKey = (String)paramMap.get("searchKey");
+//		
+//		paramMap.put(pdname, pdname);
+//		paramMap.put(sdate, sdate);
+//		paramMap.put(edate, edate);
+//		paramMap.put(searchKey, searchKey);
 		
 		//logger.info(" - paramMap :" + paramMap);
 		
 		List<RefundInfoVO> refundInfoList = refundInfoService.refundInfoList(paramMap);
-		model.addAttribute("refundInfoList", refundInfoList);
-		model.addAttribute("paramMap", paramMap);
 		
 		int totalCnt = refundInfoService.countRefundInfoList(paramMap);
-		model.addAttribute("totalCnt", totalCnt);
-		model.addAttribute("pageSize", pageSize);
-		model.addAttribute("currentPage", currentPage);
-
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		resultMap.put("refundInfoList", refundInfoList);
+		resultMap.put("totalCnt", totalCnt);
+		resultMap.put("pageSize", pageSize);
+		resultMap.put("currentPage", currentPage);
 		
 		logger.info("+ End" + className + ".refundInfoList");
 		
-		return "scm/refundInfoList";
+		return resultMap;
 	}
 	
 	//배송지시서 상세 모달 
@@ -91,11 +93,11 @@ public class RefundInfoController {
 	      Map<String, Object> resultMap = new HashMap<String, Object>();
 	      
 	      RefundInfoVO rDtModal = refundInfoService.refundDtModalList(paramMap);
-	      List<WarehouseVO> wareInfo = refundInfoService.selectWareInfo(paramMap);
+	     // List<WarehouseVO> wareInfo = refundInfoService.selectWareInfo(paramMap);
 	      
 	      resultMap.put("loginId", session.getAttribute("loginId"));
 	      resultMap.put("result", rDtModal);
-	      resultMap.put("wareInfo", wareInfo);
+	      //resultMap.put("wareInfo", wareInfo);
 	      
 	      //logger.info("   - result : " + rDtModal);
 	     // logger.info("   - returnmap : " + resultMap);

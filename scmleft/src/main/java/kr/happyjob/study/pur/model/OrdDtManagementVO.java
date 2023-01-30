@@ -17,8 +17,15 @@ public class OrdDtManagementVO {
 	private String pdname;
 	private String approved;
 	private String unapproved;
+	private String PD_NAME;
 	
 	
+	public String getPD_NAME() {
+		return PD_NAME;
+	}
+	public void setPD_NAME(String pD_NAME) {
+		PD_NAME = pD_NAME;
+	}
 	public String getCpname() {
 		return cpname;
 	}
@@ -99,7 +106,7 @@ public class OrdDtManagementVO {
 	}
 	@Override
 	public String toString() {
-		return "OrdDtManagementVO [BORD_CODE=" + BORD_CODE + ", BORD_AMT=" + BORD_AMT + ", loginID=" + loginID
+		return "OrdDtManagementVO [BORD_CODE=" + BORD_CODE + ", PD_NAME=" + PD_NAME + ",  BORD_AMT=" + BORD_AMT + ", loginID=" + loginID
 				+ ", MODEL_NAME=" + MODEL_NAME + ", BORD_DATE=" + BORD_DATE + ", BORD_TYPE=" + BORD_TYPE + ", JORD_IN="
 				+ JORD_IN + ", sdate=" + sdate + ", edate=" + edate + ", cpname=" + cpname + ", pdname=" + pdname
 				+ ", approved=" + approved + ", unapproved=" + unapproved + "]";

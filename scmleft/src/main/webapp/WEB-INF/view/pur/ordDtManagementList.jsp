@@ -28,7 +28,7 @@
 				</c:if>	
 				<c:if test="${list.BORD_TYPE == 0}">
 			    	<td>N</td>
-				<td style="color: skyblue;font-weight: bold;">확인</td>
+				    <td style="color: skyblue;font-weight: bold;">확인</td>
 				</c:if>		
 					<c:if test="${list.BORD_TYPE == 2}">
 			    	<td>미승인</td>

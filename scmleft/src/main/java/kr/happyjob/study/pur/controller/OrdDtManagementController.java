@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import kr.happyjob.study.pur.model.OrdDtManagementVO;
 import kr.happyjob.study.pur.service.OrdDtManagementService;
-import kr.happyjob.study.system.model.ComnGrpCodModel;
 
 
 @Controller
@@ -46,7 +45,8 @@ public class OrdDtManagementController {
 	
 	//주문내역조회
 	@RequestMapping("ordDtManagementList.do")
-	public String ordDtManagementList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+	@ResponseBody
+	public Map<String, Object> ordDtManagementList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
 		
 		logger.info("+ Start " + className + ".ordDtManagementList");
@@ -62,18 +62,19 @@ public class OrdDtManagementController {
 		
 		// 주문내역조회
 		List<OrdDtManagementVO> listOrdDtManagement = ordDtManagementService.ordDtManagementList(paramMap);
-		model.addAttribute("listOrdDtManagement", listOrdDtManagement);
+		
+		Map<String, Object> resultmap = new HashMap<String, Object>();
+		
+		resultmap.put("listOrdDtManagement", listOrdDtManagement);
 		
 		// 주문내역 카운트 조회
 		int totalCnt = ordDtManagementService.ordDtManagementTotalCnt(paramMap);
-		model.addAttribute("totalCnt", totalCnt);		
-		model.addAttribute("pageSize", pageSize);
-		model.addAttribute("currentPageComnGrpCod",currentPage);
+		resultmap.put("totalCnt", totalCnt);		
+		resultmap.put("pageSize", pageSize);
 		
 		logger.info("+ End " + className + ".ordDtManagementList");
 		
-
-		return "/pur/ordDtManagementList";
+		return resultmap;
 	}	
 	
 	//발주지시서 단건조회
@@ -82,32 +83,66 @@ public class OrdDtManagementController {
 	public Map<String, Object> ordDtManagementSelect(Model model, @RequestParam Map<String, Object> paramMap) throws Exception {
 		
 		logger.info("+ Start " + className + ".ordDtManagementSelect");
+		logger.info("     paramMap :  " + paramMap);
 									
-		Map<String, Object> resultMap = new HashMap<>();
+//		Map<String, Object> resultMap = new HashMap<>();
+//		
+//		OrdDtManagementVO ordDtManagementVO = ordDtManagementService.ordDtManagementSelect(paramMap);
+//		resultMap.put("ordDtManagementVO", ordDtManagementVO);
 		
+		String result = "";
+
+		// 선택된 게시판 1건 조회
 		OrdDtManagementVO ordDtManagementVO = ordDtManagementService.ordDtManagementSelect(paramMap);
-		resultMap.put("ordDtManagementVO", ordDtManagementVO);
+
+		if (ordDtManagementVO != null) {
+			result = "SUCCESS"; // 성공시 찍습니다.
+		} else {
+			result = "FAIL / 불러오기에 실패했습니다."; // null이면 실패입니다.
+		}
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("resultMsg", result); // success 용어 담기
+		resultMap.put("result", ordDtManagementVO); // 리턴 값 해쉬에 담기
+		// resultMap.put("resultComments", comments);
+		System.out.println(ordDtManagementVO);
+
+		logger.info("+ End " + className + ".ordDtManagementVO");
 		
 		return  resultMap;
 	}	
 	
-	//발주지시서 단건 상세조회
-		@RequestMapping("modalOrdDtl.do")
+		@RequestMapping("updateList.do")
 		@ResponseBody
-		public String modalOrdDtl(Model model, @RequestParam Map<String, Object> paramMap) throws Exception {
+		public Map<String, Object> updateList(Model model, @RequestParam Map<String, Object> paramMap,
+				HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception{
+			logger.info("+ Start " + className + ".updateList");
+			logger.info("   - paramMap : " + paramMap);
 			
-			logger.info("+ Start " + className + ".modalOrdDtl");
-										
-			List<OrdDtManagementVO> ordDtlList = ordDtManagementService.ordDtlList(paramMap);
-			model.addAttribute("ordDtlList", ordDtlList);
+			String action = (String) paramMap.get("action");
+			String result="";
 			
-			// 주문내역 카운트 조회
-			int modalTotalCnt = ordDtManagementService.countOrdDtlList(paramMap);
-			model.addAttribute("modalTotalCnt", modalTotalCnt);		
+//			int currentPage=Integer.parseInt((String) paramMap.get("currentPage"));
+//			int pageSize=Integer.parseInt((String) paramMap.get("pageSize"));
+//			int pageIndex=(currentPage-1)*pageSize;
+//			
+			paramMap.put("loginId", session.getAttribute("loginId"));
+			logger.info("loginId : " + paramMap.get("loginId"));
+//			logger.info("sendRefundFinalConfirm.do => paramMap : "+paramMap);
 			
+			// 
+			if("U".equals(action)){
+				ordDtManagementService.updateBordType(paramMap);
+				result = "UPDATED";
+				System.out.println(paramMap);
+			} else {
+				result = "FALSE : 등록에 실패하였습니다.";
+			}
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			resultMap.put("result", result);
 			
-			logger.info("+ End " + className + ".modalOrdDtl");
-			
-			return  "/pur/modalOrdDtlList";
-		}	
+			return resultMap;
+		}
+
+		
 }

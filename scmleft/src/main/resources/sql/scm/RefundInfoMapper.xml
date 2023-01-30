@@ -11,7 +11,8 @@
 		      , pn.PD_PRICE*rn.RE_AMT as RE_PRICE
         	  , wn.WH_NAME
         	  , rn.re_code 
-        	  ,jn.loginID      	 
+        	  ,jn.loginID      	
+        	  , rn.RE_TYPE 
 			from RETURN_INFO rn
 		     inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
 		     inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE		
@@ -60,6 +61,7 @@
         	  , wn.WH_NAME
         	  , rn.re_code
            	  , rn.WH_CODE as origin_ware_no
+           	  , rn.RE_TYPE
 		from RETURN_INFO rn
 		     inner join JORDER_INFO jn on rn.JORD_CODE = jn.JORD_CODE
 		     inner join PD_INFO pn on jn.MODEL_CODE = pn.MODEL_CODE		

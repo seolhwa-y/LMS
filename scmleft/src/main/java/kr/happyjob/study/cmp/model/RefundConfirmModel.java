@@ -11,7 +11,9 @@ public class RefundConfirmModel {
 	private String JORD_DATE;
 	private String RE_DATE;
 	private String RE_AMT;
-	private String PD_PRICE;
+	private String RE_PRICE;
+	private String RE_TYPE;
+	
 	
 	public String getRE_CODE() {
 		return RE_CODE;
@@ -62,17 +64,23 @@ public class RefundConfirmModel {
 	public void setRE_AMT(String rE_AMT) {
 		RE_AMT = rE_AMT;
 	}
-	public String getPD_PRICE() {
-		return PD_PRICE;
+	public String getRE_PRICE() {
+		return RE_PRICE;
 	}
-	public void setPD_PRICE(String pD_PRICE) {
-		PD_PRICE = pD_PRICE;
+	public void setRE_PRICE(String rE_PRICE) {
+		RE_PRICE = rE_PRICE;
+	}
+	public String getRE_TYPE() {
+		return RE_TYPE;
+	}
+	public void setRE_TYPE(String rE_TYPE) {
+		RE_TYPE = rE_TYPE;
 	}
 	@Override
 	public String toString() {
 		return "RefundConfirmModel [DIR_CODE=" + DIR_CODE + ", JORD_CODE=" + JORD_CODE + ", RE_CODE=" + RE_CODE
 				+ ", name=" + name + ", PD_NAME=" + PD_NAME + ", JORD_DATE=" + JORD_DATE + ", RE_DATE=" + RE_DATE
-				+ ", RE_AMT=" + RE_AMT + ", PD_PRICE=" + PD_PRICE + "]";
+				+ ", RE_AMT=" + RE_AMT + ", RE_PRICE=" + RE_PRICE + ", RE_TYPE=" + RE_TYPE + "]";
 	}
 	
 

@@ -25,27 +25,22 @@ public class OrdDtManagementServiceImpl implements OrdDtManagementService{
 	
 	@Override
 	public int ordDtManagementTotalCnt(Map<String, Object> paramMap) throws Exception{
-		// TODO Auto-generated method stub
 		int totalCnt = ordDtManagementDao.ordDtManagementTotalCnt(paramMap);
 		return totalCnt;
 	}
 
 	@Override
 	public OrdDtManagementVO ordDtManagementSelect(Map<String, Object> paramMap) throws Exception{
-		// TODO Auto-generated method stub
-		return ordDtManagementDao.ordDtManagementSelect(paramMap);
+		OrdDtManagementVO ordDtManagementSelect = ordDtManagementDao.ordDtManagementSelect(paramMap);
+		return ordDtManagementSelect;
 	}
 
 	@Override
-	public List<OrdDtManagementVO> ordDtlList(Map<String, Object> paramMap) throws Exception {
-		// TODO Auto-generated method stub
-		return ordDtManagementDao.ordDtlList(paramMap);
+	public int updateBordType(Map<String, Object> paramMap) throws Exception {
+		int updateBordType = ordDtManagementDao.updateBordType(paramMap);
+		return updateBordType;
 	}
+	
 
-	@Override
-	public int countOrdDtlList(Map<String, Object> paramMap) throws Exception {
-		// TODO Auto-generated method stub
-		return ordDtManagementDao.countOrdDtlList(paramMap);
-	}
 
 }

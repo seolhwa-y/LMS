@@ -15,8 +15,5 @@ public interface OrdDtManagementDao {
 	//단건조회
 	public OrdDtManagementVO ordDtManagementSelect(Map<String, Object>paramMap)throws Exception;
 	
-	//상세조회
-	public List<OrdDtManagementVO> ordDtlList(Map<String, Object> paramMap) throws Exception;
-	public int countOrdDtlList(Map<String, Object> paramMap) throws Exception;
-	
+	public int updateBordType(Map<String, Object> paramMap) throws Exception;
 }

@@ -12,7 +12,7 @@
 								   INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
 								   INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
 								   INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
-		WHERE		BI.BORD_TYPE = 3
+		WHERE		BI.BORD_TYPE <![CDATA[>=]]> 3
 		<if test="keyword != null and !keyword.equals('')">
 			AND UI.company LIKE CONCAT('%',#{keyword},'%')
 		</if>
@@ -25,12 +25,12 @@
 	
 	<!-- 발주지시서 카운트 -->	
 	<select id="getOrderReturnCount" resultType="int">
-		SELECT		COUNT(*)
+		SELECT		COUNT(DISTINCT PD.loginID)
 		FROM		BORDER_INFO BI LEFT OUTER JOIN RETURN_INFO RI ON BI.BORD_CODE = RI.BORD_CODE 
 								   INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
 								   INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
 								   INNER JOIN tb_userinfo UI ON PD.loginID = UI.loginID 
-		WHERE		BI.BORD_TYPE = 3 AND RI.RE_OUT != 1
+		WHERE		BI.BORD_TYPE <![CDATA[>=]]> 3
 		<if test="keyword != null and !keyword.equals('')">
 			AND UI.company LIKE CONCAT('%',#{keyword},'%')
 		</if>
@@ -53,14 +53,16 @@
 				FORMAT(PD.PD_PRICE, 0) AS 'PDPRICE',
 				BI.WH_CODE AS 'WHCODE',
 				WI.WH_NAME AS 'WHNAME',
-				RI.RE_TYPE AS 'RETYPE'
+				RI.RE_TYPE AS 'RETYPE',
+				BI.BORD_DATE AS 'BORDDATE'
 		FROM 	BORDER_INFO BI	LEFT OUTER JOIN RETURN_INFO RI ON BI.BORD_CODE = RI.BORD_CODE 
 								INNER JOIN DIRECTION DI ON BI.DIR_CODE = DI.DIR_CODE 
 								INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
 								INNER JOIN WHOUSE_INFO WI ON BI.WH_CODE = WI.WH_CODE 
 								INNER JOIN tb_detail_code DC ON DC.group_code = 'proCD' AND DC.detail_code = PD.MODEL_NAME 
-		WHERE 	BI.BORD_TYPE = 3 
-				AND PD.loginID = #{loginId}
+		WHERE 	BI.BORD_TYPE <![CDATA[>=]]> 3 AND PD.loginID = #{loginId}
+    	GROUP BY BI.BORD_CODE
+    	LIMIT		#{startPage}, #{endPage}
 	</select>
 	
 	<!-- 발주지시서 상세내역 카운트 -->
@@ -71,15 +73,15 @@
 								INNER JOIN PD_INFO PD ON BI.MODEL_CODE = PD.MODEL_CODE 
 								INNER JOIN WHOUSE_INFO WI ON BI.WH_CODE = WI.WH_CODE 
 								INNER JOIN tb_detail_code DC ON DC.group_code = 'proCD' AND DC.detail_code = PD.MODEL_NAME 
-		WHERE 	BI.BORD_TYPE = 3 AND RI.RE_OUT != 1 
-				AND PD.loginID = #{loginId}
+		WHERE 	BI.BORD_TYPE <![CDATA[>=]]> 3 AND PD.loginID = #{loginId}
 	</select>
 	
 	<!-- 발주완료 -->
 	<update id="updateBorderInfo" parameterType="java.util.HashMap">
 		UPDATE	BORDER_INFO  
-		SET		BORD_DATE = DATE_FORMAT(NOW(), '%Y%m%d')
-				AND BORD_TYPE = '4'
+		SET		BORD_DATE = DATE_FORMAT(NOW(), '%Y%m%d'),
+				BORD_TYPE = <if test="type.equals('in')">'4'</if>
+								<if test="type.equals('out')">'5'</if>
 		WHERE	BORD_CODE = #{bordCode}
 	</update>
 	
@@ -108,21 +110,22 @@
 		</selectKey>
 		INSERT INTO WHOUSE_HOUSING (WH_NO, WH_CODE, MODEL_CODE, loginID, WH_TYPE, WH_AMT, WH_DATE)
 		VALUES (#{whNo}, #{whCode}, #{modelCode}, #{loginId}, <if test="type.equals('in')">0</if>
-															  <if test="type.equals('out')">1</if>, #{whAmt}, DATE_FORMAT(NOW(), '%Y%m%d'))
+															  <if test="type.equals('out')">1</if>, #{bordAmt}, DATE_FORMAT(NOW(), '%Y%m%d'))
 	</insert>
 	
 	<!-- 창고 재고 -->
 	<update id="updateWhouseStock" parameterType="java.util.HashMap">
 		UPDATE	WHOUSE_STOCK  
-		SET		WH_STOCK = (SELECT	WH_STOCK
-							<if test="type.equals('in')">
-								+ #{bordAmt}
-							</if>
-							<if test="type.equals('out')">
-								- #{bordAmt}
-							</if>
-							FROM	WHOUSE_STOCK
-							WHERE	WH_CODE = #{whCode} AND MODEL_CODE = #{modelCode})
+		SET		WH_STOCK = (SELECT	WS.STOCK
+							FROM	(SELECT	WH_STOCK
+									<if test="type.equals('in')">
+										+ #{bordAmt} AS 'STOCK'
+									</if>
+									<if test="type.equals('out')">
+										- #{bordAmt} AS 'STOCK'
+									</if>
+									FROM	WHOUSE_STOCK
+									WHERE	WH_CODE = #{whCode} AND MODEL_CODE = #{modelCode})WS)
 		WHERE	WH_CODE = #{whCode} AND MODEL_CODE = #{modelCode}
 	</update>
 	

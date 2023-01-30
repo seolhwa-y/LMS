@@ -12,6 +12,7 @@ public class OrderReturnModel {
 	private String pdCorp;
 	private String dirDate;
 	private String bordAmt;
+	private String bordDate;
 	private String pdPrice;
 	private int whCode;
 	private String whName;
@@ -27,6 +28,12 @@ public class OrderReturnModel {
 	
 	
 	
+	public String getBordDate() {
+		return bordDate;
+	}
+	public void setBordDate(String bordDate) {
+		this.bordDate = bordDate;
+	}
 	public String getLoginId() {
 		return loginId;
 	}
@@ -166,9 +173,9 @@ public class OrderReturnModel {
 		return "OrderReturnModel [loginId=" + loginId + ", companyName=" + companyName + ", total=" + total
 				+ ", bordCode=" + bordCode + ", modelCode=" + modelCode + ", modelName=" + modelName + ", pdName="
 				+ pdName + ", pdCode=" + pdCode + ", pdCorp=" + pdCorp + ", dirDate=" + dirDate + ", bordAmt=" + bordAmt
-				+ ", pdPrice=" + pdPrice + ", whCode=" + whCode + ", whName=" + whName + ", reCode=" + reCode
-				+ ", reOut=" + reOut + ", type=" + type + ", keyword=" + keyword + ", startDate=" + startDate
-				+ ", endDate=" + endDate + ", startPage=" + startPage + ", endPage=" + endPage + "]";
+				+ ", bordDate=" + bordDate + ", pdPrice=" + pdPrice + ", whCode=" + whCode + ", whName=" + whName
+				+ ", reCode=" + reCode + ", reOut=" + reOut + ", type=" + type + ", keyword=" + keyword + ", startDate="
+				+ startDate + ", endDate=" + endDate + ", startPage=" + startPage + ", endPage=" + endPage + "]";
 	}
 	
 

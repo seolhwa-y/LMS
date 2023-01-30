@@ -13,8 +13,9 @@
 							      ,DATE_FORMAT(JI.JORD_DATE, '%Y-%m-%d') as JORD_DATE
 							      ,DATE_FORMAT(RI.RE_DATE, '%Y-%m-%d') as RE_DATE
 							      ,RI.RE_AMT
-							      ,PN.PD_PRICE
-							
+							      ,PN.PD_PRICE*RI.RE_AMT as RE_PRICE
+							      ,RI.RE_TYPE
+								
 							from DIRECTION DI
 							  inner join RETURN_INFO RI on DI.DIR_CODE = RI.DIR_CODE
 							  inner join JORDER_INFO JI on RI.JORD_CODE = JI.JORD_CODE 	
@@ -38,7 +39,7 @@
 	</select>	
 	<update id="SclickRefundConfirm" parameterType="Map" >
         UPDATE RETURN_INFO 
-           set RE_TYPE=#{status} 
+           set RE_TYPE=#{re_TYPE} 
          where RE_CODE = #{re_code}      
     </update>
     

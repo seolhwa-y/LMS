@@ -18,250 +18,55 @@
 
 <script type="text/javascript">
     
-	// 강의목록 페이징 설정
-	var pageSizeComnGrpCod = 5;
-	var pageBlockSizeComnGrpCod = 5;
-	
-	// 수강학생 페이징 설정
-	var pageSizeComnDtlCod = 5;
-	var pageBlockSizeComnDtlCod = 10;
-	
-	
-	/** OnLoad event */ 
-	$(function() {
-	
-		// 강의목록 조회
-		fListLecList();
-		
-		// 버튼 이벤트 등록
-		fRegisterButtonClickEvent();
-	});
-	                                 
-
-	/** 버튼 이벤트 등록 */
-	function fRegisterButtonClickEvent() {
-		$('a[name=btn]').click(function(e) {
-			e.preventDefault();
-
-			var btnId = $(this).attr('id');
-
-			switch (btnId) {
-				case 'btnSaveGrpCod' :
-					fSaveGrpCod();
-					break;
-				case 'btnDeleteGrpCod' :
-					fDeleteGrpCod();
-					break;
-				case 'btnSaveDtlCod' :
-					fSaveDtlCod();
-					break;
-				case 'btnDeleteDtlCod' :
-					fDeleteDtlCod();
-					break;
-				case 'btnSearchGrpcod':
-					board_search();
-					break;
-				case 'btnCloseGrpCod' :
-				case 'btnCloseDtlCod' :
-					gfCloseModal();
-					break;
-			}
-		});
-	}
-	
-	
-	
-	// 검색기능
-	function board_search(currentPage) {
-        
-        var sname = $('#sname');
-        var searchKey = document.getElementById("searchKey");
-		var oname = searchKey.options[searchKey.selectedIndex].value;
-		
-		currentPage = currentPage || 1;
-		
-		console.log("currentPage : " + currentPage);     
-		
-        var param = {
-        		  sname : sname.val()
-        	  ,	  oname : oname
-              ,   currentPage : currentPage
-              ,   pageSize : pageSizeComnGrpCod
-        }
-        //swal(JSON.stringify(param));
-        var resultCallback = function(data) {
-        	flistGrpCodResult(data, currentPage); 
-        };
-        
-        callAjax("/scm/listLecList.do", "post", "text", true, param, resultCallback);
-        
-  } 
-
-	
-	
-	
-	
-	
-	
-	/** 강의목록 조회 */
-	function fListLecList(currentPage) {
-		
-		currentPage = currentPage || 1;
-		
-		var sname = $('#sname');
-        var searchKey = document.getElementById("searchKey");
-		var oname = searchKey.options[searchKey.selectedIndex].value;
-		
-		
-		console.log("currentPage : " + currentPage, " , sname : "+sname);
-		
-		var param = {	
-					sname : sname.val()
-				,	oname : oname
-				,	currentPage : currentPage
-				,	pageSize : pageSizeComnGrpCod
-		}
-		
-		var resultCallback = function(data) {
-			console.log(data);
-			flistGrpCodResult(data, currentPage);
-			
-		};
-		//Ajax실행 방식
-		//callAjax("Url",type,return,async or sync방식,넘겨준거,값,Callback함수 이름)
-		callAjax("/scm/listLecList.do", "post", "text", true, param, resultCallback);
-	}
-	
-	
-	/** 강의목록 조회 콜백 함수 */
-	function flistGrpCodResult(data, currentPage) {
-		
-		//swal(data);
-		console.log(data);
-		
-		// 기존 목록 삭제
-		$('#listComnGrpCod').empty();
-		
-		// 신규 목록 생성
-		$("#listComnGrpCod").append(data);
-		
-		// 총 개수 추출
-		
-		var totalCntComnGrpCod = $("#totalCntComnGrpCod").val();
-		
-		
-		//swal(totalCntComnGrpCod);
-		
-		// 페이지 네비게이션 생성
-		
-		var paginationHtml = getPaginationHtml(currentPage, totalCntComnGrpCod, pageSizeComnGrpCod, pageBlockSizeComnGrpCod, 'fListLecList');
-		console.log("paginationHtml : " + paginationHtml);
-		//swal(paginationHtml);
-		$("#comnGrpCodPagination").empty().append( paginationHtml );
-		
-		// 현재 페이지 설정
-		$("#currentPageComnGrpCod").val(currentPage);
-	}
-	
-
-	
-
-
-	
-	
-	/** 학생선택 모달 실행 */
-	function fPopModalComnDtlCod(loginID) {
-		
-	
-			// 학생선택 단건 조회
-			fSelectDtlCod(loginID);
-	}
-	
-	/** 학생선택 단건 조회 */
-	function fSelectDtlCod(loginID,li_no) {
-
-		var paramMap = {
-					loginID: loginID
-					,li_no  : li_no
-		};
-		
-		var resultCallback = function(data) {
-			fSelectDtlCodResult(data);
-		};
-		   
-		callAjax("/scm/selectLecPersonList.do", "post", "json", true, paramMap, resultCallback);
-	}
-	
-	
-	/** 학생선택 단건 조회 콜백 함수*/
-	function fSelectDtlCodResult(data) {
-
-	
-			// 모달 팝업
-			gfModalPop("#layer1");
-			
-			// 그룹코드 폼 데이터 설정
-			fInitFormDtlCod(data.selectAdmsmtLecPersonList);
-			
-		
-	}
-		
-	
-	/** 수강학생 목록 조회 */
-	function fListLecPersonList(currentPage, li_no, wh_code) {
-		$("#li_no").val(li_no);
-		$("#wh_no").val(wh_no);
-		currentPage = currentPage || 1;
-		
-		var param = {
-					li_no : li_no
-				,	wh_code : wh_code
-				,	currentPage : currentPage
-				,	pageSize : pageSizeComnDtlCod
-		}
-		
-		var resultCallback = function(data) {
-			flistDtlCodResult(data, currentPage);
-		};
-		
-		callAjax("/scm/listLecPersonList.do", "post", "text", true, param, resultCallback);
-	}
-	
-	
-	/** 상세코드 조회 콜백 함수 */
-	function flistDtlCodResult(data, currentPage) {
-		
-		// 기존 목록 삭제
-		$('#listComnDtlCod').empty(); 
-		
-		var $data = $( $(data).html() );
-		// 신규 목록 생성
-		$("#listComnDtlCod").append(data);
-		
-	
-		
-		
-		
-		
-		var totalCntComnDtlCod = $("#totalCntComnDtlCod").val();
-			
-	
-		
-		// 페이지 네비게이션 생성
-		var li_no = $("#li_no").val();
-		var grp_cod_nm = $("#tmpGrpCodNm").val();
-		var paginationHtml = getPaginationHtml(currentPage, totalCntComnDtlCod, pageSizeComnDtlCod, pageBlockSizeComnDtlCod, 'fListLecPersonList',[li_no]);
-		$("#comnDtlCodPagination").empty().append( paginationHtml );
-		
-		// 현재 페이지 설정
-		$("#currentPageComnDtlCod").val(currentPage);
-	
-	
-	}
-	
-
-
-	
+    //목록 페이징 설정
+    var pageSizeComnGrpCod = 5;
+    var pageBlockSizeComnDtlCod = 10;
+    
+    // OnLoad event
+    $(function(){
+    	//목록 조회
+    	fListWhList();
+    	
+    	//버튼 이벤트 등록
+    	 fRegisterButtonClickEvent();
+    	
+    })
+    
+    //버튼 이벤트 등록
+    function  fRegisterButtonClickEvent() {
+    	$('a[name]=btn').click(function(e){
+    		e.preventDefault();
+    		
+    		var btnId =  $(this).attr('id');
+    		
+    		switch (btnId){
+    		case 'btnSaveGrpGod' :
+    			fSaveGrpCod();
+    			break;
+    		case 'btnDeleteGrpCod' : 
+    			fDeleteGrpCod();
+    			break;
+    		case 'btnSaveDtlCod' :
+    			fSaveDtlCod();
+    			break;
+    		case 'btnDeleteDtlCod':
+    			fDeleteDtlCode();
+    			break;
+    		case 'btnSearchGrpcode':
+    			board_search();
+    			break;
+    		case ' btnCloseGrpCod':
+    			case 'btnCloseDtlCod' :
+    				gfCloseModal();
+    				break;
+    		};
+    	});
+    }
+    
+    function board_search(currentPage){
+    	var sname= $('#sname');
+    	var searchKey = document.getElementById("searchkey");
+    }
 </script>
 
 </head>

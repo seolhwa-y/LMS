@@ -2,109 +2,117 @@ package kr.happyjob.study.scm.model;
 
 public class ProductInfoModel {
 
-	private int model_code; //모델코드  
-	private String model_name; //모델명
-	private String pd_name; // 제품명  
-	private String pd_corp; // 제조사 
-	private String pd_code; // 제품no 
-	private String pd_price; // 제품가격		
-	private int pdfile_code; //파일코드
-	private String pdfile_name; //파일명
-	private String pd_nadd; //논리주소
-	private String pd_madd; //물리주소
-	private String pd_size; //파일크기	
-	private String loginID; 
-	private String name;  	
+	private int modelCode; //모델코드   카멜표기법으로 다시 수정함 model_code --> modelCode
+	private String modelName; //모델명
+	private String pdName; // 제품명  
+	private String pdCorp; // 제조사 
+	private String pdCode; // 제품no 
+	private int pdPrice; // 제품가격		
+	private int pdfileCode; //파일코드
+	private String pdfileName; //파일명
+	private String pdNadd; //논리주소
+	private String pdMadd; //물리주소
+	private String pdSize; //파일크기	
+	private String loginId; 
+	private String company;  //납품업체 	
+	private String pdDetail;  //상세정보 PD_DETAIL	
 	private int currentPage;  
 	private int pageSize;  
 	private int pageIndex;
 	
+	
 	@Override
 	public String toString() {
-		return "ProductInfoModel [model_code=" + model_code + ", model_name=" + model_name + ", pd_name=" + pd_name
-				+ ", pd_corp=" + pd_corp + ", pd_code=" + pd_code + ", pd_price=" + pd_price + ", pdfile_code="
-				+ pdfile_code + ", pdfile_name=" + pdfile_name + ", pd_nadd=" + pd_nadd + ", pd_madd=" + pd_madd
-				+ ", pd_size=" + pd_size + ", loginID=" + loginID + ", name=" + name + ", currentPage=" + currentPage
-				+ ", pageSize=" + pageSize + ", pageIndex=" + pageIndex + "]";
+		return "ProductInfoModel [modelCode=" + modelCode + ", modelName=" + modelName + ", pdName=" + pdName
+				+ ", pdCorp=" + pdCorp + ", pdCode=" + pdCode + ", pdPrice=" + pdPrice + ", pdfileCode=" + pdfileCode
+				+ ", pdfileName=" + pdfileName + ", pdNadd=" + pdNadd + ", pdMadd=" + pdMadd + ", pdSize=" + pdSize
+				+ ", loginId=" + loginId + ", company=" + company + ", pdDetail=" + pdDetail + ", currentPage="
+				+ currentPage + ", pageSize=" + pageSize + ", pageIndex=" + pageIndex + "]";
 	}
 	
-	public int getModel_code() {
-		return model_code;
+	public int getModelCode() {
+		return modelCode;
 	}
-	public void setModel_code(int model_code) {
-		this.model_code = model_code;
+	public void setModelCode(int modelCode) {
+		this.modelCode = modelCode;
 	}
-	public String getModel_name() {
-		return model_name;
+	public String getModelName() {
+		return modelName;
 	}
-	public void setModel_name(String model_name) {
-		this.model_name = model_name;
+	public void setModelName(String modelName) {
+		this.modelName = modelName;
 	}
-	public String getPd_name() {
-		return pd_name;
+	public String getPdName() {
+		return pdName;
 	}
-	public void setPd_name(String pd_name) {
-		this.pd_name = pd_name;
+	public void setPdName(String pdName) {
+		this.pdName = pdName;
 	}
-	public String getPd_corp() {
-		return pd_corp;
+	public String getPdCorp() {
+		return pdCorp;
 	}
-	public void setPd_corp(String pd_corp) {
-		this.pd_corp = pd_corp;
+	public void setPdCorp(String pdCorp) {
+		this.pdCorp = pdCorp;
 	}
-	public String getPd_code() {
-		return pd_code;
+	public String getPdCode() {
+		return pdCode;
 	}
-	public void setPd_code(String pd_code) {
-		this.pd_code = pd_code;
+	public void setPdCode(String pdCode) {
+		this.pdCode = pdCode;
 	}
-	public String getPd_price() {
-		return pd_price;
+	public int getPdPrice() {
+		return pdPrice;
 	}
-	public void setPd_price(String pd_price) {
-		this.pd_price = pd_price;
+	public void setPdPrice(int pdPrice) {
+		this.pdPrice = pdPrice;
 	}
-	public int getPdfile_code() {
-		return pdfile_code;
+	public int getPdfileCode() {
+		return pdfileCode;
 	}
-	public void setPdfile_code(int pdfile_code) {
-		this.pdfile_code = pdfile_code;
+	public void setPdfileCode(int pdfileCode) {
+		this.pdfileCode = pdfileCode;
 	}
-	public String getPdfile_name() {
-		return pdfile_name;
+	public String getPdfileName() {
+		return pdfileName;
 	}
-	public void setPdfile_name(String pdfile_name) {
-		this.pdfile_name = pdfile_name;
+	public void setPdfileName(String pdfileName) {
+		this.pdfileName = pdfileName;
 	}
-	public String getPd_nadd() {
-		return pd_nadd;
+	public String getPdNadd() {
+		return pdNadd;
 	}
-	public void setPd_nadd(String pd_nadd) {
-		this.pd_nadd = pd_nadd;
+	public void setPdNadd(String pdNadd) {
+		this.pdNadd = pdNadd;
 	}
-	public String getPd_madd() {
-		return pd_madd;
+	public String getPdMadd() {
+		return pdMadd;
 	}
-	public void setPd_madd(String pd_madd) {
-		this.pd_madd = pd_madd;
+	public void setPdMadd(String pdMadd) {
+		this.pdMadd = pdMadd;
 	}
-	public String getPd_size() {
-		return pd_size;
+	public String getPdSize() {
+		return pdSize;
 	}
-	public void setPd_size(String pd_size) {
-		this.pd_size = pd_size;
+	public void setPdSize(String pdSize) {
+		this.pdSize = pdSize;
 	}
-	public String getLoginID() {
-		return loginID;
+	public String getLoginId() {
+		return loginId;
 	}
-	public void setLoginID(String loginID) {
-		this.loginID = loginID;
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
 	}
-	public String getName() {
-		return name;
+	public String getCompany() {
+		return company;
 	}
-	public void setName(String name) {
-		this.name = name;
+	public void setCompany(String company) {
+		this.company = company;
+	}
+	public String getPdDetail() {
+		return pdDetail;
+	}
+	public void setPdDetail(String pdDetail) {
+		this.pdDetail = pdDetail;
 	}
 	public int getCurrentPage() {
 		return currentPage;
@@ -124,5 +132,9 @@ public class ProductInfoModel {
 	public void setPageIndex(int pageIndex) {
 		this.pageIndex = pageIndex;
 	}
+
+	
+	
+
 	
 }

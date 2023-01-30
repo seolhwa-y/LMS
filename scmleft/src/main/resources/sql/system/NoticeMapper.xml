@@ -7,7 +7,7 @@
 	<select id = "noticeList" resultType = "kr.happyjob.study.system.model.NoticeModel">
 			select nt.NOT_CODE as notcode
 			      ,nt.NOT_TITLE as nottitle
-			      ,DATE_FORMAT(nt.NOT_DATE, '%Y-%m-%d') as notdate
+			      ,DATE_FORMAT(STR_TO_DATE(left(nt.NOT_DATE,8), '%Y%m%d'), '%Y-%m-%d')  as notdate
 			      ,nt.loginID as loginid
 			      ,ui.name 
 			  from NOTICE nt
@@ -49,25 +49,25 @@
 		
 	
 	
+	
 	<!-- 공지사항 단건 조회 : 공지제목 클릭시 -->
 	<select id = "noticeDetail" resultType = "kr.happyjob.study.system.model.NoticeModel">
 		SELECT
-					u.loginID as loginId
-				,	n.NOT_TITLE as nottitle
-				,	n.NOT_CON as noticeContent
-				,   n.NOT_CODE as notcode
-				,   u.name as name
-		FROM	NOTICE n
-			JOIN	tb_userinfo u
-			ON			n.loginID = u.loginID
-		WHERE n.NOT_CODE = #{noticeNo}
+					nt.loginID as loginid
+				,	nt.NOT_TITLE as nottitle
+				,	nt.NOT_CON as noticeContent
+				,   nt.NOT_CODE as notcode
+				,   u.name 
+		FROM	NOTICE nt
+			       inner join tb_userinfo u	on nt.loginID = u.loginID
+		WHERE nt.NOT_CODE = #{noticeNo}
 	</select>
 	
 		
 		
 	<!-- 공지사항 신규등록(저장) :  -->
 	<insert id = "insertNotice" parameterType="java.util.Map">
-	    <selectKey resultType="string" keyProperty="notcode" order="BEFORE">
+	    <selectKey resultType="string" keyProperty="noticeNo" order="BEFORE">
             SELECT IFNULL(MAX(NOT_CODE),0) + 1 FROM NOTICE 
         </selectKey> 
 		INSERT
@@ -77,28 +77,28 @@
 				)
 		VALUES
 				(
-						#{notcode}
+						#{noticeNo}
 					,	#{loginId}
-					,	#{nottitle}
+					,	#{noticeTitle}
 					,	#{noticeContent}
-					,	DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+					,	DATE_FORMAT(now(), '%Y%m%d')
 				)
 	</insert>
 	
 	<!-- 공지사항 수정-->
 	<update id = "updateNotice">
 		UPDATE NOTICE
-		SET		NOT_TITLE = #{nottitle}
+		SET		NOT_TITLE = #{noticeTitle}
 				,	NOT_CON = #{noticeContent}
-				,	NOT_DATE = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
-		WHERE	NOT_CODE = #{notcode}
+				,	NOT_DATE = DATE_FORMAT(now(), '%Y%m%d')
+		WHERE	NOT_CODE = #{noticeNo}
 	</update>
 	
 	<!-- 공지사항 삭제-->
 	<delete id="deleteNotice">
 		DELETE
 		FROM 	NOTICE
-		WHERE 	NOT_CODE = #{notcode}
+		WHERE 	NOT_CODE = #{noticeNo}
 	</delete>
 
 </mapper>

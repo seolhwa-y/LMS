@@ -83,8 +83,8 @@
                     group by  wh_code,model_code, wh_no
 		          ) wh3 on wh3.MODEL_CODE = wh.MODEL_CODE  and wh.WH_NO = wh3.wh_no and wh.WH_DATE = wh3.WH_DATE
 		where wh.model_code = #{li_no}
-       and wh.wh_code = #{wh_code}
-       group by wh.MODEL_CODE, wh.WH_DATE, wh.WH_NO
+      <!--  and wh.wh_code = #{wh_code}
+       group by wh.MODEL_CODE, wh.WH_DATE, wh.WH_NO -->
 	</select>	
 	
 	<select id="ScountList" resultType="int">

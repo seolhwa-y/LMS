@@ -39,13 +39,17 @@ public class RefundConfirm {
 	      logger.info("+ Start " + className + ".refundConfirm");
 	      logger.info("   - paramMap : " + paramMap);
 	      
+	      String loginID = (String) session.getAttribute("loginId");
+	      paramMap.put("loginID", loginID);
+	      
 	      logger.info("+ End " + className + ".refundConfirm");
 	
 	      return "cmp/refundConfirmMgt";
 	   }
 	   
 		@RequestMapping("refundConfirmMgt.do")	
-		public String refundConfirmMgt(Model model, @RequestParam Map<String, Object> paramMap,
+		@ResponseBody
+		public Map<String, Object> refundConfirmMgt(Model model, @RequestParam Map<String, Object> paramMap,
 				HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
 
 			logger.info("+ Start " + className + ".refundConfirmMgt");
@@ -56,26 +60,24 @@ public class RefundConfirm {
 			int pagesize = Integer.parseInt(String.valueOf(paramMap.get("pagesize")));
 			int startnum = (clickpagenum - 1) * pagesize;
 			
-			String loginID = (String) session.getAttribute("loginId");
-			
-			logger.info("loginId ??????????????????????????????????" + loginID);
-			
 			paramMap.put("startnum", startnum);
-
 			paramMap.put("pagesize", pagesize);
 
-			paramMap.put("loginID", loginID);
 
 			List<RefundConfirmModel> refundConfirmlist = refundconfirmservice.refundConfirmMgt(paramMap);
-			model.addAttribute("refundConfirmlist", refundConfirmlist);
 
 			int refundConfirmMgtcnt = refundconfirmservice.refundConfirmMgtcnt(paramMap);
-			model.addAttribute("refundConfirmMgtcnt", refundConfirmMgtcnt);
+			
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			resultMap.put("refundConfirmlist", refundConfirmlist);
+			resultMap.put("refundConfirmMgtcnt", refundConfirmMgtcnt);
+			resultMap.put("startnum", startnum);
+			resultMap.put("pagesize", pagesize);
 
 			logger.info("+ End " + className + ".refundConfirmMgt");
 			
 			
-			return "cmp/refundConfirmlist";
+			return resultMap;
 		}
 		
 		@RequestMapping("SclickRefundConfirm.do")

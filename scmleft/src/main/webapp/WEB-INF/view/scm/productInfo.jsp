@@ -6,7 +6,7 @@
 <html lang="ko">
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<title>배송 지시서</title>
+<title>제품정보 관리</title>
 
 <jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
 
@@ -17,48 +17,115 @@
 <script type="text/javascript"
 	src="${CTX_PATH}/js/duDatePicker/duDatepicker.js"></script>
 
-<script type="text/javascript">	
-</script>
-</head>
 <script type="text/javascript">
 
 	// 페이징 설정 
 	var pageSize = 10;    	// 화면에 뿌릴 데이터 수 
 	var pagenumSize = 5;		// 블럭으로 잡히는 페이징처리 수
 	
+	var productarea;
+	var seacharea;
+	
 	/* onload 이벤트  */
-	$(function(){
-		//  리스트 뿌리기 함수 
+	$(document).ready(function() {
+		
+		//userCombo("usr", "F", "usrall", "all", "");   // 사용자 정보 : F : usertype      usrall :selectbox ID   value : loginID          all : 전체     sel : 선택 
+		
+		init();
+		
+		//  제품정보관리 리스트 조회  
 		fselectProductList();
 		
+		// 버튼 이벤트 등록
+		fButtonClickEvent();
+			
 	});
 	
 	
+	function init() {
+		
+		productarea = new Vue({
+			el : '#productList', // #은 id값으로 넘겨준다 .은 class
+			data : {
+				listitem:[], // 변수선언 ex.<tbody v-for="(item, index) in SupplierListItem" v-if="SupplierListItem.length">
+				action : "",
+			},
+			methods : {
+				DetailProduct : function(mdCode) { //파라미터로 넘어오는 변수는 db 변수와 다르게 표기 
+					fdetailModal(mdCode);
+				}		
+		     }
+	   });
+		
+		productvue = new Vue({
+			el : '#productsave',
+			data : {
+				modelCode : "",
+				pdCode :"",
+				pdName : "",
+				modelName : "",
+				pdCorp : "",
+				pdPrice : "",
+				company : "",
+				pdfileCode : "",
+				pdDetail : "",
+			    pdfileName : "",
+			    pdNadd : "/images/admin/comm/no_image.png",
+			    pdMadd : "",
+			    pdSize : "",
+				loginId:"",
+				
+			},
+		    methods:{    //파일업로드 미리보기           
+                      selimg:function(event){                    	         
+                                var image = event.target;
+               
+                                if(image.files[0]){
+                                   //alert(window.URL.createObjectURL(image.files[0]));// 임시주소 생성됨
+                                   
+                                   this.pdNadd =  window.URL.createObjectURL(image.files[0]);
+                                }
+                            },
+                            //사진 클릭하면 다운로드 
+                            download: function() {
+                            	filedown();
+                            }       
+                   }
+		});
+		//검색
+		searcharea = new Vue({
+			el : '#searchproduct',
+			data : {
+				search : "",
+				select : "all"
+			}
+		});
+	}
+	
+		
 	/* 버튼 이벤트 등록 - 저장, 수정, 삭제  */
-/* 	function fButtonClickEvent(){
+ 	function fButtonClickEvent(){
 		$('a[name=btn]').click(function(e){
 			e.preventDefault();   
 					
 			var btnId = $(this).attr('id');
 			
 			switch(btnId){
-			case 'btnSavePro' : fSaveProduct(); // save 안에 저장,수정
-				//alert("저장버튼 클릭!!!이벤트!!");
+			case 'btnSavePro' : fProductSave(); // save 안에 저장,수정
+				alert("저장버튼 클릭!!!이벤트!!");
 				break;
 			case 'btnDeletePro' : fDeleteProduct();	// 만들자 
-				//alert("삭제버튼 클릭!!!이벤트!!");		
+				alert("삭제버튼 클릭!!!이벤트!!");		
 				break;
-			case 'btnClose' : gfCloseModal();  // 모달닫기 
-			
+			case 'btnClose' : gfCloseModal();  // 모달닫기 			
 				break;
-			case 'btnUpdatePro' : fUpdateProduct();  // 수정하기
-				break;
-			case 'searchBtn' : board_search();  // 검색하기
-			break;
+			case 'serachbtn' : fselectProductList();  // 검색하기
+			break; 
 			
 			}
 		});
-	} */
+	} 
+	
 	
 	/* 제품정보 목록 불러오기  */
 	function fselectProductList(pagenum){
@@ -66,6 +133,8 @@
 		pagenum = pagenum || 1;   // or		
 		
 		var param = {
+				search : searcharea.search,
+				select : searcharea.select,
 				currentPage : pagenum ,
 				pageSize : pageSize 
 		}
@@ -74,27 +143,49 @@
 			productListResult(returndata, pagenum); 
 		}
 		
-		callAjax("/scm/productInfoList.do","post","text", true, param, resultCallback);
+		callAjax("/scm/productInfoList.do","post","json", true, param, resultCallback);
+		// js로 할때는 json말고 text로 넘겨줌 
 		
 	}
 	
 
 	 /* 제품정보 리스트 data를 콜백함수를 통해 뿌려봅시당   */
 	 function productListResult(data, currentPage){
+		
+		 // 뷰로 바꾸기 
+		productarea.listitem = data.productInfoList; // productInfoList : 컨트롤러에서 넘겨 온 값  
+		
+		console.log(data);
+		console.log(data.productInfoList);
+		console.log(searcharea.search);
+		console.log(searcharea.select);
+		
+		
+		// 총 개수 추출
+		var totalCnt = data.totalCnt;
+		var list = $("#currentPageProduct").val();
+
+		// 페이지 네비게이션 생성
+		var paginationHtml = getPaginationHtml(currentPage, totalCnt,
+				pageSize, pagenumSize, 'fselectProductList',
+				[ list ]);
+
+		$("#pagingnavi").empty().append(paginationHtml);
 		 
+		 
+		 
+	/* 	 // 기존 자바스크립트 방법 
 		 // 일단 기존 목록을 삭제합니다. (변경시 재부팅 용)
 		 $("#productList").empty();
 		 console.log("data !!!! " +  data);
 		 
 		 
 		 $("#productList").append(data);
-	
-		 
+			 
 		 // 리스트의 총 개수를 추출합니다. 
 	     var totalCnt = $("#totalCnt").val();  // qnaRealList() 에서보낸값 
 	     //alert("totalCnt 찍어봄!! " + totalCnt);
-		 
-		 
+		 		 
 	    // var list = $("#tmpList").val();
 	     
 		 //var listnum = $("#tmpListNum").val();
@@ -106,10 +197,225 @@
 	     $("#pagingnavi").empty().append(pagingnavi); // 위에꺼를 첨부합니다. 
 		 
 		 // 현재 페이지 설정 
-	    $("#currentPage").val(currentPage);
+	    $("#currentPage").val(currentPage); */
 	    
 		 
 	 }
+	 
+			 
+	 /*1건 상세 조회*/
+ 	 function fdetailModal(modelCode){ 
+		 alert(" 상세 조회  ");
+		 
+		 productarea.action ="U";
+		 		 
+		 var param = {modelCode : modelCode};
+		 //console.log(param);
+		 
+		 var resultCallback2 = function(data){
+			 console.log("aa : " + JSON.stringify(data));
+			 fdetailResult(data);
+		 };
+		 
+		 callAjax("/scm/productOne.do", "post", "json", true, param, resultCallback2);
+		 //alert(" 상세 조회  22");		 
+	 } 
+	 
+	 /*  1건 상세 조회 -> 콜백함수   */
+ 	 function fdetailResult(data){
+
+		 //alert("상세 조회  33");
+		 //모달 띄우기 
+		  gfModalPopTop("#productsave");
+			 
+		 //alert(data.result);
+		// 모달에 정보 넣기 
+		frealPopModal(data.result);		 
+	 } 
+	 
+ 	 /* ****게시글 신규 등록******** */
+ 	   function fProductNew(){
+ 		  
+ 		  productarea.action = "I"	   		   
+ 		  frealPopModal();	   
+ 		 gfModalPopTop("#productsave");
+ 		  
+ 	   }
+ 	   
+ 	   /* ********게시글 저장 ************/
+/*  	   function  fProductSave(){	   
+ 		  productarea.action == "I" ? alert("I") : alert("U");
+ 	       
+ 		   var param = {
+ 	             action : productarea.action,
+ 	             modelCode : productvue.modelCode,
+ 	             pdCode : productvue.pdCode,
+ 	             pdName : productvue.pdName,
+ 	             modelName : productvue.modelName,
+ 	             pdCorp : productvue.pdCorp,
+ 	             pdPrice : productvue.pdPrice,
+ 	             name : productvue.name,
+ 	             pdCode : productvue.pdCode,
+ 	             pdDetail : productvue.pdDetail,
+ 	             loginId : productvue.loginId
+ 	           }
+ 	       console.log(param);
+ 	       
+ 	       var saveCallBack = function(saveReturn){
+ 	          console.log("data Check ::  " + JSON.stringify(saveReturn));
+ 	          
+ 	          if(!saveReturn.resultMsg.includes("FALSE")) {
+ 	             alert("저장"); 
+ 	          }
+ 	          else alert("실패");
+ 	          
+ 	          gfCloseModal();
+ 	          fselectProductList();
+ 	          
+ 	       }
+ 	       
+ 	       callAjax("/scm/productSave.do", "post", "json", true, param, saveCallBack);
+ 	    }
+	 */
+	 
+	 /*제품정보 저장 수정 */
+ 	  function fProductSave() {
+		 
+		 productarea.action == "I" ? alert("I") : alert("U");
+ 			
+		 	//액션 값 넘기기 
+		    $("#action").val(productarea.action);
+		 		 
+ 			var frm = document.getElementById("myProduct"); //form id="myProduct"
+ 			frm.enctype = 'multipart/form-data'; // 파일업로드 
+ 			var dataWithFile = new FormData(frm);
+ 			
+ 			var saveCallBack = function(saveReturn){
+ 	 	          console.log("data Check ::  " + JSON.stringify(saveReturn));
+ 	 	          
+ 	 	          if(saveReturn.resultMsg != "FALSE") {
+ 	 	        //if(!saveReturn.resultMsg.includes("FALSE")) {
+ 	 	             alert("저장"); 
+ 	 	          }
+ 	 	          else alert("실패");
+ 	 	          
+ 	 	          gfCloseModal();
+ 	 	          fselectProductList();
+ 	 	     }
+    		
+ 			callAjaxFileUploadSetFormData("/scm/productSave.do", "post", "json", true, dataWithFile, saveCallBack);
+ 		}
+ 	   
+ 	   
+ 	// 팝업(신규등록 및 수정)
+ 	function frealPopModal(object){
+ 		
+ 		console.log(object);
+ 		
+ 		if (productarea.action == "I") {
+ 			productvue.modelCode = "";
+ 			productvue.pdCode = "";
+ 			productvue.pdName = "";
+ 			productvue.modelName = "";
+ 			productvue.pdCorp = "";
+ 			productvue.pdPrice = "";
+ 			productvue.company = "";
+ 			productvue.pdDetail = "";
+ 			productvue.loginId = "";
+ 			productvue.pdfileCode = "";
+ 			
+ 			productvue.pdfileName = "";
+ 			productvue.pdNadd = "/images/admin/comm/no_image.png";
+ 			productvue.pdMadd = "";
+ 			productvue.pdSize = "";
+ 			
+ 			$("#thumbnail").val("");
+ 			
+ 		} else {
+ 			//console.log(object.pdName);
+ 			productvue.modelCode = object.modelCode;
+ 			
+ 			//
+ 			$("#modelCode").val(object.modelCode);
+ 			
+ 			productvue.pdCode = object.pdCode;
+ 			productvue.pdName = object.pdName;
+ 			productvue.modelName = object.modelName;
+ 			productvue.pdCorp = object.pdCorp;
+ 			productvue.pdPrice = object.pdPrice;
+ 			productvue.company = object.company;
+ 			productvue.loginId = object.loginId;
+ 			productvue.pdDetail = object.pdDetail;
+ 			productvue.pdfileCode = object.pdfileCode; 
+ 			
+ 			productvue.pdfileName = object.pdfileName;
+ 			productvue.pdNadd = object.pdNadd;                                     
+ 			productvue.pdMadd = object.pdMadd;
+ 			productvue.pdSize = object.pdSize;
+ 		}
+ 	}
+
+ 
+ // 첨부파일 다운로드 (사진 클릭하면 다운로드)
+ //modelCode로 단건 조회 했기때문에 가져오기 
+	function filedown(){
+ 	 	var params = "";
+		params += "<input type='hidden' name='modelCode' value='"+ $("#modelCode").val() +"' />"; 	
+		jQuery("<form action='/scm/fileDown.do' method='post'>"+params+"</form>").appendTo('body').submit().remove(); 			
+	} 
+	 
+    /*//자바스크립트 jstl 방법으로 한것  
+	/* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  
+	 function frealPopModal(object){
+		 
+		
+		if(object == null || object==""){
+			$("#modelCode").val(""); //value 값으로 받아 올때는 .val 
+			 $("#pdCode").val("");
+			 $("#pdName").val("");
+			 $("#modelName").val(""); //.text
+			 $("#pdCorp").val("");
+			 $("#pdPrice").val("");
+			 $("#name").val("");
+			 $("#pdfileCode").val("");
+		} else {
+			 $("#modelCode").val(object.modelCode); //value 값으로 받아 올때는 .val 
+			 $("#pdCode").val(object.pdCode);
+			 $("#pdName").val(object.pdName);
+			 $("#modelName").val(object.modelName); //.text
+			 $("#pdCorp").val(object.pdCorp);
+			 $("#pdPrice").val(object.pdPrice);
+			 $("#name").val(object.name);
+			 $("#pdfileCode").val(object.pdfileCode);			
+		}
+
+		
+		 //$("#shCode").text(object.sh_code);
+		
+		 //모달팝업 
+		 gfModalPop("#layer2");	
+			 
+    }  */
+	 
+ 	 /* 제품정보관리 모달창(팝업) 실행  여기부터 
+  	  function pdModalOpen(modelCode) {
+		 
+		 // 신규저장 하기 버튼 클릭시 (값이 null)
+		  if(modelCode == null || modelCode==""){
+			
+			$("#action").val("I"); // insert 
+			frealPopModal(); //  초기화 
+			
+			//모달 팝업 모양 오픈! (빈거) _ 있는 함수 쓰는거임. 
+			gfModalPop("#productsave");
+			
+		 }else{
+			$("#action").val("U");  // update 
+			fdetailModal(mdCode); //번호로 -> 상품 상세 조회 팝업 띄우기
+		 }
+
+	 };  */
+	 
 	 
  	 //검색  
 /* 	 function board_search(currentPage) {
@@ -133,68 +439,6 @@
 	         callAjax("/scm/productList.do", "post", "text", true, param, resultCallback);
 	   }  */
 	 
-	
-	 
-	 /* 제품정보관리 모달창(팝업) 실행  여기부터 */
- 	 function pdModalOpen(model_code) {
-		 
-		 // 신규저장 하기 버튼 클릭시 (값이 null)
-		 if(model_code == null || model_code==""){
-			
-			$("#action").val("I"); // insert 
-			frealPopModal(pro_no); //  초기화 
-			
-			//모달 팝업 모양 오픈! (빈거) _ 있는 함수 쓰는거임. 
-			gfModalPopTop("#pdinfo");
-			
-		 }else{
-			$("#action").val("U");  // update
-			fdetailModal(pro_no); //번호로 -> 상품 상세 조회 팝업 띄우기
-		 }
-
-	 } 
-	 
-	 
-	 /*1건 상세 조회*/
-/* 	 function fdetailModal(pro_no){
-		 //alert(" 상세 조회  ");
-		 
-		 var param = {pro_no : pro_no};
-		 var resultCallback2 = function(data){
-			 fdetailResult(data);
-		 };
-		 
-		 callAjax("/scm/detailProduct.do", "post", "json", true, param, resultCallback2);
-		 //alert(" 상세 조회  22");
-		 
-	 } */
-	 
-	 /*  1건 상세 조회 -> 콜백함수   */
-/* 	 function fdetailResult(data){
-
-		 //alert("공지사항 상세 조회  33");
-		 if(data.resultMsg == "SUCCESS"){
-			 //모달 띄우기 
-			 gfModalPopTop("#user");
-			 
-			 //alert(data.result);
-			// 모달에 정보 넣기 
-			frealPopModal(data.result);
-		 
-		 }else{
-			 alert(data.resultMsg);
-		 }
-	 } */
-	 
-	 /* 팝업 _ 초기화 페이지(신규) 혹은 내용뿌리기  */
- 	 function frealPopModal(object){
-		 
-		
-		 gfModalPopTop("#pdinfo");
-		
-			 
-		 }
-	  
 	 
 	 
 	 /* 팝업내 수정, 저장 validation */
@@ -343,16 +587,18 @@
 		 */
 
 </script>
-
-
+</head>
 <body>
 
 <form id="myProduct" action="" method="">
 	
 	<input type="hidden" id="currentPage" value="1">  <!-- 현재페이지는 처음에 항상 1로 설정하여 넘김  -->
-	<input type="hidden" id="tmpList" value=""> <!-- ★ 이거뭐임??? -->
+	<input type="hidden" id="currentPageProduct" value="1"> 
 	<input type="hidden" id="tmpListNum" value=""> <!-- 스크립트에서 값을 설정해서 넘길거임 / 임시 리스트 넘버 -->
 	<input type="hidden" name="action" id="action" value=""> 
+	
+	<input type="hidden" name="modelCode" id="modelCode" value=""> 
+	
 	 <!-- <input type="hidden" id="swriter" value="${writer}"> 작성자 session에서 java에서 넘어온값 -->
 	
 	<div id="wrap_area">
@@ -382,36 +628,37 @@
 						<p class="conTitle">
 							<span>제품정보 관리 </span> <span class="fr"> 
 								<c:set var="nullNum" value=""></c:set>
-								<a class="btnType blue" href="javascript:pdModalOpen(${null});" name="modal">
-								
+								<a class="btnType blue" href="javascript:fProductNew();" name="modal">
 								<span>신규등록</span></a>
 								
 							</span>
 						</p>
 						
 					<!--검색창   -->
+					<div id="searchproduct">
 					<table width="100%" cellpadding="5" cellspacing="0" border="1"
                         align="left"
                         style="border-collapse: collapse; border: 1px #50bcdf;">
                         <tr style="border: 0px; border-color: blue">
                            <td width="100" height="25" style="font-size: 120%">&nbsp;&nbsp;</td>
                            <td width="50" height="25" style="font-size: 100%; text-align:right;padding-right:25px;">
-     	                       <select id="oname" name="oname" style="width:130px;height:27px">
+     	                       <select id="select" name="select" style="width:130px;height:27px" v-model="select">
 						        <option value="all">전체</option>
-						        <option value="pro_no">제품 번호</option>
+						        <option value="pro_no">제품 코드</option>
 						        <option value="pro_nm">제품명</option>
 						        <option value="model_nm">모델명</option>
-						        <option value="manu_nm">제조사</option>
+						        <option value="pd_corp">제조사</option>
 						      </select>
-     	                       <input type="text" style="width: 150px ; height: 25px;" id="sname" name="sname" >                    
-	                           <a href="" class="btnType blue" id="searchBtn" name="btn"><span>검  색</span></a>
+						      
+     	                       <input type="text" style="width: 150px ; height: 25px;" id="search" name="search" v-model="search" >                    
+	                           <a href="" class="btnType blue" id="serachbtn" name="btn"><span>검  색</span></a>
                            </td> 
                            
                         </tr>
                      </table> &nbsp;&nbsp;
+						</div>
 						
-						
-						<div class="divUserList">
+						<div id="productList">
 							<table class="col">
 								<caption>caption</caption>
 	
@@ -419,40 +666,39 @@
 									<tr>
 									      <th scope="col"></th>
 							              <th scope="col">모델명</th>
-									      <th scope="col">제품 번호</th>							              
+									      <th scope="col">제품 코드</th>							              
 							              <th scope="col">제품명</th>
 							              <th scope="col">제조사</th>
 							              <th scope="col">판매가</th>
 							              <th scope="col">납품 업체</th>							              
 									</tr>
 								</thead>
-								<tbody id="productList"></tbody>
+								<!--기존 자바스크립트 방법  <tbody id="productList"></tbody> -->
+								<tbody>
+										<tr v-for="(item, index) in listitem"
+										v-if="listitem.length > 0" @click="DetailProduct(item.modelCode)"> <!-- db모델이랑 똑같이  -->
+											<td>{{ item.modelCode }}</td>
+											<td>{{ item.modelName }}</td>
+											<td>{{ item.pdCode }}</td>
+											<td>{{ item.pdName }}</td>
+											<td>{{ item.pdCorp }}</td>
+											<td>{{ item.pdPrice }}</td>
+											<td>{{ item.company }}</td>
+											<%-- <td>
+				   								<fmt:formatNumber value="{{item.pdPrice}}" pattern="#,###,###,###"></fmt:formatNumber>
+											</td> --%>
+										</tr>
+										<tr v-else>
+											<td colspan = "7">데이터 없어요</td>
+										</tr>
+								</tbody>
 							</table>
 							
-							<!-- 페이징 처리  -->
-							<div class="paging_area" id="pagingnavi">
-								<div class="paging">
-									<a class="first" href="javascript:selectProductList(1)">
-									<span class="hidden">맨앞</span></a>
-									<a class="pre" href="javascript:selectProductList(1)">
-									<span class="hidden">이전</span></a>
-									<strong>1</strong> 
-									<a href="javascript:selectProductList(2)">2</a> 
-									<a href="javascript:selectProductList(3)">3</a> 
-									<a href="javascript:selectProductList(4)">4</a>
-									<a href="javascript:selectProductList(5)">5</a>
-									<a class="next" href="javascript:selectProductList(5)">
-									<span class="hidden">다음</span></a>
-									<a class="last" href="javascript:selectProductList(5)">
-									<span class="hidden">맨뒤</span></a>
-								</div>
-							</div>
-											
 						</div>
-
-		
-					</div> <!--// content -->
-
+                    </div> <!--// content -->
+                   <!-- 페이징 처리  -->
+				   <div class="paging_area" id="pagingnavi"></div>	
+                    
 					<h3 class="hidden">풋터 영역</h3>
 						<jsp:include page="/WEB-INF/view/common/footer.jsp"></jsp:include>
 				</li>
@@ -461,7 +707,7 @@
 	</div>
 
 	<!-- 제품정보관리 모달 -->
-		<div id="pdinfo" class="layerPop layerType2" style="width: 900px; height: auto;">
+		<div id="productsave" class="layerPop layerType2" style="width: 900px; height: auto;">
 		<input type="hidden" id="loginID" name="loginID"> <!-- 수정시 필요한 num 값을 넘김  -->
            <dl>
 			<dt>
@@ -480,22 +726,16 @@
 
 					
 					<tbody>
-						<tr>
+					<!-- 	<tr>
 							<th scope="row">제품 번호 <span class="font_red">*</span></th>
-							<td colspan="3"><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pro_no" id="pro_no" /></td>
+							<td colspan="3"><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="modelCode" id="modelCode" v-model="modelCode" /></td>
 													
-						</tr>
+						</tr> -->
 						<tr>
 							<th scope="row">제품 코드 <span class="font_red">*</span></th>
-							<td colspan="3">  
-							<select name="pro_cd" id="pro_cd" style="width:webkit-fill-available; height:16.25px" data-placeholder="제품 코드를 선택하세요." class="chosen-select">
-								<c:forEach var="tempCdlist" items="${cdListObj}">
-						         	<option value="${tempCdlist.detail_code}">${tempCdlist.detail_name}</option>
-						        </c:forEach>
-							</select>
-							</td>
+							<td colspan="3"> <input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pdCode" id="pdCode" v-model="pdCode" /></td>
 						</tr>	
-						<tr>
+					<%-- 	<tr>
 							<th scope="row">저장 창고 <span class="font_red">*</span></th>
 							<td colspan="3">  
 							<select name="ware_no" id="ware_no" data-placeholder="1개 이상의 창고를 선택하세요." 
@@ -505,94 +745,58 @@
 						        </c:forEach>
 							</select>
 							</td>	
-						</tr>					
+						</tr> --%>					
 						<tr>
 							<th scope="row">제품명 <span class="font_red">*</span></th>
-							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pro_name" id="pro_name" ></td>
+							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pdName" id="pdName" v-model="pdName"></td>
 							
 							<th scope="row">모델명 <span class="font_red">*</span></th>
-							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pro_model_name" id="pro_model_name" /></td>
+							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="modelName" id="modelName" v-model="modelName"/></td>
 						</tr>
 						<tr>
 							<th scope="row">제조사 <span class="font_red">*</span></th>
-							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pro_manu_name" id="pro_manu_name" /></td>
+							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="15" name="pdCorp" id="pdCorp" v-model="pdCorp"/></td>
 							
 							<th scope="row">제품 가격 <span class="font_red">*</span></th>
-							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="10" name="pro_price" id="pro_price" style="ime-mode: disabled;" onKeyDown="filterNumber(this, event);" onChange="filterNum(this);" ></td>							
+							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="10" name="pdPrice" id="pdPrice" v-model="pdPrice" style="ime-mode: disabled;"  ></td>							
 						</tr>
 						<tr>
 							<th scope="row">납품 업체 <span class="font_red">*</span></th>
 							<td>  
-							<select name="deli_no" id="deli_no" style="width:129px; height:16.25px" data-placeholder="납품업체를 선택하세요."class="chosen-select">
-								<c:forEach var="tempCdlist3" items="${deliListObj}">
-						         	<option value="${tempCdlist3.deli_no}">${tempCdlist3.deli_company}</option>
-						        </c:forEach>
-							</select>
+							   <select id="loginId"  name="loginId" v-model="loginId">
+                                 <option value="">선택</option>
+                                 <option value="fadmin">ASUS</option>
+                                 <option value="naadmin">납품업체1</option>
+                                 <option value="naadmin1">납품업체2</option>
+                                 <option value="naadmin2">납품업체3</option>
+                                 <option value="naadmin4">납품업체4</option>
+                                 <option value="zoo2234">한성</option>
+                                 <option value="wallmart">월마트일렉트로닉스</option>
+                               </select>
 							</td>
-							<th scope="row">납품 단가 <span class="font_red">*</span></th>
-							<td><input class = "ui-widget ui-widget-content ui-corner-all" style="height:20px;" type="text" maxlength="10" name="pro_deli_price" id="pro_deli_price" style="ime-mode: disabled;" onKeyDown="filterNumber(this, event);" onChange="filterNum(this);"></td>							
-						</tr>
+						</tr> 
 						
 						<tr>
 							
 							<th scope="row">상세 정보 <span class="font_red">*</span></th>
 							<td colspan="3">
-							<textarea class = "ui-widget ui-widget-content ui-corner-all" id="pro_detail" maxlength="500" name="pro_detail" style="height:130px;outline:none;resize:none;" placeholder="여기에 상세정보를 적어주세요.(500자 이내)"></textarea>
+							<textarea class = "ui-widget ui-widget-content ui-corner-all" id="pdDetail" maxlength="500" name="pdDetail" v-model="pdDetail" style="height:130px;outline:none;resize:none;" placeholder="여기에 상세정보를 적어주세요.(500자 이내)"></textarea>
 							</td>
 								
 						</tr>		
 
-						
+						<!-- 첨부파일&다운로드  -->
 						<tr>
 		                    <th scope="row">대표 이미지 <span class="font_red">*</span></th>
 		                    <td class="thumb">
 		                        <span> 
-								<input name="thumbnail" type="file" id="thumbnail" accept="image/* " required>
-		
-										<!-- 파일 미리보기 스크립트 영역 -->
-								       <script>
-								       var file = document.querySelector('#thumbnail');
-										
-								       file.onchange = function () { 
-								           var fileList = file.files ;
-								           
-								           // 읽기
-								           var reader = new FileReader();
-								           reader.readAsDataURL(fileList [0]);
-								           //로드 한 후
-								           reader.onload = function  () {
-								               //로컬 이미지를 보여주기
-								               
-								               //썸네일 이미지 생성
-								               var tempImage = new Image(); //drawImage 메서드에 넣기 위해 이미지 객체화
-								               tempImage.src = reader.result; //data-uri를 이미지 객체에 주입
-								               tempImage.onload = function() {
-								                   //리사이즈를 위해 캔버스 객체 생성
-								                   var canvas = document.createElement('canvas');
-								                   var canvasContext = canvas.getContext("2d");
-								                   
-								                   //캔버스 크기 설정
-								                   canvas.width = 400; //가로 400px
-								                   canvas.height = 400; //세로 400px
-								                   
-								                   
-								                   //이미지를 캔버스에 그리기
-								                   canvasContext.drawImage(this, 0, 0, 400, 400);
-								                   //캔버스에 그린 이미지를 다시 data-uri 형태로 변환
-								                   var dataURI = canvas.toDataURL("image/jpeg");
-								                   
-								                   //썸네일 이미지 보여주기
-								                   document.querySelector('#tempImg').src = dataURI;
-								               };
-								           }; 
-								       };
-		                            </script>
-		                            <!-- 파일 미리보기 스크립트 영역 끝 -->
-		                            </span>
-								 </td>
-								 <td colspan="2" style="text-align:center;">
-								 	<img id="tempImg" style="object-fit: cover;max-width:100%" src="/images/admin/comm/no_image.png" alt="제품사진미리보기">
-								 </td>
+								    <input name="thumbnail" type="file" id="thumbnail" @change="selimg">
+		                        </span>
+						   </td>
+						   <td colspan="2" style="text-align:center;">
+						       {{pdfileName}}
+							   <img id="tempImg" style="object-fit: cover;max-width:100%" v-bind:src="pdNadd" @click="download()" alt="제품사진미리보기">
+						   </td>
                 	</tr>		
 						
 					</tbody>
@@ -600,7 +804,7 @@
 				</table>
 				<div class="btn_areaC mt30">
 					<a href="" class="btnType blue" id="btnUpdatePro" name="btn" style="display:none"><span>수정</span></a> 
-					<a href="" class="btnType blue" id="btnDeletePro" name="btn" ><span>삭제</span></a> 
+					<!-- <a href="" class="btnType blue" id="btnDeletePro" name="btn" ><span>삭제</span></a>  -->
 					<a href="" class="btnType blue" id="btnSavePro" name="btn"><span>저장</span></a>			
 					<a href=""	class="btnType gray"  id="btnClose" name="btn"><span>취소</span></a>
 				</div>

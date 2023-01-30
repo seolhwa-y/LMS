@@ -66,5 +66,13 @@ public class ComnComboServiceImpl implements ComnComboService {
     return list;
   }
   
+  /** 사용자  목록 조회 */
+  public List<comcombo> selectuserlist(Map<String, Object> paramMap) throws Exception {
+    
+    List<comcombo> list = comnComboDao.selectuserlist(paramMap);
+    
+    return list;
+  } 
+  
 
 }
