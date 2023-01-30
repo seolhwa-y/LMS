@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.happyjob.study.cor.dao.ProductListDAO">
+	
+	<!-- 제품목록조회 -->
+	<select id="productList" resultType="kr.happyjob.study.cor.model.ProductInfoModel">
+		<!-- 모델번호 model_code, 모델명(모델구분) model_name, 제품번호 pd_code, 제품명 pd_name,제조사 pd_corp, 판매가격 pd_price, -->
+		SELECT 
+		   MODEL_CODE AS model_code
+		  ,MODEL_NAME AS model_name
+		  ,PD_CODE AS pd_code
+		  ,PD_NAME AS pd_name
+		  ,PD_CORP AS pd_corp
+		  ,PD_PRICE AS pd_price
+		FROM PD_INFO
+	<where>
+		<if test ="(search != null) and (!search.equals(''))">			
+					and ( MODEL_NAME LIKE CONCAT('%', #{search}, '%')
+					   or PD_NAME LIKE CONCAT('%', #{search}, '%')
+					   or PD_CORP LIKE CONCAT('%', #{search}, '%') 
+					   or PD_PRICE LIKE CONCAT('%', #{search}, '%') 
+					   )
+		</if>
+		<if test ="(prolargeall != null) and (!prolargeall.equals(''))">
+			and MODEL_NAME LIKE CONCAT('%', #{prolargeall}, '%')
+		</if>
+		<if test ="(prodall!= null) and (!prodall.equals(''))">
+			and MODEL_CODE LIKE CONCAT('%', #{prodall}, '%')
+		</if>
+	</where>	
+		ORDER BY MODEL_CODE
+		LIMIT #{pageIndex}, #{pageSize}
+	</select>
+	
+	<!-- 제품 목록 수 조회  -->
+	<select id="productTotalCnt" resultType="int">
+		SELECT COUNT(*)
+			FROM PD_INFO
+	<where>
+		<if test ="(search != null) and (!search.equals(''))">			
+					and ( MODEL_NAME LIKE CONCAT('%', #{search}, '%')
+					   or PD_NAME LIKE CONCAT('%', #{search}, '%')
+					   or PD_CORP LIKE CONCAT('%', #{search}, '%') 
+					   or PD_PRICE LIKE CONCAT('%', #{search}, '%') 
+					   )
+		</if>
+		<if test ="(prolargeall != null) and (!prolargeall.equals(''))">
+			and MODEL_NAME LIKE CONCAT('%', #{prolargeall}, '%')
+		</if>
+		<if test ="(prodall!= null) and (!prodall.equals(''))">
+			and MODEL_CODE LIKE CONCAT('%', #{prodall}, '%')
+		</if>
+	</where>	
+	</select>
+	
+	<!-- 제품상세조회-->
+	<select id="selecProductDetail" resultType="kr.happyjob.study.cor.model.ProductInfoModel">
+		<!-- 모델번호 model_code, 모델명(모델구분) model_name, 제품번호 pd_code, 제품명 pd_name,제조사 pd_corp, 판매가격 pd_price, -->
+		SELECT 
+		   pd.MODEL_CODE AS model_code
+		  ,pd.MODEL_NAME AS model_name
+		  ,pd.PD_CODE AS pd_code
+		  ,pd.PD_NAME AS pd_name
+		  ,pd.PD_CORP AS pd_corp
+		  ,pd.PD_PRICE AS pd_price
+		  ,fi.PD_NADD AS pd_nadd
+		FROM PD_INFO pd
+		LEFT JOIN PD_FILE fi ON pd.PDFILE_CODE = fi.PDFILE_CODE 
+		<where>
+		MODEL_CODE = #{result}
+		</where>
+	</select>
+	
+	
+	<!-- 주문하기  -->
+	<insert id="insertOrder" parameterType="java.util.Map">
+			<selectKey resultType="int" keyProperty="jordCode" order="BEFORE">
+	            SELECT 
+	              IFNULL(MAX(JORD_CODE),0) + 1
+	            FROM JORDER_INFO
+	        </selectKey> 
+		INSERT 
+		INTO JORDER_INFO
+		(
+			JORD_CODE 
+		   ,MODEL_CODE 
+		   ,loginID  
+		   ,JORD_NO 
+		   ,JORD_DATE 
+		   ,JORD_IN 
+		   ,JORD_WISHDATE 
+		   ,JORD_AMT
+		)
+		VALUES
+		(
+		  #{jordCode}
+		 ,#{modelCode} 
+		 ,#{loginId} 
+		 ,0 
+		 ,DATE_FORMAT(now(), '%Y%m%d') 
+		 ,0 
+		 ,DATE_FORMAT(#{jordWishdate}, '%Y%m%d')
+		 ,#{jordAmt}
+		)
+	</insert>
+	
+	<!-- 장바구니 -->
+	<insert id="insertProductBasket" parameterType="java.util.Map">
+		<selectKey resultType="int" keyProperty="bCode" order="BEFORE">
+			SELECT
+			  IFNULL(MAX(B_CODE),0) + 1
+			FROM BASKET 
+		</selectKey>
+		
+		INSERT
+		INTO BASKET
+		(
+		 	B_CODE
+		   ,loginID
+		   ,MODEL_CODE
+		   ,B_AMT
+		   ,B_WISHDATE	
+		)
+		VALUES
+		(
+			#{bCode}
+		   ,#{loginId}
+		   ,#{modelCode}
+		   ,#{bAmt}	
+		   ,DATE_FORMAT(#{bWishdate}, '%Y%m%d')	
+		)
+	</insert>
+	</mapper>

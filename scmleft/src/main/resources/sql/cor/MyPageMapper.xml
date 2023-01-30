@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "kr.happyjob.study.cor.dao.MyPageDAO">
+
+	<select id="detailUser" resultType="kr.happyjob.study.cor.model.MyPageModel">
+		select 
+			   u.user_type as user_type,
+			   u.loginID as loginID,
+			   u.name as name,
+			   u.password as password,
+			   u.hp as hp,
+			   u.email as email,
+			   u.div_cd as div_cd,
+			   d.detail_name as divCD_name,
+			   u.zip as zip,
+			   u.addr as addr,
+			   u.dtl_add as dtl_add,
+			   u.company as company
+			   from(select * from tb_detail_code d where d.group_code = 'divCD') d
+			   join tb_userinfo u
+			   on u.div_cd = d.detail_code
+			   where loginID = #{loginID};
+	</select>
+	
+	<update id="updateUser" parameterType="java.util.Map">
+		update tb_userinfo set 
+			name = #{name},
+			password = #{password},
+			hp = #{hp},
+			email = #{email},
+			company = #{company},
+			zip = #{zip},
+			addr = #{addr},
+			dtl_add = #{dtl_add}
+			where loginID = #{rloginID}
+	</update>
+
+
+
+</mapper>

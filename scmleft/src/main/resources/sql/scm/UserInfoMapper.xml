@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.scm.dao.UserInfoDao">
+
+<select id="listUser" resultType="kr.happyjob.study.scm.model.UserInfoModel">
+	SELECT
+		u.div_cd as div_cd,
+		u.loginID as loginID,
+		u.name as name,
+		u.user_type as user_type,
+		u.addr as addr,
+		u.dtl_add as dtl_add,
+		u.bank as bank,
+		u.account as account,
+		u.company as company,
+		u.hp as hp,
+		d.detail_name as divCD,
+		d2.detail_name as chaCD
+	FROM 
+		(select * FROM tb_detail_code d where d.group_code = 'divCD') d 
+	JOIN 
+		tb_userinfo u
+	ON 
+		u.div_cd = d.detail_code
+	JOIN 
+		(select * FROM tb_detail_code d where d.group_code = 'chaCD') d2
+	ON 
+		u.user_type = d2.detail_code
+	<where>
+			<if test="(search != null) and (!search.equals(''))">
+				<choose>
+					<when
+						test="option eq 'user_id'.toString()">
+						and u.loginID Like CONCAT('%', #{search}, '%')
+					</when>
+					<when
+						test="option eq 'user_name'.toString()">
+						and u.name Like CONCAT('%', #{search}, '%')
+					</when>
+					<when
+						test="option eq 'user_cha'.toString()">
+						and d2.detail_name Like CONCAT('%', #{search}, '%')
+					</when>
+					<otherwise>
+						AND ( u.loginID Like CONCAT('%', #{search}, '%')
+						  or  u.name Like CONCAT('%', #{search}, '%')
+						  or  d2.detail_name Like CONCAT('%', #{search}, '%')
+						    )
+					</otherwise>
+				</choose>
+			</if>	
+		</where>
+	ORDER BY 
+		div_cd, loginID
+	LIMIT 
+		#{pageIndex}, #{pageSize};
+</select>
+
+<select id="countListUser" resultType="int">
+	SELECT
+		count(*)
+	FROM 
+		(select * FROM tb_detail_code d where d.group_code = 'divCD') d 
+	JOIN 
+		tb_userinfo u
+	ON 
+		u.div_cd = d.detail_code
+	JOIN 
+		(select * FROM tb_detail_code d where d.group_code = 'chaCD') d2
+	ON 
+		u.user_type = d2.detail_code
+	<where>
+		<if test="(search != null) and (!search.equals(''))">
+			<choose>
+				<when
+					test="option eq 'user_id'.toString()">
+					and u.loginID Like CONCAT('%', #{search}, '%')
+				</when>
+				<when
+					test="option eq 'user_name'.toString()">
+					and u.name Like CONCAT('%', #{search}, '%')
+				</when>
+				<when
+					test="option eq 'user_cha'.toString()">
+					and d2.detail_name Like CONCAT('%', #{search}, '%')
+				</when>
+				<otherwise>
+					AND ( u.loginID Like CONCAT('%', #{search}, '%')
+					  or  u.name Like CONCAT('%', #{search}, '%')
+					  or  d2.detail_name Like CONCAT('%', #{search}, '%')
+					    )
+				</otherwise>
+			</choose>
+		</if>	
+	</where>
+</select>
+
+<!-- 회원 1건 상세정보 -->
+	<select id="UserDetail" resultType="kr.happyjob.study.scm.model.UserInfoModel">
+		select  
+			u.dtl_add as dtl_add,
+			u.user_type as user_type,
+		    u.name as name,
+		    u.loginID as loginID,
+		    u.email as email,
+		    u.company as company,
+		    u.password as password,
+		    u.hp as hp,
+		    u.div_cd as div_cd,
+		    d.detail_name as divCD,
+		    d2.detail_name as chaCD,
+		    u.bank as bank,
+		    u.zip as zip,
+		    u.addr as addr,
+		    u.account as account,
+		    u.company as company
+		FROM 
+			(select * FROM tb_detail_code d where d.group_code = 'divCD') d 
+		JOIN 
+			tb_userinfo u
+		ON 
+			u.div_cd = d.detail_code
+		JOIN 
+			(select * FROM tb_detail_code d where d.group_code = 'chaCD') d2
+		ON 
+			u.user_type = d2.detail_code
+		where 
+			loginID = #{loginID};
+	</select>
+	
+<!-- 회원 수정 -->
+	<update id="updateUser" parameterType="java.util.Map">
+		UPDATE tb_userinfo
+			SET 
+			password = #{password},
+			hp = #{hp},
+			email = #{email},
+			zip = #{zip},
+			addr = #{addr},
+			dtl_add = #{dtl_add},
+			name = #{name},
+			company = #{company},
+			user_type=#{chaCD},
+			bank=#{bank},
+			account=#{account}
+		WHERE 
+			loginID = #{rloginID}
+	</update>
+	
+	<!-- 회원 삽입 -->
+	<insert id="insertUser" parameterType="java.util.Map">
+		INSERT INTO tb_userinfo(
+			loginID,
+			name,
+			password,
+			email,
+			hp,
+			zip,
+			addr,
+			dtl_add,
+			div_cd,
+			company,
+			bank,
+			account,
+			user_type
+			)
+		VALUES(
+			#{rloginID},
+			#{name},
+			#{password},
+			#{email},
+			#{hp},
+			#{zip},
+			#{addr},
+			#{dtl_add},
+			#{checkstaff},
+			<if test="checkstaff.equals('outstaff')">
+			#{company},
+			#{bank},
+			#{account},
+			"C"
+			</if>
+			<if test="checkstaff.equals('instaff')">
+			"",
+			"",
+			"",
+			#{chaCD}
+			</if>
+			)
+	</insert>
+	
+	<!-- id 중복 체크 -->
+	<select id="idcheck" parameterType="java.util.Map" resultType="int">
+		SELECT count(*)
+		FROM tb_userinfo
+		WHERE loginID = #{checkid}
+	</select>
+</mapper>
